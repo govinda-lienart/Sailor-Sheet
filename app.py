@@ -4,16 +4,13 @@
 # =============================================================================
 
 # Import required libraries
-from flask import Flask, render_template, request, redirect, url_for  # Web framework
+from flask import Flask, render_template, request  # Web framework
 import gspread  # Google Sheets API library
 from google.oauth2.service_account import Credentials  # Google authentication
 from datetime import datetime  # For timestamps
-import os  # Operating system functions
-from config import Config  # Configuration settings
 
 # Create Flask web application
 app = Flask(__name__)
-app.config.from_object(Config)  # Load configuration from config.py
 
 # =============================================================================
 # GOOGLE SHEETS SETUP
@@ -28,7 +25,7 @@ SCOPES = [
 # Load service account credentials from JSON file
 # This is like giving our app a "login card" for Google
 credentials = Credentials.from_service_account_file(
-    app.config['GOOGLE_SHEETS_CREDENTIALS_FILE'],  # Path to credentials.json
+    'credentials.json',  # Path to credentials.json
     scopes=SCOPES  # What permissions our app has
 )
 
@@ -66,7 +63,7 @@ def index():
             sheet = gc.open('Test_Sheet').sheet1
             
             # Create timestamp for when data was submitted
-            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            timestamp = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
             
             # Prepare data row: [Name, Amount, Description, Timestamp]
             row = [name, amount, description, timestamp]
