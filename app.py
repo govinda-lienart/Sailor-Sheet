@@ -9,7 +9,6 @@ import os
 
 # Import our custom modules
 from sheets_manager import initialize_sheets, add_transaction
-from total_calculator import update_total_automatically
 
 # Create Flask web application
 app = Flask(__name__)
@@ -62,13 +61,8 @@ def index():
             # Add transaction to Google Sheets (uses environment sheet name)
             sheet = add_transaction(gc, SHEET_NAME, name, amount, description)
             
-            # =====================================================================
-            # AUTOMATICALLY UPDATE TOTAL (SMART!)
-            # =====================================================================
-            new_total = update_total_automatically(sheet)
-            
-            # Redirect to thank you page with total
-            return redirect(url_for('thank_you', total=new_total))
+            # Redirect to thank you page
+            return redirect(url_for('thank_you'))
             
         except Exception as e:
             # If something goes wrong, show error message
@@ -93,8 +87,7 @@ def thank_you():
     """
     Thank you page after successful submission
     """
-    total = request.args.get('total', type=float)
-    return render_template('thank_you.html', total=total)
+    return render_template('thank_you.html')
 
 # =============================================================================
 # START THE APPLICATION
