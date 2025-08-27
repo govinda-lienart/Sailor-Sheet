@@ -38,14 +38,24 @@ def initialize_sheets():
         except Exception as e:
             raise Exception(f"Error parsing Google credentials from environment: {str(e)}")
     else:
-        # Use credentials file (development)
+        # Try to use secret file first, then fall back to local file
         try:
+            # Try to read from secret file (production)
             credentials = Credentials.from_service_account_file(
-                'credentials.json',  # Path to credentials.json
-                scopes=SCOPES  # What permissions our app has
+                '/etc/secrets/credentials.json',  # Secret file path
+                scopes=SCOPES
             )
+        except FileNotFoundError:
+            try:
+                # Fall back to local file (development)
+                credentials = Credentials.from_service_account_file(
+                    'credentials.json',  # Local file path
+                    scopes=SCOPES
+                )
+            except Exception as e:
+                raise Exception(f"Error loading credentials.json file: {str(e)}")
         except Exception as e:
-            raise Exception(f"Error loading credentials.json file: {str(e)}")
+            raise Exception(f"Error loading secret credentials file: {str(e)}")
     
     # Authorize our app to use Google Sheets
     return gspread.authorize(credentials)
