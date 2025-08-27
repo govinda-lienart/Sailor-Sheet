@@ -11,7 +11,8 @@ from flask import Flask, render_template, request, redirect, url_for  # Web fram
 import os
 
 # Import our custom modules
-from sheets_manager import initialize_sheets, add_transaction
+from config import initialize_sheets
+from sheets_manager import add_transaction
 
 # Create Flask web application
 app = Flask(__name__)
