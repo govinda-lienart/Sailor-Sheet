@@ -54,6 +54,13 @@ def update_total_automatically(sheet):
         total_data = ['TOTAL', total, f'{transaction_count} transactions', '']
         sheet.append_row(total_data)
         
+        # Import and format table after updating totals
+        try:
+            from sheets_manager import format_as_table
+            format_as_table(sheet)
+        except:
+            pass  # Don't fail if formatting doesn't work
+        
         return total
         
     except Exception as e:

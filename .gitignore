@@ -1,8 +1,6 @@
-# Environment variables
-.env
-
-# Google Sheets credentials
-credentials.json
+# VS Code
+*.code-workspace
+.vscode/
 
 # Python
 __pycache__/
@@ -10,14 +8,61 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
 venv/
+env/
 ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Google API Credentials
+credentials.json
+*.json
+!package.json
+!package-lock.json
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # IDE
-.vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# OS
-.DS_Store
-Thumbs.db
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
