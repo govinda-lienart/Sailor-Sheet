@@ -5,6 +5,7 @@
 
 # Import required libraries
 from flask import Flask, render_template, request, redirect, url_for  # Web framework
+import os
 
 # Import our custom modules
 from sheets_manager import initialize_sheets, add_transaction
@@ -12,6 +13,17 @@ from total_calculator import update_total_automatically
 
 # Create Flask web application
 app = Flask(__name__)
+
+# =============================================================================
+# ENVIRONMENT CONFIGURATION
+# =============================================================================
+
+# Get environment (development or production)
+FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
+SHEET_NAME = os.environ.get('SHEET_NAME', 'Test_Sheet')
+
+# Set debug mode based on environment
+DEBUG_MODE = FLASK_ENV == 'development'
 
 # =============================================================================
 # INITIALIZE GOOGLE SHEETS
@@ -47,8 +59,8 @@ def index():
         # =====================================================================
         
         try:
-            # Add transaction to Google Sheets
-            sheet = add_transaction(gc, 'Test_Sheet', name, amount, description)
+            # Add transaction to Google Sheets (uses environment sheet name)
+            sheet = add_transaction(gc, SHEET_NAME, name, amount, description)
             
             # =====================================================================
             # AUTOMATICALLY UPDATE TOTAL (SMART!)
@@ -60,7 +72,10 @@ def index():
             
         except Exception as e:
             # If something goes wrong, show error message
-            return f"Error: {str(e)}"
+            if DEBUG_MODE:
+                return f"Error: {str(e)}"
+            else:
+                return "An error occurred. Please try again."
     
     # =====================================================================
     # SHOW THE WEB FORM (GET request)
@@ -86,5 +101,5 @@ def thank_you():
 # =============================================================================
 
 if __name__ == '__main__':
-    # Run the Flask app in debug mode (shows errors, auto-reloads)
-    app.run(debug=True)
+    # Run the Flask app with environment-based debug mode
+    app.run(debug=DEBUG_MODE)

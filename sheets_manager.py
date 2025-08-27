@@ -6,6 +6,8 @@
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+import os
+import json
 
 # =============================================================================
 # GOOGLE SHEETS SETUP
@@ -22,11 +24,28 @@ def initialize_sheets():
     Initialize Google Sheets connection
     Returns: gspread client
     """
-    # Load service account credentials from JSON file
-    credentials = Credentials.from_service_account_file(
-        'credentials.json',  # Path to credentials.json
-        scopes=SCOPES  # What permissions our app has
-    )
+    # Check if credentials are in environment variable (production)
+    google_credentials = os.environ.get('GOOGLE_CREDENTIALS')
+    
+    if google_credentials:
+        # Use credentials from environment variable (production)
+        try:
+            credentials_dict = json.loads(google_credentials)
+            credentials = Credentials.from_service_account_info(
+                credentials_dict,
+                scopes=SCOPES
+            )
+        except Exception as e:
+            raise Exception(f"Error parsing Google credentials from environment: {str(e)}")
+    else:
+        # Use credentials file (development)
+        try:
+            credentials = Credentials.from_service_account_file(
+                'credentials.json',  # Path to credentials.json
+                scopes=SCOPES  # What permissions our app has
+            )
+        except Exception as e:
+            raise Exception(f"Error loading credentials.json file: {str(e)}")
     
     # Authorize our app to use Google Sheets
     return gspread.authorize(credentials)
