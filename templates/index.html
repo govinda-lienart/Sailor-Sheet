@@ -4,21 +4,38 @@
      Created: 2025-01-27 19:30:00
      Status: ✅ WORKING - Clean form for data entry
      ============================================================================= -->
+
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- =====================================================================
+         HEAD SECTION - Page Setup and Styling
+         ===================================================================== -->
     <title>NGO Accounting - Data Entry</title>
+    <!-- Link to our CSS file for styling -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
+    <!-- =====================================================================
+         MAIN CONTAINER - Wraps everything on the page
+         ===================================================================== -->
     <div class="container">
         <div class="form-container">
+            
+            <!-- =====================================================================
+                 PAGE TITLE
+                 ===================================================================== -->
             <h1>NGO Accounting System</h1>
             
-            <!-- Flash messages -->
+            <!-- =====================================================================
+                 FLASH MESSAGES SECTION - Shows success/error messages
+                 This section displays messages from the server (like "Success!" or "Error!")
+                 ===================================================================== -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
+                        <!-- Show error messages in red, success messages in green -->
                         <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
                             {{ message }}
                         </div>
@@ -26,77 +43,138 @@
                 {% endif %}
             {% endwith %}
             
+            <!-- =====================================================================
+                 MAIN FORM - Where users enter data
+                 method="POST" means this form sends data to the server
+                 ===================================================================== -->
             <form method="POST">
-                <!-- Sheet Selection Dropdown -->
+                
+                <!-- =====================================================================
+                     STEP 1: SELECT GOOGLE SHEET
+                     This dropdown shows all available Google Sheets
+                     ===================================================================== -->
                 <div class="form-group">
                     <label>Select Sheet:</label>
+                    <!-- 
+                        This dropdown lists all Google Sheets the user has access to
+                        onchange="loadWorksheets()" means when user selects a sheet, 
+                        it automatically loads the worksheets for that sheet
+                    -->
                     <select name="sheet_name" id="sheet_select" required onchange="loadWorksheets()">
                         <option value="">Choose a sheet...</option>
+                        <!-- Loop through all available sheets from Python -->
                         {% for sheet in sheets %}
                         <option value="{{ sheet.id }}">{{ sheet.title }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 
-                <!-- Worksheet Selection Dropdown -->
+                <!-- =====================================================================
+                     STEP 2: SELECT WORKSHEET (SUB-SHEET)
+                     This dropdown shows worksheets within the selected Google Sheet
+                     ===================================================================== -->
                 <div class="form-group">
                     <label>Select Worksheet:</label>
+                    <!-- 
+                        This dropdown is disabled until user selects a sheet
+                        It will be populated with worksheets from the selected sheet
+                    -->
                     <select name="worksheet_name" id="worksheet_select" required disabled>
                         <option value="">First select a sheet...</option>
                     </select>
                 </div>
                 
+                <!-- =====================================================================
+                     STEP 3: ENTER TRANSACTION DETAILS
+                     These are the actual data fields users fill out
+                     ===================================================================== -->
+                
+                <!-- Name field - who the transaction is for -->
                 <div class="form-group">
                     <label>Name:</label>
                     <input type="text" name="name" required placeholder="Enter your name">
                 </div>
+                
+                <!-- Amount field - how much money -->
                 <div class="form-group">
                     <label>Amount:</label>
+                    <!-- step="0.01" allows decimal numbers (like $10.50) -->
                     <input type="number" name="amount" step="0.01" required placeholder="Enter amount">
                 </div>
+                
+                <!-- Description field - what the transaction is for -->
                 <div class="form-group">
                     <label>Description:</label>
+                    <!-- textarea allows multiple lines of text -->
                     <textarea name="description" rows="3" required placeholder="Enter description"></textarea>
                 </div>
+                
+                <!-- Submit button - sends all the data to Google Sheets -->
                 <button type="submit" class="btn">Submit to Google Sheets</button>
             </form>
         </div>
     </div>
 
+    <!-- =====================================================================
+         JAVASCRIPT SECTION - Makes the form interactive
+         This code runs in the user's browser and handles the dynamic loading
+         ===================================================================== -->
     <script>
+        // =====================================================================
+        // FUNCTION: loadWorksheets()
+        // PURPOSE: When user selects a Google Sheet, this loads the worksheets
+        // =====================================================================
         function loadWorksheets() {
+            // Get references to the dropdown elements
             const sheetSelect = document.getElementById('sheet_select');
             const worksheetSelect = document.getElementById('worksheet_select');
             const selectedSheetId = sheetSelect.value;
             
-            // Reset worksheet dropdown
+            // =====================================================================
+            // STEP 1: Reset the worksheet dropdown and show "Loading..."
+            // =====================================================================
             worksheetSelect.innerHTML = '<option value="">Loading worksheets...</option>';
-            worksheetSelect.disabled = true;
+            worksheetSelect.disabled = true;  // Disable dropdown while loading
             
+            // =====================================================================
+            // STEP 2: Check if user actually selected a sheet
+            // =====================================================================
             if (!selectedSheetId) {
                 worksheetSelect.innerHTML = '<option value="">First select a sheet...</option>';
-                return;
+                return;  // Exit function if no sheet selected
             }
             
-            // Fetch worksheets for selected sheet
+            // =====================================================================
+            // STEP 3: Fetch worksheets from the server
+            // This sends a request to our Python backend to get worksheets
+            // =====================================================================
             fetch(`/get_worksheets/${selectedSheetId}`)
-                .then(response => response.json())
+                .then(response => response.json())  // Convert response to JavaScript data
                 .then(data => {
+                    // =====================================================================
+                    // STEP 4: Populate the worksheet dropdown with the data
+                    // =====================================================================
                     worksheetSelect.innerHTML = '<option value="">Choose a worksheet...</option>';
                     
+                    // Check if we got any worksheets back
                     if (data.length > 0) {
+                        // Loop through each worksheet and create an option
                         data.forEach(worksheet => {
                             const option = document.createElement('option');
                             option.value = worksheet.title;
                             option.textContent = worksheet.title;
                             worksheetSelect.appendChild(option);
                         });
-                        worksheetSelect.disabled = false;
+                        worksheetSelect.disabled = false;  // Enable the dropdown
                     } else {
+                        // No worksheets found
                         worksheetSelect.innerHTML = '<option value="">No worksheets found</option>';
                     }
                 })
                 .catch(error => {
+                    // =====================================================================
+                    // ERROR HANDLING: If something goes wrong
+                    // =====================================================================
                     console.error('Error loading worksheets:', error);
                     worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
                 });
