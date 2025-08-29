@@ -35,6 +35,21 @@ def get_available_sheets(gc):
         print(f"Error getting sheets: {e}")
         return []
 
+def get_sheet_by_id(gc, sheet_id):
+    """
+    Get a specific sheet by its ID
+    Args:
+        gc: Google Sheets client
+        sheet_id: ID of the sheet to retrieve
+    Returns: Sheet object or None if not found
+    """
+    try:
+        sheet = gc.open_by_key(sheet_id)
+        return sheet
+    except Exception as e:
+        print(f"Error getting sheet by ID: {e}")
+        return None
+
 def get_worksheets_from_sheet(gc, sheet_id):
     """
     Get list of worksheets (subsheets) from a specific Google Sheet
@@ -44,8 +59,10 @@ def get_worksheets_from_sheet(gc, sheet_id):
     Returns: List of dictionaries with worksheet info
     """
     try:
-        # Open the specific sheet by ID
-        sheet = gc.open_by_key(sheet_id)
+        # Use the centralized sheet opening function
+        sheet = get_sheet_by_id(gc, sheet_id)
+        if sheet is None:
+            return []
         
         # Get all worksheets in this sheet
         worksheets = sheet.worksheets()
@@ -76,8 +93,10 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
     Returns: True if successful, False otherwise
     """
     try:
-        # Open the specific sheet by ID
-        sheet = gc.open_by_key(sheet_id)
+        # Use the centralized sheet opening function
+        sheet = get_sheet_by_id(gc, sheet_id)
+        if sheet is None:
+            return False
         
         # Get the specific worksheet by title
         worksheet = sheet.worksheet(worksheet_title)
@@ -101,21 +120,6 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
     except Exception as e:
         print(f"Error adding transaction to selected sheet: {e}")
         return False
-
-def get_sheet_by_id(gc, sheet_id):
-    """
-    Get a specific sheet by its ID
-    Args:
-        gc: Google Sheets client
-        sheet_id: ID of the sheet to retrieve
-    Returns: Sheet object or None if not found
-    """
-    try:
-        sheet = gc.open_by_key(sheet_id)
-        return sheet
-    except Exception as e:
-        print(f"Error getting sheet by ID: {e}")
-        return None
 
 
 

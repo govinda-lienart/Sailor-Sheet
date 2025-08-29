@@ -41,7 +41,7 @@ gc = initialize_sheets()
 # MAIN WEB ROUTE - Sheet Selection Form
 # =============================================================================
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/get_worksheets/<sheet_id>')
 def index():
     """
     Main function that handles the web form with sheet selection
