@@ -34,9 +34,7 @@ def add_transaction(gc, sheet_name, name, amount, description):
         
         # Add the new row to the Google Sheet
         sheet.append_row(row)
-        
-        # No totals - user will handle manually
-        
+                
         return sheet
         
     except Exception as e:
@@ -52,4 +50,3 @@ def get_sheet_data(gc, sheet_name):
     except Exception as e:
         raise Exception(f"Error getting sheet data: {str(e)}")
 
-# Total calculator removed - user will handle manually

@@ -10,7 +10,7 @@
 from flask import Flask, render_template, request, redirect, url_for  # Web framework
 import os
 
-# Import our custom modules
+# Import custom modules
 from config import initialize_sheets
 from sheets_manager import add_transaction
 
