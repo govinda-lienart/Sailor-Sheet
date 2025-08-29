@@ -9,16 +9,78 @@
 from datetime import datetime
 
 # =============================================================================
-# DATA OPERATIONS
+# SHEET SELECTION AND MANAGEMENT
 # =============================================================================
 
-def add_transaction(gc, sheet_name, name, amount, description):
+def get_available_sheets(gc):
     """
-    Add a new transaction to Google Sheets
+    Get list of available Google Sheets for dropdown selection
+    Args:
+        gc: Google Sheets client
+    Returns: List of dictionaries with sheet info
     """
     try:
-        # Open the Google Sheet
-        sheet = gc.open(sheet_name).sheet1
+        # Get all spreadsheets you have access to
+        all_sheets = gc.openall()
+        sheet_list = []
+        
+        for sheet in all_sheets:
+            sheet_list.append({
+                'id': sheet.id,
+                'title': sheet.title
+            })
+        
+        return sheet_list
+    except Exception as e:
+        print(f"Error getting sheets: {e}")
+        return []
+
+def get_worksheets_from_sheet(gc, sheet_id):
+    """
+    Get list of worksheets (subsheets) from a specific Google Sheet
+    Args:
+        gc: Google Sheets client
+        sheet_id: ID of the specific sheet
+    Returns: List of dictionaries with worksheet info
+    """
+    try:
+        # Open the specific sheet by ID
+        sheet = gc.open_by_key(sheet_id)
+        
+        # Get all worksheets in this sheet
+        worksheets = sheet.worksheets()
+        worksheet_list = []
+        
+        for worksheet in worksheets:
+            worksheet_list.append({
+                'id': worksheet.id,
+                'title': worksheet.title,
+                'index': worksheet.index
+            })
+        
+        return worksheet_list
+    except Exception as e:
+        print(f"Error getting worksheets: {e}")
+        return []
+
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amount, description):
+    """
+    Add transaction to a specific selected sheet and worksheet
+    Args:
+        gc: Google Sheets client
+        sheet_id: ID of the specific sheet
+        worksheet_title: Title of the specific worksheet
+        name: Name from form
+        amount: Amount from form
+        description: Description from form
+    Returns: True if successful, False otherwise
+    """
+    try:
+        # Open the specific sheet by ID
+        sheet = gc.open_by_key(sheet_id)
+        
+        # Get the specific worksheet by title
+        worksheet = sheet.worksheet(worksheet_title)
         
         # Create timestamp for when data was submitted
         timestamp = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
@@ -32,21 +94,28 @@ def add_transaction(gc, sheet_name, name, amount, description):
         # Prepare data row: [Name, Amount (as number), Description, Timestamp]
         row = [name, numeric_amount, description, timestamp]
         
-        # Add the new row to the Google Sheet
-        sheet.append_row(row)
-                
-        return sheet
+        # Add to next empty row
+        worksheet.append_row(row)
         
+        return True
     except Exception as e:
-        raise Exception(f"Error adding transaction: {str(e)}")
+        print(f"Error adding transaction to selected sheet: {e}")
+        return False
 
-def get_sheet_data(gc, sheet_name):
+def get_sheet_by_id(gc, sheet_id):
     """
-    Get all data from Google Sheet
+    Get a specific sheet by its ID
+    Args:
+        gc: Google Sheets client
+        sheet_id: ID of the sheet to retrieve
+    Returns: Sheet object or None if not found
     """
     try:
-        sheet = gc.open(sheet_name).sheet1
+        sheet = gc.open_by_key(sheet_id)
         return sheet
     except Exception as e:
-        raise Exception(f"Error getting sheet data: {str(e)}")
+        print(f"Error getting sheet by ID: {e}")
+        return None
+
+
 

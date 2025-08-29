@@ -7,12 +7,12 @@
 # =============================================================================
 
 # Import required libraries
-from flask import Flask, render_template, request, redirect, url_for  # Web framework
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify  # Web framework
 import os
 
 # Import custom modules
 from config import initialize_sheets
-from sheets_manager import add_transaction
+from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet
 
 # Create Flask web application
 app = Flask(__name__)
@@ -23,10 +23,12 @@ app = Flask(__name__)
 
 # Get environment (development or production)
 FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
-SHEET_NAME = os.environ.get('SHEET_NAME', 'Test_Sheet')
 
 # Set debug mode based on environment
 DEBUG_MODE = FLASK_ENV == 'development'
+
+# Add secret key for flash messages
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
 # =============================================================================
 # INITIALIZE GOOGLE SHEETS
@@ -36,51 +38,73 @@ DEBUG_MODE = FLASK_ENV == 'development'
 gc = initialize_sheets()
 
 # =============================================================================
-# MAIN WEB ROUTE - Handles both GET and POST requests
+# MAIN WEB ROUTE - Sheet Selection Form
 # =============================================================================
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     """
-    Main function that handles the web form
+    Main function that handles the web form with sheet selection
     GET: Shows the form to the user
-    POST: Processes form data and saves to Google Sheets
+    POST: Processes form data and saves to selected Google Sheet
     """
     
     if request.method == 'POST':
         # =====================================================================
-        # PROCESS FORM SUBMISSION
+        # PROCESS FORM SUBMISSION WITH SHEET SELECTION
         # =====================================================================
         
         # Extract data from the web form
-        name = request.form['name']           # Get name from form
-        amount = request.form['amount']       # Get amount from form
-        description = request.form['description']  # Get description from form
+        selected_sheet_id = request.form['sheet_name']
+        selected_worksheet = request.form['worksheet_name']
+        name = request.form['name']
+        amount = request.form['amount']
+        description = request.form['description']
         
-        # =====================================================================
-        # SAVE DATA TO GOOGLE SHEETS
-        # =====================================================================
+        # Validate that a sheet and worksheet were selected
+        if not selected_sheet_id:
+            flash('Please select a sheet!', 'error')
+            available_sheets = get_available_sheets(gc)
+            return render_template('index.html', sheets=available_sheets)
         
-        try:
-            # Add transaction to Google Sheets (uses environment sheet name)
-            sheet = add_transaction(gc, SHEET_NAME, name, amount, description)
-            
-            # Redirect to thank you page
+        if not selected_worksheet:
+            flash('Please select a worksheet!', 'error')
+            available_sheets = get_available_sheets(gc)
+            return render_template('index.html', sheets=available_sheets)
+        
+        # Add transaction to selected sheet and worksheet
+        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, name, amount, description):
+            flash('Transaction added successfully!', 'success')
             return redirect(url_for('thank_you'))
-            
-        except Exception as e:
-            # If something goes wrong, show error message
-            if DEBUG_MODE:
-                return f"Error: {str(e)}"
-            else:
-                return "An error occurred. Please try again."
+        else:
+            flash('Error adding transaction!', 'error')
+            available_sheets = get_available_sheets(gc)
+            return render_template('index.html', sheets=available_sheets)
     
     # =====================================================================
-    # SHOW THE WEB FORM (GET request)
+    # SHOW THE FORM WITH SHEET SELECTION (GET request)
     # =====================================================================
     
-    # If it's a GET request, show the HTML form
-    return render_template('index.html')
+    # Get available sheets for dropdown
+    available_sheets = get_available_sheets(gc)
+    
+    # Show the form with sheet selection
+    return render_template('index.html', sheets=available_sheets)
+
+# =============================================================================
+# AJAX ROUTE FOR WORKSHEET SELECTION
+# =============================================================================
+
+@app.route('/get_worksheets/<sheet_id>')
+def get_worksheets(sheet_id):
+    """
+    AJAX route to get worksheets for a selected sheet
+    """
+    try:
+        worksheets = get_worksheets_from_sheet(gc, sheet_id)
+        return jsonify(worksheets)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # =============================================================================
 # THANK YOU PAGE ROUTE

@@ -14,22 +14,93 @@
     <div class="container">
         <div class="form-container">
             <h1>NGO Accounting System</h1>
+            
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
             <form method="POST">
-            <div class="form-group">
-                <label>Name:</label>
-                <input type="text" name="name" required placeholder="Enter your name">
-            </div>
-            <div class="form-group">
-                <label>Amount:</label>
-                <input type="number" name="amount" step="0.01" required placeholder="Enter amount">
-            </div>
-            <div class="form-group">
-                <label>Description:</label>
-                <textarea name="description" rows="3" required placeholder="Enter description"></textarea>
-            </div>
-            <button type="submit" class="btn">Submit to Google Sheets</button>
-        </form>
+                <!-- Sheet Selection Dropdown -->
+                <div class="form-group">
+                    <label>Select Sheet:</label>
+                    <select name="sheet_name" id="sheet_select" required onchange="loadWorksheets()">
+                        <option value="">Choose a sheet...</option>
+                        {% for sheet in sheets %}
+                        <option value="{{ sheet.id }}">{{ sheet.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Worksheet Selection Dropdown -->
+                <div class="form-group">
+                    <label>Select Worksheet:</label>
+                    <select name="worksheet_name" id="worksheet_select" required disabled>
+                        <option value="">First select a sheet...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" name="name" required placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label>Amount:</label>
+                    <input type="number" name="amount" step="0.01" required placeholder="Enter amount">
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea name="description" rows="3" required placeholder="Enter description"></textarea>
+                </div>
+                <button type="submit" class="btn">Submit to Google Sheets</button>
+            </form>
         </div>
     </div>
+
+    <script>
+        function loadWorksheets() {
+            const sheetSelect = document.getElementById('sheet_select');
+            const worksheetSelect = document.getElementById('worksheet_select');
+            const selectedSheetId = sheetSelect.value;
+            
+            // Reset worksheet dropdown
+            worksheetSelect.innerHTML = '<option value="">Loading worksheets...</option>';
+            worksheetSelect.disabled = true;
+            
+            if (!selectedSheetId) {
+                worksheetSelect.innerHTML = '<option value="">First select a sheet...</option>';
+                return;
+            }
+            
+            // Fetch worksheets for selected sheet
+            fetch(`/get_worksheets/${selectedSheetId}`)
+                .then(response => response.json())
+                .then(data => {
+                    worksheetSelect.innerHTML = '<option value="">Choose a worksheet...</option>';
+                    
+                    if (data.length > 0) {
+                        data.forEach(worksheet => {
+                            const option = document.createElement('option');
+                            option.value = worksheet.title;
+                            option.textContent = worksheet.title;
+                            worksheetSelect.appendChild(option);
+                        });
+                        worksheetSelect.disabled = false;
+                    } else {
+                        worksheetSelect.innerHTML = '<option value="">No worksheets found</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading worksheets:', error);
+                    worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
+                });
+        }
+    </script>
 </body>
 </html>
