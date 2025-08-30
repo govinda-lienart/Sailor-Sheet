@@ -81,7 +81,7 @@ def get_worksheets_from_sheet(gc, sheet_id):
         print(f"Error getting worksheets: {e}")
         return []
 
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amount, description):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amount, description, file_link=""):
     """
     Add transaction to a specific selected sheet and worksheet
     Args:
@@ -91,6 +91,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         name: Name from form
         amount: Amount from form
         description: Description from form
+        file_link: Optional file link from upload
     Returns: True if successful, False otherwise
     """
     try:
@@ -111,8 +112,9 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         except ValueError:
             raise Exception(f"Invalid amount: {amount}. Please enter a valid number.")
         
-        # Prepare data row: [Name, Amount (as number), Description, Timestamp]
-        row = [name, numeric_amount, description, timestamp]
+        # Prepare data row: [Timestamp, Name, Amount, Description, LINK]
+        # This matches your Google Sheet headers exactly
+        row = [timestamp, name, numeric_amount, description, file_link]
         
         # Add to next empty row
         worksheet.append_row(row)

@@ -67,12 +67,13 @@ def index():
         
         # Handle file link (file was already uploaded separately)
         file_link = request.form.get('file_link', '')
+        
         if file_link:
             print(f"DEBUG: File link from form: {file_link}")
-            # File link is already in description from the upload step
             flash(f'Transaction submitted with file link!', 'success')
         else:
             print("DEBUG: No file link in form")
+            file_link = ""
         
         # Validate that a sheet and worksheet were selected
         if not selected_sheet_id:
@@ -85,8 +86,8 @@ def index():
             available_sheets = get_available_sheets(gc)
             return render_template('index.html', sheets=available_sheets)
         
-        # Add transaction to selected sheet and worksheet
-        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, name, amount, description):
+        # Add transaction to selected sheet and worksheet with file link
+        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, name, amount, description, file_link):
             flash('Transaction added successfully!', 'success')
             return redirect(url_for('thank_you'))
         else:

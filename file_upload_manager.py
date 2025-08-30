@@ -41,9 +41,9 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def unique_name(base: str, ext: str) -> str:
-    """Generate a unique filename with timestamp"""
+    """Generate a unique filename with timestamp (like 'Bill_timestamp')"""
     ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    return f"{base}_{ts}.{ext}"
+    return f"Bill_{ts}.{ext}"
 
 def get_service_account_credentials():
     """Get credentials using same method as main app"""

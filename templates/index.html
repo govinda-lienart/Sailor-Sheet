@@ -254,9 +254,9 @@
                     // Store file link for form submission
                     fileLinkInput.value = data.file_url;
                     
-                    // Add file link to description
-                    const currentDescription = descriptionField.value;
-                    descriptionField.value = currentDescription + ` [File: ${data.file_url}]`;
+                    // File link will be stored separately in the LINK column
+                    // No need to add it to description anymore
+                    console.log(`File uploaded: ${data.file_url}`);
                     
                 } else {
                     // Show error
