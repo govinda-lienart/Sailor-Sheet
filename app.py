@@ -13,6 +13,7 @@ import os
 # Import custom modules
 from config import initialize_sheets
 from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet
+from file_upload_manager import upload_file_to_drive, list_folder_files
 
 # Create Flask web application
 app = Flask(__name__)
@@ -30,6 +31,9 @@ DEBUG_MODE = FLASK_ENV == 'development'
 # Add secret key for flash messages
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
+# Set maximum file size for uploads (16MB)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
 # =============================================================================
 # INITIALIZE GOOGLE SHEETS
 # =============================================================================
@@ -41,7 +45,7 @@ gc = initialize_sheets()
 # MAIN WEB ROUTE - Sheet Selection Form
 # =============================================================================
 
-@app.route('/get_worksheets/<sheet_id>')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """
     Main function that handles the web form with sheet selection
@@ -60,6 +64,15 @@ def index():
         name = request.form['name']
         amount = request.form['amount']
         description = request.form['description']
+        
+        # Handle file link (file was already uploaded separately)
+        file_link = request.form.get('file_link', '')
+        if file_link:
+            print(f"DEBUG: File link from form: {file_link}")
+            # File link is already in description from the upload step
+            flash(f'Transaction submitted with file link!', 'success')
+        else:
+            print("DEBUG: No file link in form")
         
         # Validate that a sheet and worksheet were selected
         if not selected_sheet_id:
@@ -105,6 +118,43 @@ def get_worksheets(sheet_id):
         return jsonify(worksheets)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/upload_file', methods=['POST'])
+def upload_file():
+    """
+    AJAX route to upload file first, before form submission
+    """
+    try:
+        print("DEBUG: upload_file route called")
+        file = request.files.get('file')
+        if not file or not file.filename:
+            print("DEBUG: No file in request")
+            return jsonify({'success': False, 'error': 'No file selected'})
+        
+        print(f"DEBUG: Uploading file: {file.filename}")
+        print(f"DEBUG: File size: {len(file.read())} bytes")
+        file.seek(0)  # Reset file pointer after reading
+        
+        # Upload file to Google Drive using our working upload manager
+        result = upload_file_to_drive(file)
+        
+        if result['success']:
+            print(f"DEBUG: File uploaded successfully: {result}")
+            return jsonify({
+                'success': True,
+                'file_name': result['file_name'],
+                'file_url': result['file_url'],
+                'file_id': result['file_id']
+            })
+        else:
+            print(f"DEBUG: File upload failed: {result['error']}")
+            return jsonify({'success': False, 'error': result['error']})
+            
+    except Exception as e:
+        print(f"DEBUG: Error in upload_file route: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # =============================================================================
 # THANK YOU PAGE ROUTE

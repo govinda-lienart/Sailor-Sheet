@@ -44,13 +44,38 @@
             {% endwith %}
             
             <!-- =====================================================================
-                 MAIN FORM - Where users enter data
+                 STEP 1: FILE UPLOAD SECTION
+                 Upload files first, then use the link in the form
+                 ===================================================================== -->
+            <div class="upload-section">
+                <h3>Step 1: Upload Supporting Documents</h3>
+                <div class="form-group">
+                    <label>Upload File (Optional):</label>
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                    <div class="form-text">Upload receipts, invoices, or other supporting documents</div>
+                    <button type="button" id="uploadBtn" class="btn btn-secondary">Upload File</button>
+                </div>
+                
+                <!-- File upload status and link display -->
+                <div id="uploadStatus" style="display: none;">
+                    <div id="uploadProgress" class="alert alert-info">Uploading file...</div>
+                    <div id="uploadResult" style="display: none;">
+                        <div class="alert alert-success">
+                            <strong>File uploaded successfully!</strong>
+                            <div id="fileLink"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- =====================================================================
+                 STEP 2: MAIN FORM - Where users enter data
                  method="POST" means this form sends data to the server
                  ===================================================================== -->
-            <form method="POST">
+            <form method="POST" id="mainForm">
                 
                 <!-- =====================================================================
-                     STEP 1: SELECT GOOGLE SHEET
+                     STEP 2A: SELECT GOOGLE SHEET
                      This dropdown shows all available Google Sheets
                      ===================================================================== -->
                 <div class="form-group">
@@ -70,7 +95,7 @@
                 </div>
                 
                 <!-- =====================================================================
-                     STEP 2: SELECT WORKSHEET (SUB-SHEET)
+                     STEP 2B: SELECT WORKSHEET (SUB-SHEET)
                      This dropdown shows worksheets within the selected Google Sheet
                      ===================================================================== -->
                 <div class="form-group">
@@ -85,7 +110,7 @@
                 </div>
                 
                 <!-- =====================================================================
-                     STEP 3: ENTER TRANSACTION DETAILS
+                     STEP 2C: ENTER TRANSACTION DETAILS
                      These are the actual data fields users fill out
                      ===================================================================== -->
                 
@@ -106,7 +131,9 @@
                 <div class="form-group">
                     <label>Description:</label>
                     <!-- textarea allows multiple lines of text -->
-                    <textarea name="description" rows="3" required placeholder="Enter description"></textarea>
+                    <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
+                    <!-- Hidden field to store file link -->
+                    <input type="hidden" name="file_link" id="fileLinkInput">
                 </div>
                 
                 <!-- Submit button - sends all the data to Google Sheets -->
@@ -179,6 +206,81 @@
                     worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
                 });
         }
+
+        // =====================================================================
+        // FUNCTION: uploadFile()
+        // PURPOSE: Upload file first, then show the link
+        // =====================================================================
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const uploadResult = document.getElementById('uploadResult');
+            const fileLink = document.getElementById('fileLink');
+            const fileLinkInput = document.getElementById('fileLinkInput');
+            const descriptionField = document.getElementById('descriptionField');
+
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file first!');
+                return;
+            }
+
+            // Show upload progress
+            uploadStatus.style.display = 'block';
+            uploadProgress.style.display = 'block';
+            uploadResult.style.display = 'none';
+            uploadBtn.disabled = true;
+
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Upload file to server
+            fetch('/upload_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                uploadProgress.style.display = 'none';
+                
+                if (data.success) {
+                    // Show success and file link
+                    uploadResult.style.display = 'block';
+                    fileLink.innerHTML = `<a href="${data.file_url}" target="_blank">${data.file_name}</a>`;
+                    
+                    // Store file link for form submission
+                    fileLinkInput.value = data.file_url;
+                    
+                    // Add file link to description
+                    const currentDescription = descriptionField.value;
+                    descriptionField.value = currentDescription + ` [File: ${data.file_url}]`;
+                    
+                } else {
+                    // Show error
+                    uploadResult.style.display = 'block';
+                    fileLink.innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                uploadProgress.style.display = 'none';
+                uploadResult.style.display = 'block';
+                fileLink.innerHTML = `<div class="alert alert-error">Upload failed: ${error.message}</div>`;
+            })
+            .finally(() => {
+                uploadBtn.disabled = false;
+            });
+        }
+
+        // =====================================================================
+        // EVENT LISTENERS - Connect buttons to functions
+        // =====================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Connect upload button to upload function
+            document.getElementById('uploadBtn').addEventListener('click', uploadFile);
+        });
     </script>
 </body>
 </html>
