@@ -93,7 +93,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         name: Name from form
         amount: Amount from form
         description: Description from form
-        file_link: Optional file link from upload
+        file_link: Optional file link dict with filename and url
     Returns: True if successful, False otherwise
     """
     try:
@@ -114,12 +114,29 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         except ValueError:
             raise Exception(f"Invalid amount: {amount}. Please enter a valid number.")
         
+        # Handle file link - create HYPERLINK formula if we have both URL and filename
+        if isinstance(file_link, dict) and 'filename' in file_link and 'url' in file_link:
+            # Create the HYPERLINK formula as recommended by your colleague
+            link_value = f'=HYPERLINK("{file_link["url"]}", "{file_link["filename"]}")'
+        else:
+            link_value = file_link if file_link else ""
+        
         # Prepare data row: [Timestamp, Name, Amount, Description, LINK]
         # This matches your Google Sheet headers exactly
-        row = [timestamp, name, numeric_amount, description, file_link]
+        row = [timestamp, name, numeric_amount, description, link_value]
         
         # Add to next empty row
         worksheet.append_row(row)
+        
+        # If we added a HYPERLINK formula, we need to format it properly with USER_ENTERED
+        if link_value.startswith('=HYPERLINK('):
+            # Get the last row number (where we just added data)
+            all_values = worksheet.get_all_values()
+            last_row = len(all_values)
+            
+            # Set the formula in the LINK column (column E) with USER_ENTERED
+            cell_address = f'E{last_row}'
+            worksheet.update(cell_address, link_value, value_input_option='USER_ENTERED')
         
         return True
     except Exception as e:

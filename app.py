@@ -69,13 +69,22 @@ def index():
         
         # Handle file link (file was already uploaded separately)
         file_link = request.form.get('file_link', '')
+        file_name = request.form.get('file_name', '')
         
-        if file_link:
+        if file_link and file_name:
             print(f"DEBUG: File link from form: {file_link}")
+            print(f"DEBUG: File name from form: {file_name}")
+            
+            # Create the file link dict for the sheets manager
+            file_link_dict = {
+                'url': file_link,
+                'filename': file_name
+            }
+            
             flash(f'Transaction submitted with file link!', 'success')
         else:
             print("DEBUG: No file link in form")
-            file_link = ""
+            file_link_dict = ""
         
         # Validate that a sheet and worksheet were selected
         if not selected_sheet_id:
@@ -89,7 +98,7 @@ def index():
             return render_template('index.html', sheets=available_sheets)
         
         # Add transaction to selected sheet and worksheet with file link
-        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, name, amount, description, file_link):
+        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, name, amount, description, file_link_dict):
             flash('Transaction added successfully!', 'success')
             return redirect(url_for('thank_you'))
         else:

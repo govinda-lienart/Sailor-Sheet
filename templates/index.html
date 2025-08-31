@@ -53,7 +53,7 @@
             <form method="POST" id="mainForm">
                 <div class="form-group">
                     <label>Select Sheet:</label>
-                    <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
+                    <select name="sheet_name" id="sheet_select" required onchange="loadWorksheets()">
                         <option value="">Choose a sheet...</option>
                         {% for sheet in sheets %}
                         <option value="{{ sheet.id }}">{{ sheet.title }}</option>
@@ -63,7 +63,7 @@
 
                 <div class="form-group">
                     <label>Select Worksheet:</label>
-                    <select name="worksheet_title" id="worksheet_select" required disabled>
+                    <select name="worksheet_name" id="worksheet_select" required disabled>
                         <option value="">First select a sheet...</option>
                     </select>
                 </div>
