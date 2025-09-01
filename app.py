@@ -1,4 +1,10 @@
 # =============================================================================
+# Created: 2025-09-01 10:45:48
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-01 10:45:07
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-01 10:42:35
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-08-30 14:05:01
 # Status: ✅ WORKING - Ready for GitHub commit
 # NGO ACCOUNTING APP - Main Flask Application
@@ -14,8 +20,8 @@ import os
 
 # Import custom modules
 from config import initialize_sheets
-from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet
-from file_upload_manager import upload_file_to_drive, list_folder_files
+from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_fund_name_by_id
+from file_upload_manager import upload_file_to_drive
 
 # Create Flask web application
 app = Flask(__name__)
@@ -66,6 +72,7 @@ def index():
         name = request.form['name']
         amount = request.form['amount']
         description = request.form['description']
+        fund_id = request.form['fund_id']
         
         # Handle file link (file was already uploaded separately)
         file_link = request.form.get('file_link', '')
@@ -90,21 +97,24 @@ def index():
         if not selected_sheet_id:
             flash('Please select a sheet!', 'error')
             available_sheets = get_available_sheets(gc)
-            return render_template('index.html', sheets=available_sheets)
+            funds = get_funds_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds)
         
         if not selected_worksheet:
             flash('Please select a worksheet!', 'error')
             available_sheets = get_available_sheets(gc)
-            return render_template('index.html', sheets=available_sheets)
+            funds = get_funds_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds)
         
-        # Add transaction to selected sheet and worksheet with file link
-        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, name, amount, description, file_link_dict):
+        # Add transaction to selected sheet and worksheet with file link and fund
+        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, name, amount, description, fund_id, file_link_dict):
             flash('Transaction added successfully!', 'success')
             return redirect(url_for('thank_you'))
         else:
             flash('Error adding transaction!', 'error')
             available_sheets = get_available_sheets(gc)
-            return render_template('index.html', sheets=available_sheets)
+            funds = get_funds_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds)
     
     # =====================================================================
     # SHOW THE FORM WITH SHEET SELECTION (GET request)
@@ -113,8 +123,11 @@ def index():
     # Get available sheets for dropdown
     available_sheets = get_available_sheets(gc)
     
-    # Show the form with sheet selection
-    return render_template('index.html', sheets=available_sheets)
+    # Get available funds for dropdown
+    funds = get_funds_list(gc)
+    
+    # Show the form with sheet selection and funds
+    return render_template('index.html', sheets=available_sheets, funds=funds)
 
 # =============================================================================
 # AJAX ROUTE FOR WORKSHEET SELECTION

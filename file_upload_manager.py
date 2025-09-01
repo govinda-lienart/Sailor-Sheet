@@ -1,4 +1,10 @@
 # =============================================================================
+# Created: 2025-09-01 10:45:48
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-01 10:45:07
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-01 10:42:35
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-08-30 14:05:01
 # Status: ✅ WORKING - Ready for GitHub commit
 # FILE UPLOAD MANAGER - Google Drive File Upload
@@ -8,14 +14,18 @@
 # Status: ✅ WORKING - Integrated from drive_test.py
 # =============================================================================
 
-import os
-import json
-import io
-from datetime import datetime
-from werkzeug.utils import secure_filename
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload, MediaFileUpload
+# =============================================================================
+# IMPORTS - Each library serves a specific purpose for file uploads
+# =============================================================================
+
+import os                                                 # Operating system functions (file paths, environment variables)
+import json                                               # JSON data handling (for Google API credentials)
+import io                                                 # Input/Output operations (for handling file data in memory)
+from datetime import datetime                             # Date and time functions (for creating timestamped filenames)
+from werkzeug.utils import secure_filename                # Flask utility to make filenames safe (prevents security issues)
+from google.oauth2.service_account import Credentials     # Google authentication (for accessing Drive API)
+from googleapiclient.discovery import build               # Google API client builder (creates Drive service)
+from googleapiclient.http import MediaIoBaseUpload        # Google API file upload handler (uploads files to Drive)
 
 # =============================================================================
 # CONFIGURATION
@@ -163,22 +173,4 @@ def upload_file_to_drive(file):
             'error': f'Upload failed: {str(e)}'
         }
 
-def list_folder_files():
-    """List all files in the shared drive folder"""
-    try:
-        creds = get_service_account_credentials()
-        drive = build_drive_service(creds)
-        
-        res = drive.files().list(
-            q=f"'{FOLDER_ID}' in parents and trashed=false",
-            fields="files(id,name,webViewLink,createdTime)",
-            includeItemsFromAllDrives=True,
-            supportsAllDrives=True,
-            corpora="allDrives",
-            orderBy="createdTime desc"
-        ).execute()
-        
-        return res.get("files", [])
-        
-    except Exception as e:
-        raise Exception(f"Error listing files: {str(e)}")
+

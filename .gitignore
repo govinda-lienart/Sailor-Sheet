@@ -78,3 +78,17 @@ logs/
 .env
 .env.local
 env.example
+
+
+# Practice/Learning Directories
+Practise/
+Practice/
+practise/
+practice/
+Examples/
+examples/
+Debug/
+debug/
+Test/
+test/
+

@@ -24,6 +24,12 @@ PYTHON_FILES = [
     'list_folders.py'
 ]
 
+# HTML files to update (templates)
+HTML_FILES = [
+    'templates/index.html',
+    'templates/thank_you.html'
+]
+
 # =============================================================================
 # TIMESTAMP FUNCTIONS
 # =============================================================================
@@ -32,7 +38,7 @@ def get_current_timestamp():
     """Get current timestamp in the format used in your files"""
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-def add_timestamp_to_file(filepath):
+def add_timestamp_to_python_file(filepath):
     """Add or update timestamp comment in a Python file"""
     try:
         # Read the file
@@ -79,7 +85,56 @@ def add_timestamp_to_file(filepath):
         with open(filepath, 'w', encoding='utf-8') as file:
             file.write('\n'.join(lines))
         
-        print(f"✅ Updated: {filepath}")
+        print(f"✅ Updated Python: {filepath}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error updating {filepath}: {e}")
+        return False
+
+def add_timestamp_to_html_file(filepath):
+    """Add or update timestamp comment in an HTML file"""
+    try:
+        # Read the file
+        with open(filepath, 'r', encoding='utf-8') as file:
+            content = file.read()
+        
+        lines = content.split('\n')
+        current_time = get_current_timestamp()
+        
+        # Look for existing HTML timestamp comment
+        timestamp_found = False
+        for i, line in enumerate(lines):
+            if 'Updated:' in line and '<!--' in line:
+                # Update existing timestamp
+                lines[i] = f'<!-- Updated: {current_time} - Ready for GitHub commit -->'
+                timestamp_found = True
+                break
+        
+        if not timestamp_found:
+            # Add timestamp at the beginning (after DOCTYPE if present)
+            new_lines = []
+            inserted = False
+            
+            for i, line in enumerate(lines):
+                if not inserted and (line.strip().startswith('<!DOCTYPE') or line.strip().startswith('<html')):
+                    new_lines.append(line)
+                    new_lines.append(f'<!-- Updated: {current_time} - Ready for GitHub commit -->')
+                    inserted = True
+                else:
+                    new_lines.append(line)
+            
+            # If no DOCTYPE or html tag found, add at the very beginning
+            if not inserted and new_lines:
+                new_lines.insert(0, f'<!-- Updated: {current_time} - Ready for GitHub commit -->')
+            
+            lines = new_lines
+        
+        # Write back to file
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.write('\n'.join(lines))
+        
+        print(f"✅ Updated HTML: {filepath}")
         return True
         
     except Exception as e:
@@ -87,27 +142,44 @@ def add_timestamp_to_file(filepath):
         return False
 
 def update_all_files():
-    """Update timestamps in all Python files"""
-    print("🚀 Updating timestamps in all Python files...")
-    print("=" * 60)
+    """Update timestamps in all Python and HTML files"""
+    print("🚀 Updating timestamps in all Python and HTML files...")
+    print("=" * 70)
     
     current_time = get_current_timestamp()
     print(f"📅 Current time: {current_time}")
     print()
     
-    success_count = 0
-    total_count = len(PYTHON_FILES)
-    
+    # Update Python files
+    python_success = 0
+    print("🐍 Updating Python files:")
     for filename in PYTHON_FILES:
         if os.path.exists(filename):
-            if add_timestamp_to_file(filename):
-                success_count += 1
+            if add_timestamp_to_python_file(filename):
+                python_success += 1
         else:
-            print(f"⚠️  File not found: {filename}")
+            print(f"⚠️  Python file not found: {filename}")
     
-    print("\n" + "=" * 60)
+    print()
+    
+    # Update HTML files
+    html_success = 0
+    print("🌐 Updating HTML files:")
+    for filename in HTML_FILES:
+        if os.path.exists(filename):
+            if add_timestamp_to_html_file(filename):
+                html_success += 1
+        else:
+            print(f"⚠️  HTML file not found: {filename}")
+    
+    total_success = python_success + html_success
+    total_files = len(PYTHON_FILES) + len(HTML_FILES)
+    
+    print("\n" + "=" * 70)
     print("📊 Update Summary:")
-    print(f"   ✅ Successfully updated: {success_count}/{total_count} files")
+    print(f"   🐍 Python files: {python_success}/{len(PYTHON_FILES)} updated")
+    print(f"   🌐 HTML files: {html_success}/{len(HTML_FILES)} updated")
+    print(f"   ✅ Total: {total_success}/{total_files} files updated")
     print(f"   📅 Timestamp: {current_time}")
     print()
     print("🎉 All files are now ready for GitHub commit!")
@@ -119,3 +191,4 @@ def update_all_files():
 
 if __name__ == "__main__":
     update_all_files()
+

@@ -1,4 +1,10 @@
 # =============================================================================
+# Created: 2025-09-01 10:45:48
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-01 10:45:07
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-01 10:42:35
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-08-30 14:05:01
 # Status: ✅ WORKING - Ready for GitHub commit
 # SHEETS MANAGER - Google Sheets Operations
@@ -83,7 +89,7 @@ def get_worksheets_from_sheet(gc, sheet_id):
         print(f"Error getting worksheets: {e}")
         return []
 
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amount, description, file_link=""):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amount, description, fund_id, file_link=""):
     """
     Add transaction to a specific selected sheet and worksheet
     Args:
@@ -93,6 +99,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         name: Name from form
         amount: Amount from form
         description: Description from form
+        fund_id: ID of the fund from form
         file_link: Optional file link dict with filename and url
     Returns: True if successful, False otherwise
     """
@@ -114,6 +121,9 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         except ValueError:
             raise Exception(f"Invalid amount: {amount}. Please enter a valid number.")
         
+        # Get fund name from fund ID
+        fund_name = get_fund_name_by_id(gc, fund_id)
+        
         # Handle file link - create HYPERLINK formula if we have both URL and filename
         if isinstance(file_link, dict) and 'filename' in file_link and 'url' in file_link:
             # Create the HYPERLINK formula as recommended by your colleague
@@ -121,9 +131,9 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         else:
             link_value = file_link if file_link else ""
         
-        # Prepare data row: [Timestamp, Name, Amount, Description, LINK]
-        # This matches your Google Sheet headers exactly
-        row = [timestamp, name, numeric_amount, description, link_value]
+        # Prepare data row: [Timestamp, Fund, Name, Amount, Description, LINK]
+        # Order matches sheet headers: A=Timestamp, B=Funds, C=Name, D=Amount, E=Description, F=LINK
+        row = [timestamp, fund_name, name, numeric_amount, description, link_value]
         
         # Add to next empty row
         worksheet.append_row(row)
@@ -134,8 +144,8 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
             all_values = worksheet.get_all_values()
             last_row = len(all_values)
             
-            # Set the formula in the LINK column (column E) with USER_ENTERED
-            cell_address = f'E{last_row}'
+            # Set the formula in the LINK column (column F) with USER_ENTERED
+            cell_address = f'F{last_row}'
             worksheet.update(cell_address, link_value, value_input_option='USER_ENTERED')
         
         return True
@@ -246,6 +256,71 @@ def get_files_from_folder(gc, folder_name="NGO_Documents"):
     except Exception as e:
         print(f"Error getting files from folder: {e}")
         return []
+
+# =============================================================================
+# FUNDS REFERENCE FUNCTIONS
+# =============================================================================
+
+def get_funds_list(gc):
+    """
+    Get funds from reference sheet for dropdown
+    Args:
+        gc: Google Sheets client
+    Returns: List of fund dictionaries with id, name, and color
+    """
+    try:
+        funds_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Funds Reference")
+        funds_data = funds_sheet.get_all_records()
+        
+        print(f"DEBUG: Raw funds data from sheet: {funds_data}")
+        
+        # Return only active funds
+        active_funds = []
+        for fund in funds_data:
+            print(f"DEBUG: Processing fund: {fund}")
+            print(f"DEBUG: Active value: '{fund.get('Active')}' (type: {type(fund.get('Active'))})")
+            
+            # Check for various possible TRUE values - handle column name with spaces
+            active_value = fund.get('Active') or fund.get('Active ')  # Handle both versions
+            color_value = fund.get('Fund_Color') or fund.get('Fund_Color ')  # Handle both versions
+            
+            if active_value == True or active_value == 'TRUE' or active_value == 'true' or str(active_value).upper() == 'TRUE':
+                active_funds.append({
+                    'id': fund['Fund_ID'],
+                    'name': fund['Fund_Name'],
+                    'color': color_value
+                })
+                print(f"DEBUG: Added fund: {fund['Fund_Name']}")
+        
+        print(f"DEBUG: Found {len(active_funds)} active funds")
+        return active_funds
+        
+    except Exception as e:
+        print(f"Error getting funds: {e}")
+        return []
+
+def get_fund_name_by_id(gc, fund_id):
+    """
+    Get fund name by ID for transaction saving
+    Args:
+        gc: Google Sheets client
+        fund_id: ID of the fund to look up
+    Returns: Fund name or "Unknown Fund" if not found
+    """
+    try:
+        funds_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Funds Reference")
+        funds_data = funds_sheet.get_all_records()
+        
+        for fund in funds_data:
+            if str(fund['Fund_ID']) == str(fund_id):
+                return fund['Fund_Name']
+        
+        print(f"WARNING: Fund ID {fund_id} not found")
+        return "Unknown Fund"
+        
+    except Exception as e:
+        print(f"Error getting fund name: {e}")
+        return "Unknown Fund"
 
 
 
