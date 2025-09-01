@@ -7,7 +7,7 @@
      ============================================================================= -->
 
 <!DOCTYPE html>
-<!-- Updated: 2025-09-01 10:45:48 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-01 12:57:34 - Ready for GitHub commit -->
 <html>
 <head>
     <title>NGO Accounting - Data Entry</title>
@@ -70,22 +70,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Name:</label>
-                    <input type="text" name="name" required placeholder="Enter your name">
+                    <label>Transaction Type:</label>
+                    <select name="transaction_type" required>
+                        <option value="">Choose transaction type...</option>
+                        <option value="debit">Debit (Money Out)</option>
+                        <option value="credit">Credit (Money In)</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label>Amount:</label>
-                    <input type="number" name="amount" step="0.01" required placeholder="Enter amount">
-                </div>
-
-                <div class="form-group">
-                    <label>Description:</label>
-                    <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
-
-                    <!-- Hidden fields populated after upload -->
-                    <input type="hidden" name="file_link" id="fileLinkInput">
-                    <input type="hidden" name="file_name" id="fileNameInput">
+                    <input type="number" name="amount" step="0.01" required placeholder="Enter amount (always positive)">
                 </div>
 
                 <div class="form-group">
@@ -98,6 +93,27 @@
                         </option>
                         {% endfor %}
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Cost Center:</label>
+                    <select name="cost_center_id" required>
+                        <option value="">Choose a cost center...</option>
+                        {% for cost_center in cost_centers %}
+                        <option value="{{ cost_center.code }}">
+                            {{ cost_center.name }} ({{ cost_center.category }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
+
+                    <!-- Hidden fields populated after upload -->
+                    <input type="hidden" name="file_link" id="fileLinkInput">
+                    <input type="hidden" name="file_name" id="fileNameInput">
                 </div>
 
                 <button type="submit" class="btn">Submit to Google Sheets</button>

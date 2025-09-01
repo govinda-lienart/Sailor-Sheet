@@ -1,17 +1,8 @@
 # =============================================================================
+# Created: 2025-09-01 12:57:34
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-01 10:45:48
 # Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-01 10:45:07
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-01 10:42:35
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-08-30 14:05:01
-# Status: ✅ WORKING - Ready for GitHub commit
-# NGO ACCOUNTING APP - Main Flask Application
-# Purpose: Main web application with clean, organized structure
-# Version: 1.0.0 - Working Version
-# Created: 2025-01-27 19:30:00
-# Status: ✅ WORKING - Ready for deployment
 # =============================================================================
 
 # Import required libraries
@@ -20,7 +11,7 @@ import os
 
 # Import custom modules
 from config import initialize_sheets
-from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_fund_name_by_id
+from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_cost_centers_list
 from file_upload_manager import upload_file_to_drive
 
 # Create Flask web application
@@ -69,10 +60,11 @@ def index():
         # Extract data from the web form
         selected_sheet_id = request.form['sheet_name']
         selected_worksheet = request.form['worksheet_name']
-        name = request.form['name']
         amount = request.form['amount']
         description = request.form['description']
         fund_id = request.form['fund_id']
+        cost_center_id = request.form['cost_center_id']
+        transaction_type = request.form['transaction_type']  # 'debit' or 'credit'
         
         # Handle file link (file was already uploaded separately)
         file_link = request.form.get('file_link', '')
@@ -98,23 +90,26 @@ def index():
             flash('Please select a sheet!', 'error')
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
-            return render_template('index.html', sheets=available_sheets, funds=funds)
+            cost_centers = get_cost_centers_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
         
         if not selected_worksheet:
             flash('Please select a worksheet!', 'error')
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
-            return render_template('index.html', sheets=available_sheets, funds=funds)
+            cost_centers = get_cost_centers_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
         
         # Add transaction to selected sheet and worksheet with file link and fund
-        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, name, amount, description, fund_id, file_link_dict):
+        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, amount, description, fund_id, cost_center_id, transaction_type, file_link_dict):
             flash('Transaction added successfully!', 'success')
             return redirect(url_for('thank_you'))
         else:
             flash('Error adding transaction!', 'error')
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
-            return render_template('index.html', sheets=available_sheets, funds=funds)
+            cost_centers = get_cost_centers_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
     
     # =====================================================================
     # SHOW THE FORM WITH SHEET SELECTION (GET request)
@@ -126,8 +121,11 @@ def index():
     # Get available funds for dropdown
     funds = get_funds_list(gc)
     
-    # Show the form with sheet selection and funds
-    return render_template('index.html', sheets=available_sheets, funds=funds)
+    # Get available cost centers for dropdown
+    cost_centers = get_cost_centers_list(gc)
+    
+    # Show the form with sheet selection, funds, and cost centers
+    return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
 
 # =============================================================================
 # AJAX ROUTE FOR WORKSHEET SELECTION

@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-01 12:57:34
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-01 10:45:48
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-01 10:45:07
@@ -89,17 +91,18 @@ def get_worksheets_from_sheet(gc, sheet_id):
         print(f"Error getting worksheets: {e}")
         return []
 
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amount, description, fund_id, file_link=""):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, file_link=""):
     """
     Add transaction to a specific selected sheet and worksheet
     Args:
         gc: Google Sheets client
         sheet_id: ID of the specific sheet
         worksheet_title: Title of the specific worksheet
-        name: Name from form
-        amount: Amount from form
+        amount: Amount from form (always positive)
         description: Description from form
         fund_id: ID of the fund from form
+        cost_center_id: ID of the cost center from form
+        transaction_type: 'debit' (money out) or 'credit' (money in)
         file_link: Optional file link dict with filename and url
     Returns: True if successful, False otherwise
     """
@@ -124,6 +127,9 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         # Get fund name from fund ID
         fund_name = get_fund_name_by_id(gc, fund_id)
         
+        # Get cost center name from cost center ID
+        cost_center_name = get_cost_center_name_by_code(gc, cost_center_id)
+        
         # Handle file link - create HYPERLINK formula if we have both URL and filename
         if isinstance(file_link, dict) and 'filename' in file_link and 'url' in file_link:
             # Create the HYPERLINK formula as recommended by your colleague
@@ -131,9 +137,19 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         else:
             link_value = file_link if file_link else ""
         
-        # Prepare data row: [Timestamp, Fund, Name, Amount, Description, LINK]
-        # Order matches sheet headers: A=Timestamp, B=Funds, C=Name, D=Amount, E=Description, F=LINK
-        row = [timestamp, fund_name, name, numeric_amount, description, link_value]
+        # Determine Debit/Credit values based on transaction type
+        if transaction_type == 'debit':
+            debit_amount = numeric_amount
+            credit_amount = ""  # Empty for debit transactions
+        elif transaction_type == 'credit':
+            debit_amount = ""   # Empty for credit transactions
+            credit_amount = numeric_amount
+        else:
+            raise Exception(f"Invalid transaction type: {transaction_type}. Must be 'debit' or 'credit'.")
+        
+        # Prepare data row: [Timestamp, Fund, Cost Center, Debit, Credit, Description, LINK]
+        # Order matches sheet headers: A=Timestamp, B=Funds, C=Cost Center, D=Debit, E=Credit, F=Description, G=LINK
+        row = [timestamp, fund_name, cost_center_name, debit_amount, credit_amount, description, link_value]
         
         # Add to next empty row
         worksheet.append_row(row)
@@ -144,8 +160,8 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
             all_values = worksheet.get_all_values()
             last_row = len(all_values)
             
-            # Set the formula in the LINK column (column F) with USER_ENTERED
-            cell_address = f'F{last_row}'
+            # Set the formula in the LINK column (column G) with USER_ENTERED
+            cell_address = f'G{last_row}'
             worksheet.update(cell_address, link_value, value_input_option='USER_ENTERED')
         
         return True
@@ -153,109 +169,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, name, amoun
         print(f"Error adding transaction to selected sheet: {e}")
         return False
 
-# =============================================================================
-# GOOGLE DRIVE FILE UPLOAD FUNCTIONS
-# =============================================================================
 
-def create_or_get_folder(gc, folder_name_or_id):
-    """
-    Get a specific folder by ID or name
-    Args:
-        gc: Google Drive client
-        folder_name_or_id: Either folder ID (long string) or folder name
-    Returns: Folder info dictionary or None if error
-    """
-    try:
-        # If it looks like a folder ID (long string of letters/numbers)
-        if len(folder_name_or_id) > 20 and not folder_name_or_id.startswith(' '):
-            # Try to get folder by ID
-            folder = gc.get(folder_name_or_id)
-            return folder
-        else:
-            # Try to get folder by name (backward compatibility)
-            folders = gc.list(q=f"name='{folder_name_or_id}' and mimeType='application/vnd.google-apps.folder' and trashed=false")
-            if folders:
-                return folders[0]
-            return None
-    except Exception as e:
-        print(f"Error getting folder: {e}")
-        return None
-
-def upload_file_to_drive(gc, file, folder_name="NGO_Documents"):
-    """
-    Upload a file to Google Drive in a specific folder
-    Args:
-        gc: Google Drive client
-        file: File object from Flask request
-        folder_name: Name of the folder to upload to
-    Returns: File info dictionary or None if error
-    """
-    try:
-        print(f"DEBUG: Starting file upload to folder: {folder_name}")
-        
-        # Create or get the folder
-        folder = create_or_get_folder(gc, folder_name)
-        if folder is None:
-            print(f"DEBUG: Failed to get folder: {folder_name}")
-            return None
-        
-        print(f"DEBUG: Got folder: {folder['id']}")
-        
-        # Prepare file metadata
-        file_metadata = {
-            'name': file.filename,
-            'parents': [folder['id']]
-        }
-        
-        print(f"DEBUG: File metadata prepared: {file_metadata}")
-        
-        # Upload the file
-        uploaded_file = gc.create(file_metadata, file.read())
-        
-        print(f"DEBUG: File uploaded successfully: {uploaded_file['id']}")
-        
-        return {
-            'id': uploaded_file['id'],
-            'name': uploaded_file['name'],
-            'url': uploaded_file['webViewLink'],
-            'folder': folder_name
-        }
-        
-    except Exception as e:
-        print(f"Error uploading file: {e}")
-        return None
-
-def get_files_from_folder(gc, folder_name="NGO_Documents"):
-    """
-    Get list of files from a specific Google Drive folder
-    Args:
-        gc: Google Drive client
-        folder_name: Name of the folder to list files from
-    Returns: List of file dictionaries or empty list if error
-    """
-    try:
-        # Get the folder
-        folder = create_or_get_folder(gc, folder_name)
-        if folder is None:
-            return []
-        
-        # List files in the folder
-        files = gc.list(q=f"'{folder['id']}' in parents and trashed=false")
-        
-        file_list = []
-        for file in files:
-            file_list.append({
-                'id': file['id'],
-                'name': file['name'],
-                'url': file['webViewLink'],
-                'created': file['createdTime']
-            })
-        
-        return file_list
-        
-    except Exception as e:
-        print(f"Error getting files from folder: {e}")
-        return []
 
 # =============================================================================
 # FUNDS REFERENCE FUNCTIONS
@@ -321,6 +235,67 @@ def get_fund_name_by_id(gc, fund_id):
     except Exception as e:
         print(f"Error getting fund name: {e}")
         return "Unknown Fund"
+
+
+# =============================================================================
+# COST CENTERS REFERENCE FUNCTIONS
+# =============================================================================
+
+def get_cost_centers_list(gc):
+    """
+    Get cost centers from reference sheet for dropdown
+    Args:
+        gc: Google Sheets client
+    Returns: List of cost center dictionaries with code, name, and category
+    """
+    try:
+        cost_centers_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Cost Centers")
+        cost_centers_data = cost_centers_sheet.get_all_records()
+        
+        print(f"DEBUG: Raw cost centers data from sheet: {cost_centers_data}")
+        
+        # Return only active cost centers
+        active_cost_centers = []
+        for cc in cost_centers_data:
+            # Check if there's an Active column, default to True if not present
+            active_value = cc.get('Active', True)
+            if active_value == True or active_value == 'TRUE' or active_value == 'true' or str(active_value).upper() == 'TRUE':
+                active_cost_centers.append({
+                    'code': cc['Cost Center Code'],
+                    'name': cc['Cost Center Name'],
+                    'category': cc['Category']
+                })
+                print(f"DEBUG: Added cost center: {cc['Cost Center Name']}")
+        
+        print(f"DEBUG: Found {len(active_cost_centers)} active cost centers")
+        return active_cost_centers
+        
+    except Exception as e:
+        print(f"Error getting cost centers: {e}")
+        return []
+
+def get_cost_center_name_by_code(gc, cost_center_code):
+    """
+    Get cost center name by code for transaction saving
+    Args:
+        gc: Google Sheets client
+        cost_center_code: Code of the cost center to look up
+    Returns: Cost center name or "Unknown Cost Center" if not found
+    """
+    try:
+        cost_centers_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Cost Centers")
+        cost_centers_data = cost_centers_sheet.get_all_records()
+        
+        for cc in cost_centers_data:
+            if str(cc['Cost Center Code']) == str(cost_center_code):
+                return cc['Cost Center Name']
+        
+        print(f"WARNING: Cost Center Code {cost_center_code} not found")
+        return "Unknown Cost Center"
+        
+    except Exception as e:
+        print(f"Error getting cost center name: {e}")
+        return "Unknown Cost Center"
 
 
 
