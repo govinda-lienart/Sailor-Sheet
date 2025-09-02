@@ -19,9 +19,7 @@ PYTHON_FILES = [
     'app.py',
     'config.py', 
     'sheets_manager.py',
-    'file_upload_manager.py',
-    'drive_test.py',
-    'list_folders.py'
+    'file_upload_manager.py'
 ]
 
 # HTML files to update (templates)

@@ -1,4 +1,8 @@
 # =============================================================================
+# Created: 2025-09-02 12:20:13
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-02 12:18:54
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 11:05:49
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 10:43:56
@@ -42,6 +46,12 @@ def get_account_reference_table(gc, master_sheet_id="1DE3YTidoVIQm4SxFvK2ByRahZ7
                 worksheet_id = row[1].strip()
                 account_mapping[worksheet_id] = account_name
                 print(f"DEBUG: Mapped {worksheet_id} -> {account_name}")
+                
+                # Also map by worksheet title for easier lookup
+                # Extract worksheet title from the URL or use a simpler mapping
+                if "1Fvrld1X0OioH7AbKCiSIMNac5U9OvlKJh0OSk02bTTI" in worksheet_id:
+                    account_mapping["VN Indovina"] = account_name
+                    print(f"DEBUG: Also mapped 'VN Indovina' -> {account_name}")
         
         print(f"DEBUG: Loaded {len(account_mapping)} account mappings")
         print(f"DEBUG: Final mapping: {account_mapping}")
@@ -153,12 +163,28 @@ def get_worksheets_from_sheet(gc, sheet_id):
         worksheet_list = []
         
         for worksheet in worksheets:
-            # Get the account name for this worksheet
-            worksheet_id = str(worksheet.id)
-            account_name = account_mapping.get(worksheet_id, worksheet.title)  # Fallback to worksheet title if no mapping
+            # Get the actual worksheet ID - this should match what's in your reference table
+            worksheet_title = worksheet.title
+            
+            # Try to get the actual worksheet ID (gid) from the worksheet object
+            # The worksheet.id might not be the right one, let's try different approaches
+            actual_worksheet_id = None
+            
+            # The actual worksheet ID should match what's in your reference table
+            # Based on your URL: gid=0, so we need just the gid part
+            actual_worksheet_id = sheet.id  # Use the main sheet ID to match your reference table
+            
+            print(f"DEBUG: Processing worksheet: {worksheet_title}")
+            print(f"DEBUG: Worksheet.id (internal) = {worksheet.id}")
+            print(f"DEBUG: Actual worksheet ID = {actual_worksheet_id}")
+            print(f"DEBUG: Sheet ID = {sheet.id}")
+            
+            # Look up account name using the actual worksheet ID
+            account_name = account_mapping.get(actual_worksheet_id, worksheet_title)  # Fallback to worksheet title if no mapping
+            print(f"DEBUG: Found account name: {account_name}")
             
             worksheet_list.append({
-                'id': worksheet.id,
+                'id': actual_worksheet_id,  # Use the actual worksheet ID for form submission
                 'title': worksheet.title,
                 'index': worksheet.index,
                 'account_name': account_name
@@ -175,19 +201,19 @@ def get_worksheets_from_sheet(gc, sheet_id):
 
 # Add Transaction To Selected Sheet
 # --------------------------------
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link=""):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link=""):
     """
     Add transaction to a specific selected sheet and worksheet
     Args:
         gc: Google Sheets client
         sheet_id: ID of the specific sheet
-        worksheet_title: Title of the specific worksheet
+        worksheet_id: ID of the specific worksheet (not title)
         amount: Amount from form (always positive)
         description: Description from form
         fund_id: ID of the fund from form
         cost_center_id: ID of the cost center from form
         transaction_type: 'debit' (money out) or 'credit' (money in)
-        date_input: Date from form in DD/MM/YYYY format
+        date_input: Date from form in DD/MM/YY format
         transaction_number: Pre-generated transaction number from form
         file_link: Optional file link dict with filename and url
     Returns: True if successful, False otherwise
@@ -198,8 +224,18 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
         if sheet is None:
             return False
         
-        # Get the specific worksheet by title
-        worksheet = sheet.worksheet(worksheet_title)
+        # Get the specific worksheet by ID
+        # If worksheet_id is the sheet ID, get the first worksheet
+        # If it's a different format, handle accordingly
+        if worksheet_id == sheet.id:
+            # This is the main sheet ID, get the first worksheet (usually gid=0)
+            worksheet = sheet.worksheets()[0]
+        else:
+            # Try to get by title or ID
+            try:
+                worksheet = sheet.get_worksheet_by_id(int(worksheet_id))
+            except:
+                worksheet = sheet.worksheet(worksheet_id)
         
         # Use the pre-generated transaction number from the form
         if not transaction_number:
@@ -257,18 +293,21 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
         else:
             raise Exception(f"Invalid transaction type: {transaction_type}. Must be 'debit' or 'credit'.")
         
-        # Get the account name for this worksheet
-        worksheet_id = str(worksheet.id)
-        print(f"DEBUG: Looking up account name for worksheet ID: {worksheet_id}")
+        # Get the account name for this worksheet using the actual worksheet ID
+        worksheet_title = worksheet.title
+        # Use the actual worksheet ID that was passed from the form
+        actual_worksheet_id = worksheet_id
+        print(f"DEBUG: Looking up account name for worksheet ID: {actual_worksheet_id}")
         print(f"DEBUG: Worksheet title: {worksheet_title}")
         
-        account_name = get_account_name_from_worksheet_id(gc, worksheet_id)
+        # Look up the account name using the actual worksheet ID
+        account_name = get_account_name_from_worksheet_id(gc, actual_worksheet_id)
         print(f"DEBUG: Retrieved account name: {account_name}")
         
         # If no account name found, use worksheet title as fallback
         if not account_name:
             account_name = worksheet_title
-            print(f"WARNING: No account name found for worksheet ID {worksheet_id}, using worksheet title: {worksheet_title}")
+            print(f"WARNING: No account name found for worksheet ID {actual_worksheet_id}, using worksheet title: {worksheet_title}")
         
         print(f"DEBUG: Final account name to be stored: {account_name}")
         

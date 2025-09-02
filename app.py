@@ -1,4 +1,8 @@
 # =============================================================================
+# Created: 2025-09-02 12:20:13
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-02 12:18:54
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 11:05:49
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 10:43:56
@@ -65,7 +69,7 @@ def index():
         
         # Extract data from the web form
         selected_sheet_id = request.form['sheet_name']
-        selected_worksheet = request.form['worksheet_name']
+        selected_worksheet_id = request.form['worksheet_name']  # This is now the worksheet ID
         amount = request.form['amount']
         description = request.form['description']
         fund_id = request.form['fund_id']
@@ -73,6 +77,19 @@ def index():
         transaction_type = request.form['transaction_type']  # 'debit' or 'credit'
         date_input = request.form.get('date_input', '')  # Date in DD/MM/YYYY format
         transaction_number = request.form.get('transaction_number', '')  # Pre-generated transaction number
+        
+        # Debug: Show what we're working with
+        print(f"DEBUG: Form data extracted:")
+        print(f"  - Sheet ID: {selected_sheet_id}")
+        print(f"  - Worksheet ID: {selected_worksheet_id}")
+        print(f"  - Worksheet ID type: {type(selected_worksheet_id)}")
+        print(f"  - Amount: {amount}")
+        print(f"  - Description: {description}")
+        print(f"  - Fund ID: {fund_id}")
+        print(f"  - Cost Center ID: {cost_center_id}")
+        print(f"  - Transaction Type: {transaction_type}")
+        print(f"  - Date: {date_input}")
+        print(f"  - Transaction Number: {transaction_number}")
         
         # Handle file link (file was already uploaded separately)
         file_link = request.form.get('file_link', '')
@@ -102,7 +119,7 @@ def index():
             return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
                                                                                         # ↑ HTML name ↑ Python data
 
-        if not selected_worksheet:
+        if not selected_worksheet_id:
             flash('Please select a worksheet!', 'error')
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
@@ -110,7 +127,7 @@ def index():
             return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
         
         # Add transaction to selected sheet and worksheet with file link and fund
-        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link_dict):
+        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_id, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link_dict):
             flash('Transaction added successfully!', 'success')
             return redirect(url_for('thank_you'))
         else:

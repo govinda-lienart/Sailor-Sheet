@@ -7,7 +7,7 @@
      ============================================================================= -->
 
 <!DOCTYPE html>
-<!-- Updated: 2025-09-02 11:05:49 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-02 12:20:13 - Ready for GitHub commit -->
 <html>
 <head>
     <title>NGO Accounting - Data Entry</title>
@@ -156,7 +156,7 @@
                     if (data.length > 0) {
                         data.forEach(ws => {
                             const o = document.createElement('option');
-                            o.value = ws.title;  // Still use worksheet title as value for backend compatibility
+                            o.value = ws.id;  // Use worksheet ID for backend lookup
                             o.textContent = `${ws.account_name} (${ws.title})`;  // Show account name + worksheet title
                             worksheetSelect.appendChild(o);
                         });
