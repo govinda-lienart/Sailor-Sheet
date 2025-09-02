@@ -1,23 +1,11 @@
 # =============================================================================
+# Created: 2025-09-02 10:43:56
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-01 12:57:34
 # Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-01 10:45:48
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-01 10:45:07
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-01 10:42:35
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-08-30 14:05:01
-# Status: ✅ WORKING - Ready for GitHub commit
-# SHEETS MANAGER - Google Sheets Operations
-# Purpose: Handle all Google Sheets data operations
-# Version: 1.0.0 - Working Version
-# Created: 2025-01-27 19:30:00
-# Status: ✅ WORKING - Clean operations only
 # =============================================================================
 
 from datetime import datetime
-import os
 
 # =============================================================================
 # SHEET SELECTION AND MANAGEMENT
@@ -91,7 +79,7 @@ def get_worksheets_from_sheet(gc, sheet_id):
         print(f"Error getting worksheets: {e}")
         return []
 
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, file_link=""):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, date_input, file_link=""):
     """
     Add transaction to a specific selected sheet and worksheet
     Args:
@@ -103,6 +91,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
         fund_id: ID of the fund from form
         cost_center_id: ID of the cost center from form
         transaction_type: 'debit' (money out) or 'credit' (money in)
+        date_input: Date from form in DD/MM/YYYY format
         file_link: Optional file link dict with filename and url
     Returns: True if successful, False otherwise
     """
@@ -115,8 +104,29 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
         # Get the specific worksheet by title
         worksheet = sheet.worksheet(worksheet_title)
         
-        # Create timestamp for when data was submitted
-        timestamp = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+        # Create unique transaction number in format DDMMYY-HHMMSS
+        now = datetime.now()
+        transaction_number = now.strftime('%d%m%y-%H%M%S')
+        
+        # Format the date input to DD/MM/YY format
+        try:
+            # Parse the date input and convert to DD/MM/YY format
+            if date_input:
+                # If date_input is in YYYY-MM-DD format (from HTML date picker), convert it
+                if '-' in date_input and len(date_input.split('-')[0]) == 4:
+                    # Parse YYYY-MM-DD and convert to DD/MM/YY
+                    parsed_date = datetime.strptime(date_input, '%Y-%m-%d')
+                    formatted_date = parsed_date.strftime('%d/%m/%y')
+                else:
+                    # If already in DD/MM/YY format, use as is
+                    formatted_date = date_input
+            else:
+                # If no date provided, use today's date in DD/MM/YY format
+                formatted_date = now.strftime('%d/%m/%y')
+        except Exception as e:
+            # Fallback to today's date if parsing fails
+            formatted_date = now.strftime('%d/%m/%y')
+            print(f"Warning: Could not parse date '{date_input}', using today's date: {formatted_date}")
         
         # Convert amount to number (not string)
         try:
@@ -147,9 +157,9 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
         else:
             raise Exception(f"Invalid transaction type: {transaction_type}. Must be 'debit' or 'credit'.")
         
-        # Prepare data row: [Timestamp, Fund, Cost Center, Debit, Credit, Description, LINK]
-        # Order matches sheet headers: A=Timestamp, B=Funds, C=Cost Center, D=Debit, E=Credit, F=Description, G=LINK
-        row = [timestamp, fund_name, cost_center_name, debit_amount, credit_amount, description, link_value]
+        # Prepare data row: [Transaction Number, Date, Fund, Cost Center, Debit, Credit, Description, Link Bill]
+        # Order matches sheet headers: A=Transaction Number, B=Date, C=Funds, D=Cost Center, E=Debit, F=Credit, G=Description, H=Link Bill
+        row = [transaction_number, formatted_date, fund_name, cost_center_name, debit_amount, credit_amount, description, link_value]
         
         # Add to next empty row
         worksheet.append_row(row)
@@ -160,8 +170,8 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
             all_values = worksheet.get_all_values()
             last_row = len(all_values)
             
-            # Set the formula in the LINK column (column G) with USER_ENTERED
-            cell_address = f'G{last_row}'
+            # Set the formula in the LINK column (column H) with USER_ENTERED
+            cell_address = f'H{last_row}'
             worksheet.update(cell_address, link_value, value_input_option='USER_ENTERED')
         
         return True

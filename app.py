@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-02 10:43:56
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-01 12:57:34
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-01 10:45:48
@@ -65,6 +67,7 @@ def index():
         fund_id = request.form['fund_id']
         cost_center_id = request.form['cost_center_id']
         transaction_type = request.form['transaction_type']  # 'debit' or 'credit'
+        date_input = request.form.get('date_input', '')  # Date in DD/MM/YYYY format
         
         # Handle file link (file was already uploaded separately)
         file_link = request.form.get('file_link', '')
@@ -92,7 +95,8 @@ def index():
             funds = get_funds_list(gc)
             cost_centers = get_cost_centers_list(gc)
             return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
-        
+                                                                                        # ↑ HTML name ↑ Python data
+
         if not selected_worksheet:
             flash('Please select a worksheet!', 'error')
             available_sheets = get_available_sheets(gc)
@@ -101,7 +105,7 @@ def index():
             return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
         
         # Add transaction to selected sheet and worksheet with file link and fund
-        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, amount, description, fund_id, cost_center_id, transaction_type, file_link_dict):
+        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, amount, description, fund_id, cost_center_id, transaction_type, date_input, file_link_dict):
             flash('Transaction added successfully!', 'success')
             return redirect(url_for('thank_you'))
         else:
