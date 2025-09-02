@@ -15,7 +15,7 @@ import os
 
 # Import custom modules
 from config import initialize_sheets
-from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_cost_centers_list
+from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_cost_centers_list, get_account_reference_table
 from file_upload_manager import upload_file_to_drive
 
 # Create Flask web application

@@ -8,6 +8,82 @@
 from datetime import datetime
 
 # =============================================================================
+# ACCOUNT REFERENCE MANAGEMENT
+# =============================================================================
+
+# Get Account Reference Table
+# ---------------------------
+def get_account_reference_table(gc, master_sheet_id="1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE", worksheet_title="Account - ID Worksheet"):
+    """
+    Get the account reference table that maps worksheet IDs to account names
+    Args:
+        gc: Google Sheets client
+        master_sheet_id: ID of the master sheet containing the reference table
+        worksheet_title: Title of the worksheet containing the reference table
+    Returns: Dictionary mapping worksheet IDs to account names
+    """
+    try:
+        print(f"DEBUG: Opening master sheet: {master_sheet_id}")
+        print(f"DEBUG: Looking for worksheet: {worksheet_title}")
+        
+        # Open the master sheet
+        master_sheet = gc.open_by_key(master_sheet_id)
+        worksheet = master_sheet.worksheet(worksheet_title)
+        
+        # Get all data from the reference table
+        all_data = worksheet.get_all_values()
+        print(f"DEBUG: Raw data from reference table: {all_data}")
+        
+        # Skip header row and build mapping
+        account_mapping = {}
+        for row in all_data[1:]:  # Skip header row
+            if len(row) >= 2 and row[0] and row[1]:  # Check if both columns have data
+                account_name = row[0].strip()
+                worksheet_id = row[1].strip()
+                account_mapping[worksheet_id] = account_name
+                print(f"DEBUG: Mapped {worksheet_id} -> {account_name}")
+        
+        print(f"DEBUG: Loaded {len(account_mapping)} account mappings")
+        print(f"DEBUG: Final mapping: {account_mapping}")
+        return account_mapping
+        
+    except Exception as e:
+        print(f"Error getting account reference table: {e}")
+        return {}
+
+# Get Account Name From Worksheet ID
+# ----------------------------------
+def get_account_name_from_worksheet_id(gc, worksheet_id, master_sheet_id="1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE"):
+    """
+    Get the account name for a given worksheet ID from the reference table
+    Args:
+        gc: Google Sheets client
+        worksheet_id: ID of the worksheet to look up
+        master_sheet_id: ID of the master sheet containing the reference table
+    Returns: Account name or None if not found
+    """
+    try:
+        print(f"DEBUG: Looking up worksheet ID: {worksheet_id}")
+        print(f"DEBUG: Using master sheet ID: {master_sheet_id}")
+        
+        account_mapping = get_account_reference_table(gc, master_sheet_id)
+        print(f"DEBUG: Account mapping keys: {list(account_mapping.keys())}")
+        
+        account_name = account_mapping.get(worksheet_id)
+        
+        if account_name:
+            print(f"DEBUG: Found account name '{account_name}' for worksheet ID '{worksheet_id}'")
+        else:
+            print(f"DEBUG: No account name found for worksheet ID '{worksheet_id}'")
+            print(f"DEBUG: Available worksheet IDs: {list(account_mapping.keys())}")
+            
+        return account_name
+        
+    except Exception as e:
+        print(f"Error getting account name from worksheet ID: {e}")
+        return None
+
+# =============================================================================
 # SHEET SELECTION AND MANAGEMENT
 # =============================================================================
 
@@ -61,7 +137,7 @@ def get_worksheets_from_sheet(gc, sheet_id):
     Args:
         gc: Google Sheets client
         sheet_id: ID of the specific sheet
-    Returns: List of dictionaries with worksheet info
+    Returns: List of dictionaries with worksheet info including account names
     """
     try:
         # Use the centralized sheet opening function
@@ -69,15 +145,23 @@ def get_worksheets_from_sheet(gc, sheet_id):
         if sheet is None:
             return []
         
+        # Get account reference table for mapping
+        account_mapping = get_account_reference_table(gc)
+        
         # Get all worksheets in this sheet
         worksheets = sheet.worksheets()
         worksheet_list = []
         
         for worksheet in worksheets:
+            # Get the account name for this worksheet
+            worksheet_id = str(worksheet.id)
+            account_name = account_mapping.get(worksheet_id, worksheet.title)  # Fallback to worksheet title if no mapping
+            
             worksheet_list.append({
                 'id': worksheet.id,
                 'title': worksheet.title,
-                'index': worksheet.index
+                'index': worksheet.index,
+                'account_name': account_name
             })
         
         return worksheet_list
@@ -173,9 +257,24 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
         else:
             raise Exception(f"Invalid transaction type: {transaction_type}. Must be 'debit' or 'credit'.")
         
-        # Prepare data row: [Transaction Number, Date, Fund, Cost Center, Debit, Credit, Description, Link Bill]
-        # Order matches sheet headers: A=Transaction Number, B=Date, C=Funds, D=Cost Center, E=Debit, F=Credit, G=Description, H=Link Bill
-        row = [transaction_number, formatted_date, fund_name, cost_center_name, debit_amount, credit_amount, description, link_value]
+        # Get the account name for this worksheet
+        worksheet_id = str(worksheet.id)
+        print(f"DEBUG: Looking up account name for worksheet ID: {worksheet_id}")
+        print(f"DEBUG: Worksheet title: {worksheet_title}")
+        
+        account_name = get_account_name_from_worksheet_id(gc, worksheet_id)
+        print(f"DEBUG: Retrieved account name: {account_name}")
+        
+        # If no account name found, use worksheet title as fallback
+        if not account_name:
+            account_name = worksheet_title
+            print(f"WARNING: No account name found for worksheet ID {worksheet_id}, using worksheet title: {worksheet_title}")
+        
+        print(f"DEBUG: Final account name to be stored: {account_name}")
+        
+        # Prepare data row: [Transaction Number, Date, Funds, Cost Center, Account, Debit, Credit, Description, Link Bill]
+        # Order matches sheet headers: A=Transaction Number, B=Date, C=Funds, D=Cost Center, E=Account, F=Debit, G=Credit, H=Description, I=Link Bill
+        row = [transaction_number, formatted_date, fund_name, cost_center_name, account_name, debit_amount, credit_amount, description, link_value]
         
         # Add to next empty row
         worksheet.append_row(row)
@@ -186,8 +285,8 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
             all_values = worksheet.get_all_values()
             last_row = len(all_values)
             
-            # Set the formula in the LINK column (column H) with USER_ENTERED
-            cell_address = f'H{last_row}'
+            # Set the formula in the LINK column (column I) with USER_ENTERED
+            cell_address = f'I{last_row}'
             worksheet.update(cell_address, link_value, value_input_option='USER_ENTERED')
         
         return True

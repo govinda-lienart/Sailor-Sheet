@@ -69,10 +69,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Select Worksheet:</label>
+                    <label>Select Account:</label>
                     <select name="worksheet_name" id="worksheet_select" required disabled>
                         <option value="">First select a sheet...</option>
                     </select>
+                    <div class="form-text">This shows the official account name for each worksheet</div>
                 </div>
 
                 <div class="form-group">
@@ -151,17 +152,17 @@
             fetch(`/get_worksheets/${selectedSheetId}`)
                 .then(r => r.json())
                 .then(data => {
-                    worksheetSelect.innerHTML = '<option value="">Choose a worksheet...</option>';
+                    worksheetSelect.innerHTML = '<option value="">Choose an account...</option>';
                     if (data.length > 0) {
                         data.forEach(ws => {
                             const o = document.createElement('option');
-                            o.value = ws.title;
-                            o.textContent = ws.title;
+                            o.value = ws.title;  // Still use worksheet title as value for backend compatibility
+                            o.textContent = `${ws.account_name} (${ws.title})`;  // Show account name + worksheet title
                             worksheetSelect.appendChild(o);
                         });
                         worksheetSelect.disabled = false;
                     } else {
-                        worksheetSelect.innerHTML = '<option value="">No worksheets found</option>';
+                        worksheetSelect.innerHTML = '<option value="">No accounts found</option>';
                     }
                 })
                 .catch(() => {
