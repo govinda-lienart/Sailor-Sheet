@@ -1,16 +1,9 @@
 # =============================================================================
+# Created: 2025-09-02 21:17:10
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 12:20:13
 # Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-02 12:18:54
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-02 11:05:49
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-02 10:43:56
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-01 12:57:34
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-01 10:45:48
-# Status: ✅ WORKING - Ready for GitHub commit
+
 # =============================================================================
 
 # Import required libraries
@@ -19,7 +12,7 @@ import os
 
 # Import custom modules
 from config import initialize_sheets
-from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_cost_centers_list, get_account_reference_table
+from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_cost_centers_list
 from file_upload_manager import upload_file_to_drive
 
 # Create Flask web application
@@ -35,11 +28,11 @@ FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
 # Set debug mode based on environment
 DEBUG_MODE = FLASK_ENV == 'development'
 
-# Add secret key for flash messages
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
-
 # Set maximum file size for uploads (16MB)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+# Add secret key for flash messages and sessions
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
 # =============================================================================
 # INITIALIZE GOOGLE SHEETS
@@ -69,7 +62,7 @@ def index():
         
         # Extract data from the web form
         selected_sheet_id = request.form['sheet_name']
-        selected_worksheet_id = request.form['worksheet_name']  # This is now the worksheet ID
+        selected_worksheet_title = request.form['worksheet_name']  # This is the worksheet title
         amount = request.form['amount']
         description = request.form['description']
         fund_id = request.form['fund_id']
@@ -79,10 +72,12 @@ def index():
         transaction_number = request.form.get('transaction_number', '')  # Pre-generated transaction number
         
         # Debug: Show what we're working with
+        print(f"\n" + "="*50)
+        print(f"DEBUG: FORM SUBMISSION STARTED")
+        print(f"="*50)
         print(f"DEBUG: Form data extracted:")
-        print(f"  - Sheet ID: {selected_sheet_id}")
-        print(f"  - Worksheet ID: {selected_worksheet_id}")
-        print(f"  - Worksheet ID type: {type(selected_worksheet_id)}")
+        print(f"  - Sheet ID: '{selected_sheet_id}' (type: {type(selected_sheet_id)})")
+        print(f"  - Worksheet Title: '{selected_worksheet_title}' (type: {type(selected_worksheet_title)})")
         print(f"  - Amount: {amount}")
         print(f"  - Description: {description}")
         print(f"  - Fund ID: {fund_id}")
@@ -90,6 +85,7 @@ def index():
         print(f"  - Transaction Type: {transaction_type}")
         print(f"  - Date: {date_input}")
         print(f"  - Transaction Number: {transaction_number}")
+        print(f"="*50)
         
         # Handle file link (file was already uploaded separately)
         file_link = request.form.get('file_link', '')
@@ -119,18 +115,39 @@ def index():
             return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
                                                                                         # ↑ HTML name ↑ Python data
 
-        if not selected_worksheet_id:
+        if not selected_worksheet_title:
             flash('Please select a worksheet!', 'error')
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
             cost_centers = get_cost_centers_list(gc)
             return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
         
+        # Use the worksheet title directly as the account name
+        print(f"DEBUG: Using worksheet title as account name: {selected_worksheet_title}")
+        account_name = selected_worksheet_title  # The worksheet title is the account name
+        
         # Add transaction to selected sheet and worksheet with file link and fund
-        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_id, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link_dict):
-            flash('Transaction added successfully!', 'success')
+        print(f"DEBUG: About to call add_transaction_to_selected_sheet with:")
+        print(f"  - selected_sheet_id: {selected_sheet_id}")
+        print(f"  - selected_worksheet_title: {selected_worksheet_title}")
+        print(f"  - account_name: {account_name}")
+        print(f"  - amount: {amount}")
+        print(f"  - description: {description}")
+        print(f"  - fund_id: {fund_id}")
+        print(f"  - cost_center_id: {cost_center_id}")
+        print(f"  - transaction_type: {transaction_type}")
+        print(f"  - date_input: {date_input}")
+        print(f"  - transaction_number: {transaction_number}")
+        
+        transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link_dict, account_name)
+        print(f"DEBUG: Transaction result: {transaction_result}")
+        
+        if transaction_result:
+            print("DEBUG: Transaction successful! Redirecting to thank you page")
+            # Transaction successful! Redirect to thank you page
             return redirect(url_for('thank_you'))
         else:
+            print("ERROR: Transaction failed!")
             flash('Error adding transaction!', 'error')
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
@@ -165,9 +182,20 @@ def get_worksheets(sheet_id):
     AJAX route to get worksheets for a selected sheet
     """
     try:
+        print(f"\n" + "="*50)
+        print(f"DEBUG: GET_WORKSHEETS CALLED")
+        print(f"  - Sheet ID: {sheet_id}")
+        print(f"="*50)
+        
         worksheets = get_worksheets_from_sheet(gc, sheet_id)
+        print(f"DEBUG: Found {len(worksheets)} worksheets:")
+        for i, ws in enumerate(worksheets):
+            print(f"  {i+1}. ID: '{ws.get('id')}', Title: '{ws.get('title')}'")
+        print(f"="*50)
+        
         return jsonify(worksheets)
     except Exception as e:
+        print(f"ERROR in get_worksheets: {e}")
         return jsonify({'error': str(e)}), 500
 
 # Upload File Route

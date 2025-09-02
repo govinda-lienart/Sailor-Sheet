@@ -7,7 +7,7 @@
      ============================================================================= -->
 
 <!DOCTYPE html>
-<!-- Updated: 2025-09-02 12:20:13 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-02 21:17:10 - Ready for GitHub commit -->
 <html>
 <head>
     <title>NGO Accounting - Data Entry</title>
@@ -29,29 +29,8 @@
                 {% endif %}
             {% endwith %}
 
-            <!-- STEP 1: FILE UPLOAD -->
-            <div class="upload-section">
-                <h3>Step 1: Upload Supporting Documents</h3>
-                <div class="form-group">
-                    <label>Upload File (Optional):</label>
-                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
-                    <div class="form-text">Upload receipts, invoices, or other supporting documents</div>
-                    <button type="button" id="uploadBtn" class="btn btn-secondary">Upload File</button>
-                </div>
-
-                <div id="uploadStatus" style="display: none;">
-                    <div id="uploadProgress" class="alert alert-info">Uploading file...</div>
-                    <div id="uploadResult" style="display: none;">
-                        <div class="alert alert-success">
-                            <strong>File uploaded successfully!</strong>
-                            <div id="fileLink"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 2: MAIN FORM -->
-            <form method="POST" id="mainForm">
+            <!-- MAIN FORM -->
+            <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
                 <div class="form-group">
                     <label>Transaction Number:</label>
                     <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
@@ -130,44 +109,112 @@
                     <input type="hidden" name="transaction_number" id="transactionNumberInput">
                 </div>
 
-                <button type="submit" class="btn">Submit to Google Sheets</button>
             </form>
+
+            <!-- UPLOAD BILLS SECTION -->
+            <div class="upload-section">
+                <label>Upload Bills:</label>
+                <div class="form-group">
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                    <div class="form-text">Upload receipts, invoices, or other supporting documents</div>
+                    <button type="button" id="uploadBtn" class="btn btn-secondary">Upload File</button>
+                </div>
+
+                <div id="uploadStatus" style="display: none;">
+                    <div id="uploadProgress" class="alert alert-info">Uploading file...</div>
+                    <div id="uploadResult" style="display: none;">
+                        <div class="alert alert-success">
+                            <strong>File uploaded successfully!</strong>
+                            <div id="fileLink"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBMIT BUTTON -->
+            <button type="submit" form="mainForm" class="btn">Submit to Google Sheets</button>
         </div>
     </div>
 
     <script>
         function loadWorksheets() {
+            console.log('loadWorksheets() called');
             const sheetSelect = document.getElementById('sheet_select');
             const worksheetSelect = document.getElementById('worksheet_select');
             const selectedSheetId = sheetSelect.value;
+            console.log('Selected sheet ID:', selectedSheetId);
 
             worksheetSelect.innerHTML = '<option value="">Loading worksheets...</option>';
             worksheetSelect.disabled = true;
 
             if (!selectedSheetId) {
                 worksheetSelect.innerHTML = '<option value="">First select a sheet...</option>';
+                console.log('No sheet selected, returning');
                 return;
             }
 
+            console.log('Fetching worksheets for sheet:', selectedSheetId);
             fetch(`/get_worksheets/${selectedSheetId}`)
-                .then(r => r.json())
+                .then(r => {
+                    console.log('Response status:', r.status);
+                    return r.json();
+                })
                 .then(data => {
+                    console.log('Worksheets data received:', data);
                     worksheetSelect.innerHTML = '<option value="">Choose an account...</option>';
                     if (data.length > 0) {
                         data.forEach(ws => {
+                            console.log('Adding worksheet:', ws);
                             const o = document.createElement('option');
-                            o.value = ws.id;  // Use worksheet ID for backend lookup
-                            o.textContent = `${ws.account_name} (${ws.title})`;  // Show account name + worksheet title
+                            o.value = ws.title;  // Use worksheet title for backend lookup
+                            o.textContent = ws.title;  // Show just the worksheet title
                             worksheetSelect.appendChild(o);
                         });
                         worksheetSelect.disabled = false;
+                        console.log('Worksheets loaded successfully');
                     } else {
                         worksheetSelect.innerHTML = '<option value="">No accounts found</option>';
+                        console.log('No worksheets found');
                     }
                 })
-                .catch(() => {
+                .catch(error => {
+                    console.error('Error loading worksheets:', error);
                     worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
                 });
+        }
+
+        function handleFormSubmit(event) {
+            console.log('Form submission started');
+            
+            // Get form data
+            const formData = new FormData(document.getElementById('mainForm'));
+            
+            console.log('Form data:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  ${key}: "${value}"`);
+            }
+            
+            // Check if required fields are filled
+            const sheetSelect = document.getElementById('sheet_select');
+            const worksheetSelect = document.getElementById('worksheet_select');
+            
+            console.log('Sheet selected:', sheetSelect.value);
+            console.log('Worksheet selected:', worksheetSelect.value);
+            
+            if (!sheetSelect.value) {
+                console.error('No sheet selected');
+                alert('Please select a sheet!');
+                return false;
+            }
+            
+            if (!worksheetSelect.value) {
+                console.error('No worksheet selected');
+                alert('Please select a worksheet!');
+                return false;
+            }
+            
+            console.log('Form validation passed, submitting...');
+            return true; // Allow form to submit normally
         }
 
         function generateTransactionNumber() {
