@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-02 11:05:49
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 10:43:56
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-01 12:57:34
@@ -51,16 +53,33 @@ ALLOWED_EXTENSIONS = {
 # HELPER FUNCTIONS
 # =============================================================================
 
+# Check Allowed File
+# ------------------
 def allowed_file(filename):
     """Check if file extension is allowed"""
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def unique_name(base: str, ext: str) -> str:
-    """Generate a unique filename with timestamp (like 'Bill_timestamp')"""
-    ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    return f"Bill_{ts}.{ext}"
+# Generate Unique Name
+# --------------------
+def unique_name(base: str, ext: str, transaction_number: str = None) -> str:
+    """Generate a unique filename with transaction number (like 'Bill_transactionnumber')"""
+    print(f"DEBUG: unique_name called with base={base}, ext={ext}, transaction_number={transaction_number}")
+    
+    if transaction_number and transaction_number.strip():
+        # Use transaction number if provided
+        result = f"Bill_{transaction_number}.{ext}"
+        print(f"DEBUG: Using transaction number, result: {result}")
+        return result
+    else:
+        # Fallback to timestamp if no transaction number
+        ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        result = f"Bill_{ts}.{ext}"
+        print(f"DEBUG: No transaction number, using timestamp, result: {result}")
+        return result
 
+# Get Service Account Credentials
+# -------------------------------
 def get_service_account_credentials():
     """Get credentials using same method as main app"""
     # Check if credentials are in environment variable (production)
@@ -99,6 +118,8 @@ def get_service_account_credentials():
         except Exception as e:
             raise Exception(f"Error loading secret credentials file: {str(e)}")
 
+# Build Drive Service
+# -------------------
 def build_drive_service(creds):
     """Build Google Drive service"""
     return build("drive", "v3", credentials=creds)
@@ -107,9 +128,14 @@ def build_drive_service(creds):
 # MAIN UPLOAD FUNCTIONS
 # =============================================================================
 
-def upload_file_to_drive(file):
+# Upload File To Drive
+# ---------------------
+def upload_file_to_drive(file, transaction_number=None):
     """
     Upload a file to Google Drive shared folder
+    Args:
+        file: File object to upload
+        transaction_number: Optional transaction number to use in filename
     Returns: dict with success status, file_url, and file_name
     """
     try:
@@ -123,10 +149,14 @@ def upload_file_to_drive(file):
         # Secure the filename
         filename = secure_filename(file.filename)
         
-        # Generate unique name
+        # Generate unique name with transaction number
         base = filename.rsplit('.', 1)[0]
         ext = filename.rsplit('.', 1)[1].lower()
-        unique_filename = unique_name(base, ext)
+        unique_filename = unique_name(base, ext, transaction_number)
+        
+        print(f"DEBUG: File upload - Original filename: {filename}")
+        print(f"DEBUG: File upload - Transaction number: {transaction_number}")
+        print(f"DEBUG: File upload - Generated filename: {unique_filename}")
         
         # Get credentials and build service
         creds = get_service_account_credentials()

@@ -34,10 +34,14 @@ HTML_FILES = [
 # TIMESTAMP FUNCTIONS
 # =============================================================================
 
+# Get Current Timestamp
+# ---------------------
 def get_current_timestamp():
     """Get current timestamp in the format used in your files"""
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
+# Add Timestamp To Python File
+# -----------------------------
 def add_timestamp_to_python_file(filepath):
     """Add or update timestamp comment in a Python file"""
     try:
@@ -92,6 +96,8 @@ def add_timestamp_to_python_file(filepath):
         print(f"❌ Error updating {filepath}: {e}")
         return False
 
+# Add Timestamp To HTML File
+# ---------------------------
 def add_timestamp_to_html_file(filepath):
     """Add or update timestamp comment in an HTML file"""
     try:
@@ -141,6 +147,8 @@ def add_timestamp_to_html_file(filepath):
         print(f"❌ Error updating {filepath}: {e}")
         return False
 
+# Update All Files
+# ----------------
 def update_all_files():
     """Update timestamps in all Python and HTML files"""
     print("🚀 Updating timestamps in all Python and HTML files...")

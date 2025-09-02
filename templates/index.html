@@ -7,7 +7,7 @@
      ============================================================================= -->
 
 <!DOCTYPE html>
-<!-- Updated: 2025-09-02 10:43:56 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-02 11:05:49 - Ready for GitHub commit -->
 <html>
 <head>
     <title>NGO Accounting - Data Entry</title>
@@ -52,6 +52,12 @@
 
             <!-- STEP 2: MAIN FORM -->
             <form method="POST" id="mainForm">
+                <div class="form-group">
+                    <label>Transaction Number:</label>
+                    <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
+                    <div class="form-text">This number will be used for both the transaction and file naming</div>
+                </div>
+
                 <div class="form-group">
                     <label>Select Sheet:</label>
                     <select name="sheet_name" id="sheet_select" required onchange="loadWorksheets()">
@@ -120,6 +126,7 @@
                     <!-- Hidden fields populated after upload -->
                     <input type="hidden" name="file_link" id="fileLinkInput">
                     <input type="hidden" name="file_name" id="fileNameInput">
+                    <input type="hidden" name="transaction_number" id="transactionNumberInput">
                 </div>
 
                 <button type="submit" class="btn">Submit to Google Sheets</button>
@@ -162,6 +169,18 @@
                 });
         }
 
+        function generateTransactionNumber() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            return `${day}${month}${year}-${hours}${minutes}${seconds}`;
+        }
+
         function uploadFile() {
             const fileInput = document.getElementById('fileInput');
             const uploadBtn = document.getElementById('uploadBtn');
@@ -171,12 +190,23 @@
             const fileLink = document.getElementById('fileLink');
             const fileLinkInput = document.getElementById('fileLinkInput');
             const fileNameInput = document.getElementById('fileNameInput');
+            const transactionNumberDisplay = document.getElementById('transactionNumberDisplay');
+            const transactionNumberInput = document.getElementById('transactionNumberInput');
 
             const file = fileInput.files[0];
             if (!file) {
                 alert('Please select a file first!');
                 return;
             }
+
+            // Use the existing transaction number from the display field
+            const transactionNumber = transactionNumberDisplay.value;
+            if (!transactionNumber || transactionNumber === 'Generating...') {
+                alert('Please wait for transaction number to be generated');
+                return;
+            }
+
+            console.log('Using transaction number for file:', transactionNumber);
 
             uploadStatus.style.display = 'block';
             uploadProgress.style.display = 'block';
@@ -185,6 +215,7 @@
 
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('transaction_number', transactionNumber);
 
             fetch('/upload_file', { method: 'POST', body: formData })
                 .then(r => r.json())
@@ -196,6 +227,10 @@
                         fileLink.innerHTML = `<a href="${data.file_url}" target="_blank">${data.file_name}</a>`;
                         fileLinkInput.value = data.file_url;   // URL for backend
                         fileNameInput.value = data.file_name;  // Label for HYPERLINK
+                        transactionNumberInput.value = transactionNumber; // Pass to backend
+                        
+                        console.log('File uploaded successfully with transaction number:', transactionNumber);
+                        console.log('File name:', data.file_name);
                     } else {
                         fileLink.innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
                     }
@@ -211,6 +246,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Generate transaction number when page loads
+            const transactionNumber = generateTransactionNumber();
+            document.getElementById('transactionNumberDisplay').value = transactionNumber;
+            document.getElementById('transactionNumberInput').value = transactionNumber;
+            console.log('Generated transaction number:', transactionNumber);
+            
             document.getElementById('uploadBtn').addEventListener('click', uploadFile);
         });
     </script>

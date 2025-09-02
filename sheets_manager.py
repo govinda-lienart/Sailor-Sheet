@@ -1,7 +1,7 @@
 # =============================================================================
-# Created: 2025-09-02 10:43:56
+# Created: 2025-09-02 11:05:49
 # Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-01 12:57:34
+# Created: 2025-09-02 10:43:56
 # Status: ✅ WORKING - Ready for GitHub commit
 # =============================================================================
 
@@ -11,6 +11,8 @@ from datetime import datetime
 # SHEET SELECTION AND MANAGEMENT
 # =============================================================================
 
+# Get Available Sheets
+# -------------------
 def get_available_sheets(gc):
     """
     Get list of available Google Sheets for dropdown selection
@@ -34,6 +36,8 @@ def get_available_sheets(gc):
         print(f"Error getting sheets: {e}")
         return []
 
+# Get Sheet By ID
+# ---------------
 def get_sheet_by_id(gc, sheet_id):
     """
     Get a specific sheet by its ID
@@ -49,6 +53,8 @@ def get_sheet_by_id(gc, sheet_id):
         print(f"Error getting sheet by ID: {e}")
         return None
 
+# Get Worksheets From Sheet
+# -------------------------
 def get_worksheets_from_sheet(gc, sheet_id):
     """
     Get list of worksheets (subsheets) from a specific Google Sheet
@@ -79,7 +85,13 @@ def get_worksheets_from_sheet(gc, sheet_id):
         print(f"Error getting worksheets: {e}")
         return []
 
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, date_input, file_link=""):
+# =============================================================================
+# TRANSACTION MANAGEMENT
+# =============================================================================
+
+# Add Transaction To Selected Sheet
+# --------------------------------
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link=""):
     """
     Add transaction to a specific selected sheet and worksheet
     Args:
@@ -92,6 +104,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
         cost_center_id: ID of the cost center from form
         transaction_type: 'debit' (money out) or 'credit' (money in)
         date_input: Date from form in DD/MM/YYYY format
+        transaction_number: Pre-generated transaction number from form
         file_link: Optional file link dict with filename and url
     Returns: True if successful, False otherwise
     """
@@ -104,9 +117,12 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
         # Get the specific worksheet by title
         worksheet = sheet.worksheet(worksheet_title)
         
-        # Create unique transaction number in format DDMMYY-HHMMSS
-        now = datetime.now()
-        transaction_number = now.strftime('%d%m%y-%H%M%S')
+        # Use the pre-generated transaction number from the form
+        if not transaction_number:
+            # Fallback: generate new transaction number if none provided
+            now = datetime.now()
+            transaction_number = now.strftime('%d%m%y-%H%M%S')
+            print(f"Warning: No transaction number provided, generated: {transaction_number}")
         
         # Format the date input to DD/MM/YY format
         try:
@@ -179,12 +195,12 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_title, amount, des
         print(f"Error adding transaction to selected sheet: {e}")
         return False
 
-
-
 # =============================================================================
 # FUNDS REFERENCE FUNCTIONS
 # =============================================================================
 
+# Get Funds List
+# --------------
 def get_funds_list(gc):
     """
     Get funds from reference sheet for dropdown
@@ -223,6 +239,8 @@ def get_funds_list(gc):
         print(f"Error getting funds: {e}")
         return []
 
+# Get Fund Name By ID
+# -------------------
 def get_fund_name_by_id(gc, fund_id):
     """
     Get fund name by ID for transaction saving
@@ -251,6 +269,8 @@ def get_fund_name_by_id(gc, fund_id):
 # COST CENTERS REFERENCE FUNCTIONS
 # =============================================================================
 
+# Get Cost Centers List
+# ---------------------
 def get_cost_centers_list(gc):
     """
     Get cost centers from reference sheet for dropdown
@@ -284,6 +304,8 @@ def get_cost_centers_list(gc):
         print(f"Error getting cost centers: {e}")
         return []
 
+# Get Cost Center Name By Code
+# ----------------------------
 def get_cost_center_name_by_code(gc, cost_center_code):
     """
     Get cost center name by code for transaction saving

@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-02 11:05:49
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 10:43:56
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-01 12:57:34
@@ -46,6 +48,8 @@ gc = initialize_sheets()
 # MAIN WEB ROUTE - Sheet Selection Form
 # =============================================================================
 
+# Main Index Route
+# ----------------
 @app.route('/', methods=['GET', 'POST'])
 def index():
     """
@@ -68,6 +72,7 @@ def index():
         cost_center_id = request.form['cost_center_id']
         transaction_type = request.form['transaction_type']  # 'debit' or 'credit'
         date_input = request.form.get('date_input', '')  # Date in DD/MM/YYYY format
+        transaction_number = request.form.get('transaction_number', '')  # Pre-generated transaction number
         
         # Handle file link (file was already uploaded separately)
         file_link = request.form.get('file_link', '')
@@ -105,7 +110,7 @@ def index():
             return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
         
         # Add transaction to selected sheet and worksheet with file link and fund
-        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, amount, description, fund_id, cost_center_id, transaction_type, date_input, file_link_dict):
+        if add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link_dict):
             flash('Transaction added successfully!', 'success')
             return redirect(url_for('thank_you'))
         else:
@@ -135,6 +140,8 @@ def index():
 # AJAX ROUTE FOR WORKSHEET SELECTION
 # =============================================================================
 
+# Get Worksheets Route
+# --------------------
 @app.route('/get_worksheets/<sheet_id>')
 def get_worksheets(sheet_id):
     """
@@ -146,6 +153,8 @@ def get_worksheets(sheet_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Upload File Route
+# -----------------
 @app.route('/upload_file', methods=['POST'])
 def upload_file():
     """
@@ -154,16 +163,24 @@ def upload_file():
     try:
         print("DEBUG: upload_file route called")
         file = request.files.get('file')
+        transaction_number = request.form.get('transaction_number', '')  # Get transaction number if provided
+        
+        print(f"DEBUG: File received: {file.filename if file else 'None'}")
+        print(f"DEBUG: Transaction number received: '{transaction_number}'")
+        print(f"DEBUG: Transaction number type: {type(transaction_number)}")
+        print(f"DEBUG: Transaction number length: {len(transaction_number) if transaction_number else 0}")
+        
         if not file or not file.filename:
             print("DEBUG: No file in request")
             return jsonify({'success': False, 'error': 'No file selected'})
         
         print(f"DEBUG: Uploading file: {file.filename}")
+        print(f"DEBUG: Transaction number: {transaction_number}")
         print(f"DEBUG: File size: {len(file.read())} bytes")
         file.seek(0)  # Reset file pointer after reading
         
         # Upload file to Google Drive using our working upload manager
-        result = upload_file_to_drive(file)
+        result = upload_file_to_drive(file, transaction_number)
         
         if result['success']:
             print(f"DEBUG: File uploaded successfully: {result}")
@@ -187,6 +204,8 @@ def upload_file():
 # THANK YOU PAGE ROUTE
 # =============================================================================
 
+# Thank You Route
+# ---------------
 @app.route('/thank-you')
 def thank_you():
     """
