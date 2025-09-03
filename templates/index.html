@@ -8,14 +8,42 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-03 15:20:50 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-03 16:09:02 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
          <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+         <script>
+             // Show loading text immediately when script runs (before DOM loads)
+             (function() {
+                 // This runs immediately when the script tag is encountered
+                 var loadingDiv = document.createElement('div');
+                 loadingDiv.id = 'loadingAnimation';
+                 loadingDiv.className = 'loading-container';
+                 loadingDiv.style.display = 'block';
+                 loadingDiv.innerHTML = '<div class="simple-loading"><div class="loading-text">Loading: Google Accounting System...</div></div>';
+                 
+                 // Insert at the very beginning of body
+                 document.body.insertBefore(loadingDiv, document.body.firstChild);
+                 
+                 // Hide it after DOM is ready
+                 document.addEventListener('DOMContentLoaded', function() {
+                     setTimeout(function() {
+                         if (loadingDiv) {
+                             loadingDiv.style.opacity = '0';
+                             setTimeout(function() {
+                                 loadingDiv.style.display = 'none';
+                             }, 100);
+                         }
+                     }, 100);
+                 });
+             })();
+         </script>
      </head>
      
      <body>
+         
+         
          <div class="container">
              <div class="form-container">
                  <h1>NGO Accounting System</h1>
@@ -32,6 +60,29 @@
      
                  <!-- MAIN FORM -->
                  <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
+                     <!-- TRANSACTION TYPE SELECTOR - TOP PRIORITY -->
+                     <div class="form-group transaction-type-group">
+                         <label>Transaction Type:</label>
+                         <div class="radio-group">
+                             <label class="radio-option">
+                                 <input type="radio" name="transaction_category" value="donation" required onchange="handleTransactionTypeChange()">
+                                 <span class="radio-custom"></span>
+                                 Donation
+                             </label>
+                             <label class="radio-option">
+                                 <input type="radio" name="transaction_category" value="internal_transfer" required onchange="handleTransactionTypeChange()">
+                                 <span class="radio-custom"></span>
+                                 Internal Transfer
+                             </label>
+                             <label class="radio-option">
+                                 <input type="radio" name="transaction_category" value="payment" required onchange="handleTransactionTypeChange()">
+                                 <span class="radio-custom"></span>
+                                 Payment
+                             </label>
+                         </div>
+                         <div class="form-text">Select the type of transaction you are recording</div>
+                     </div>
+                     
                      <div class="form-group">
                          <label>Transaction Number:</label>
                          <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
@@ -56,14 +107,7 @@
                          <div class="form-text">This shows the official account name for each worksheet</div>
                      </div>
      
-                     <div class="form-group">
-                         <label>Transaction Type:</label>
-                         <select name="transaction_type" required>
-                             <option value="">Choose transaction type...</option>
-                             <option value="debit">Debit (Money Out)</option>
-                             <option value="credit">Credit (Money In)</option>
-                         </select>
-                     </div>
+
      
                      <div class="form-group">
                          <label>Date:</label>
@@ -100,14 +144,7 @@
                          </select>
                      </div>
                      
-                     <!-- TRANSFER TYPE SECTION -->
-                     <div class="form-group">
-                         <label>
-                             <input type="checkbox" id="internalTransferCheck" name="transfer_type" value="internal" onchange="toggleTransferFields()">
-                             Internal Transfer (between wallets/accounts)
-                         </label>
-                         <div class="form-text">Check this if transferring between internal accounts/wallets</div>
-                     </div>
+
                      
                      <!-- TRANSFER ACCOUNT FIELDS -->
                      <div id="transferFields" style="display: none;">
@@ -189,8 +226,8 @@
                  }
              });
              
-             function toggleTransferFields() {
-                 const checkbox = document.getElementById('internalTransferCheck');
+             function handleTransactionTypeChange() {
+                 const selectedType = document.querySelector('input[name="transaction_category"]:checked').value;
                  const transferFields = document.getElementById('transferFields');
                  const destSelect = document.getElementById('destinationAccountSelect');
                  const fundGroup = document.querySelector('.form-group:has(select[name="fund_id"])');
@@ -198,9 +235,9 @@
                  const fundSelect = document.querySelector('select[name="fund_id"]');
                  const costCenterSelect = document.querySelector('select[name="cost_center_id"]');
                  
-                 if (checkbox.checked) {
+                 if (selectedType === 'internal_transfer') {
+                     // Show transfer fields and populate destination dropdown
                      transferFields.style.display = 'block';
-                     // Populate destination account dropdown when internal transfer is selected
                      populateDestinationAccountDropdown();
                      
                      // Hide Fund and Cost Center fields completely
@@ -211,9 +248,10 @@
                      if (fundSelect) fundSelect.removeAttribute('required');
                      if (costCenterSelect) costCenterSelect.removeAttribute('required');
                  } else {
+                     // Hide transfer fields for Donation and Payment
                      transferFields.style.display = 'none';
-                     // Clear destination selection when unchecked
-                     destSelect.value = '';
+                     // Clear destination selection
+                     if (destSelect) destSelect.value = '';
                      
                      // Show Fund and Cost Center fields again
                      if (fundGroup) fundGroup.style.display = 'block';
