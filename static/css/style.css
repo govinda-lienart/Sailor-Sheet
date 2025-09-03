@@ -99,6 +99,28 @@ h1 {
     margin-bottom: 30px;
 }
 
+/* Transfer fields styling */
+#transferFields {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+#transferFields .form-group {
+    margin-bottom: 15px;
+}
+
+#internalTransferCheck {
+    width: auto;
+    margin-right: 10px;
+}
+
+#internalTransferCheck + span {
+    font-weight: normal;
+}
+
 /* Upload section styling */
 .upload-section {
     background: #f8f9fa;

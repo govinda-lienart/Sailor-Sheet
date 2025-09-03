@@ -1,4 +1,8 @@
 # =============================================================================
+# Created: 2025-09-03 11:28:57
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-03 11:27:32
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 21:17:10
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 12:20:13
@@ -238,7 +242,7 @@ def get_worksheets_from_sheet(gc, sheet_id):
 
 # Add Transaction To Selected Sheet
 # --------------------------------
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link="", account_name=""):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link="", origin_account="", destination_account="", transfer_type="external"):
     """
     Add transaction to a specific selected sheet and worksheet
     Args:
@@ -253,16 +257,26 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         date_input: Date from form in DD/MM/YY format
         transaction_number: Pre-generated transaction number from form
         file_link: Optional file link dict with filename and url
-        account_name: Account name to use (passed from frontend lookup)
+        origin_account: Account where money is coming FROM
+        destination_account: Account where money is going TO
+        transfer_type: 'internal' or 'external' transfer
     Returns: True if successful, False otherwise
     """
     try:
         print(f"DEBUG: add_transaction_to_selected_sheet called with:")
         print(f"  - sheet_id: {sheet_id}")
         print(f"  - worksheet_id: {worksheet_id}")
-        print(f"  - account_name: {account_name}")
         print(f"  - amount: {amount}")
         print(f"  - transaction_type: {transaction_type}")
+        print(f"  - transfer_type: {transfer_type}")
+        print(f"  - origin_account: {origin_account}")
+        print(f"  - destination_account: {destination_account}")
+        print(f"  - fund_id: {fund_id}")
+        print(f"  - cost_center_id: {cost_center_id}")
+        print(f"  - date_input: {date_input}")
+        print(f"  - transaction_number: {transaction_number}")
+        print(f"  - file_link: {file_link}")
+        print(f"  - description: {description}")
         # Use the centralized sheet opening function
         print(f"DEBUG: Opening sheet with ID: {sheet_id}")
         sheet = get_sheet_by_id(gc, sheet_id)
@@ -316,10 +330,14 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             raise Exception(f"Invalid amount: {amount}. Please enter a valid number.")
         
         # Get fund name from fund ID
+        print(f"DEBUG: Looking up fund name for fund_id: {fund_id}")
         fund_name = get_fund_name_by_id(gc, fund_id)
+        print(f"DEBUG: Found fund name: {fund_name}")
         
         # Get cost center name from cost center ID
+        print(f"DEBUG: Looking up cost center name for cost_center_id: {cost_center_id}")
         cost_center_name = get_cost_center_name_by_code(gc, cost_center_id)
+        print(f"DEBUG: Found cost center name: {cost_center_name}")
         
         # Handle file link - create HYPERLINK formula if we have both URL and filename
         if isinstance(file_link, dict) and 'filename' in file_link and 'url' in file_link:
@@ -338,54 +356,121 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         else:
             raise Exception(f"Invalid transaction type: {transaction_type}. Must be 'debit' or 'credit'.")
         
-        # Use the account name passed from the frontend (already looked up from master reference table)
+        # Get worksheet title for reference
         worksheet_title = worksheet.title
-        print(f"DEBUG: Using account name from frontend: {account_name}")
         print(f"DEBUG: Worksheet title: {worksheet_title}")
         
-        # If no account name was passed, fall back to looking it up
-        if not account_name:
-            print(f"DEBUG: No account name passed, looking up from worksheet ID: {worksheet_id}")
-            account_name = get_account_name_from_worksheet_id(gc, worksheet_id)
-            print(f"DEBUG: Retrieved account name: {account_name}")
-            
-            # If still no account name found, use worksheet title as fallback
-            if not account_name:
-                account_name = worksheet_title
-                print(f"WARNING: No account name found for worksheet ID {worksheet_id}, using worksheet title: {worksheet_title}")
-        
-        print(f"DEBUG: Final account name to be stored: {account_name}")
-        
         # Prepare data row to match EXACT Google Sheet column order
-        # A=Transaction Number, B=Date, C=Funds, D=Cost Center, E=Account, F=Debit(VND), G=Credit(VND), H=Description, I=Link Bill
+        # A=Transaction Number, B=Date, C=Funds, D=Cost Center, E=Origin Account, F=Destination Account, G=Debit(VND), H=Credit(VND), I=Description, J=Link Bill
+        
+        # Handle origin and destination accounts based on transfer type
+        print(f"DEBUG: Processing transfer type: {transfer_type}")
+        if transfer_type == "internal":
+            origin_acc = origin_account if origin_account else "Internal Transfer"
+            dest_acc = destination_account if destination_account else "Internal Transfer"
+            print(f"DEBUG: Internal transfer - Origin: {origin_acc}, Destination: {dest_acc}")
+        else:
+            origin_acc = origin_account if origin_account else "External"
+            dest_acc = destination_account if destination_account else "External"
+            print(f"DEBUG: External transfer - Origin: {origin_acc}, Destination: {dest_acc}")
+        
         row = [
             transaction_number,    # A: Transaction Number
             formatted_date,        # B: Date
             fund_name,            # C: Funds
             cost_center_name,     # D: Cost Center
-            account_name,         # E: Account
-            debit_amount,         # F: Debit (VND)
-            credit_amount,        # G: Credit (VND)
-            description,          # H: Description
-            link_value            # I: Link Bill
+            origin_acc,           # E: Origin Account
+            dest_acc,             # F: Destination Account
+            debit_amount,         # G: Debit (VND)
+            credit_amount,        # H: Credit (VND)
+            description,          # I: Description
+            link_value            # J: Link Bill
         ]
         
+        print(f"DEBUG: Prepared row data:")
+        for i, cell in enumerate(row):
+            column_letter = chr(65 + i)  # A=65, B=66, etc.
+            print(f"  - Column {column_letter}: '{cell}' (type: {type(cell)})")
+        
         # Add to next empty row
+        print(f"DEBUG: About to append row to worksheet: {worksheet.title}")
         worksheet.append_row(row)
+        print(f"DEBUG: Row successfully appended to worksheet")
         
         # If we added a HYPERLINK formula, we need to format it properly with USER_ENTERED
         if link_value.startswith('=HYPERLINK('):
+            print(f"DEBUG: Processing HYPERLINK formula: {link_value}")
             # Get the last row number (where we just added data)
             all_values = worksheet.get_all_values()
             last_row = len(all_values)
             
-            # Set the formula in the LINK column (column I) with USER_ENTERED
-            cell_address = f'I{last_row}'
+            # Set the formula in the LINK column (column J) with USER_ENTERED
+            cell_address = f'J{last_row}'
+            print(f"DEBUG: Updating cell {cell_address} with HYPERLINK formula")
             worksheet.update(cell_address, link_value, value_input_option='USER_ENTERED')
+            print(f"DEBUG: HYPERLINK formula updated successfully")
         
+        # FOR INTERNAL TRANSFERS: Create the opposite entry in the destination account
+        if transfer_type == "internal" and destination_account and destination_account != worksheet.title:
+            print(f"DEBUG: Creating opposite entry for internal transfer in destination account: {destination_account}")
+            
+            # Create opposite transaction type
+            opposite_transaction_type = 'credit' if transaction_type == 'debit' else 'debit'
+            opposite_debit = numeric_amount if opposite_transaction_type == 'debit' else ""
+            opposite_credit = numeric_amount if opposite_transaction_type == 'credit' else ""
+            
+            # Prepare opposite row
+            opposite_row = [
+                transaction_number,    # A: Same Transaction Number
+                formatted_date,        # B: Same Date
+                fund_name,            # C: Same Funds
+                cost_center_name,     # D: Same Cost Center
+                origin_acc,           # E: Same Origin Account
+                dest_acc,             # F: Same Destination Account
+                opposite_debit,       # G: Opposite Debit (VND)
+                opposite_credit,      # H: Opposite Credit (VND)
+                f"{description} (Internal Transfer)", # I: Modified Description
+                link_value            # J: Same Link Bill
+            ]
+            
+            try:
+                # Find the destination worksheet by title
+                destination_worksheet = None
+                for ws in sheet.worksheets():
+                    if ws.title == destination_account:
+                        destination_worksheet = ws
+                        break
+                
+                if destination_worksheet:
+                    print(f"DEBUG: Found destination worksheet: {destination_worksheet.title}")
+                    print(f"DEBUG: Adding opposite entry to destination account")
+                    destination_worksheet.append_row(opposite_row)
+                    print(f"DEBUG: Opposite entry successfully added to {destination_account}")
+                    
+                    # Handle HYPERLINK in destination sheet too
+                    if link_value.startswith('=HYPERLINK('):
+                        dest_all_values = destination_worksheet.get_all_values()
+                        dest_last_row = len(dest_all_values)
+                        dest_cell_address = f'J{dest_last_row}'
+                        destination_worksheet.update(dest_cell_address, link_value, value_input_option='USER_ENTERED')
+                        print(f"DEBUG: HYPERLINK updated in destination sheet")
+                else:
+                    print(f"WARNING: Destination worksheet '{destination_account}' not found in sheet")
+                    print(f"DEBUG: Available worksheets: {[ws.title for ws in sheet.worksheets()]}")
+                    
+            except Exception as dest_error:
+                print(f"WARNING: Could not create opposite entry in destination account: {dest_error}")
+                # Don't fail the main transaction if destination entry fails
+        
+        print(f"DEBUG: Transaction completed successfully!")
         return True
     except Exception as e:
-        print(f"Error adding transaction to selected sheet: {e}")
+        print(f"ERROR: Exception occurred in add_transaction_to_selected_sheet:")
+        print(f"  - Error message: {e}")
+        print(f"  - Error type: {type(e).__name__}")
+        import traceback
+        print(f"  - Full traceback:")
+        traceback.print_exc()
         return False
 
 # =============================================================================
@@ -405,14 +490,9 @@ def get_funds_list(gc):
         funds_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Funds Reference")
         funds_data = funds_sheet.get_all_records()
         
-        print(f"DEBUG: Raw funds data from sheet: {funds_data}")
-        
         # Return only active funds
         active_funds = []
         for fund in funds_data:
-            print(f"DEBUG: Processing fund: {fund}")
-            print(f"DEBUG: Active value: '{fund.get('Active')}' (type: {type(fund.get('Active'))})")
-            
             # Check for various possible TRUE values - handle column name with spaces
             active_value = fund.get('Active') or fund.get('Active ')  # Handle both versions
             color_value = fund.get('Fund_Color') or fund.get('Fund_Color ')  # Handle both versions
@@ -423,7 +503,6 @@ def get_funds_list(gc):
                     'name': fund['Fund_Name'],
                     'color': color_value
                 })
-                print(f"DEBUG: Added fund: {fund['Fund_Name']}")
         
         print(f"DEBUG: Found {len(active_funds)} active funds")
         return active_funds
@@ -443,18 +522,25 @@ def get_fund_name_by_id(gc, fund_id):
     Returns: Fund name or "Unknown Fund" if not found
     """
     try:
+        print(f"DEBUG: get_fund_name_by_id called with fund_id: {fund_id}")
         funds_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Funds Reference")
         funds_data = funds_sheet.get_all_records()
+        print(f"DEBUG: Retrieved {len(funds_data)} fund records")
         
-        for fund in funds_data:
+        for i, fund in enumerate(funds_data):
+            print(f"DEBUG: Fund {i}: Fund_ID='{fund.get('Fund_ID')}', Fund_Name='{fund.get('Fund_Name')}'")
             if str(fund['Fund_ID']) == str(fund_id):
+                print(f"DEBUG: Found matching fund: {fund['Fund_Name']}")
                 return fund['Fund_Name']
         
         print(f"WARNING: Fund ID {fund_id} not found")
+        print(f"DEBUG: Available fund IDs: {[str(f.get('Fund_ID')) for f in funds_data]}")
         return "Unknown Fund"
         
     except Exception as e:
-        print(f"Error getting fund name: {e}")
+        print(f"ERROR in get_fund_name_by_id: {e}")
+        import traceback
+        traceback.print_exc()
         return "Unknown Fund"
 
 
@@ -475,8 +561,6 @@ def get_cost_centers_list(gc):
         cost_centers_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Cost Centers")
         cost_centers_data = cost_centers_sheet.get_all_records()
         
-        print(f"DEBUG: Raw cost centers data from sheet: {cost_centers_data}")
-        
         # Return only active cost centers
         active_cost_centers = []
         for cc in cost_centers_data:
@@ -488,7 +572,6 @@ def get_cost_centers_list(gc):
                     'name': cc['Cost Center Name'],
                     'category': cc['Category']
                 })
-                print(f"DEBUG: Added cost center: {cc['Cost Center Name']}")
         
         print(f"DEBUG: Found {len(active_cost_centers)} active cost centers")
         return active_cost_centers
@@ -508,18 +591,25 @@ def get_cost_center_name_by_code(gc, cost_center_code):
     Returns: Cost center name or "Unknown Cost Center" if not found
     """
     try:
+        print(f"DEBUG: get_cost_center_name_by_code called with cost_center_code: {cost_center_code}")
         cost_centers_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Cost Centers")
         cost_centers_data = cost_centers_sheet.get_all_records()
+        print(f"DEBUG: Retrieved {len(cost_centers_data)} cost center records")
         
-        for cc in cost_centers_data:
+        for i, cc in enumerate(cost_centers_data):
+            print(f"DEBUG: Cost Center {i}: Code='{cc.get('Cost Center Code')}', Name='{cc.get('Cost Center Name')}'")
             if str(cc['Cost Center Code']) == str(cost_center_code):
+                print(f"DEBUG: Found matching cost center: {cc['Cost Center Name']}")
                 return cc['Cost Center Name']
         
         print(f"WARNING: Cost Center Code {cost_center_code} not found")
+        print(f"DEBUG: Available cost center codes: {[str(cc.get('Cost Center Code')) for cc in cost_centers_data]}")
         return "Unknown Cost Center"
         
     except Exception as e:
-        print(f"Error getting cost center name: {e}")
+        print(f"ERROR in get_cost_center_name_by_code: {e}")
+        import traceback
+        traceback.print_exc()
         return "Unknown Cost Center"
 
 

@@ -4,304 +4,408 @@
      Created: 2025-01-27 19:30:00
      Updated: 2025-08-30
      Status: ✅ WORKING
+     Language: HTML
      ============================================================================= -->
 
-<!DOCTYPE html>
-<!-- Updated: 2025-09-02 21:17:10 - Ready for GitHub commit -->
-<html>
-<head>
-    <title>NGO Accounting - Data Entry</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-
-<body>
-    <div class="container">
-        <div class="form-container">
-            <h1>NGO Accounting System</h1>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <!-- MAIN FORM -->
-            <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
-                <div class="form-group">
-                    <label>Transaction Number:</label>
-                    <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
-                    <div class="form-text">This number will be used for both the transaction and file naming</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Select Sheet:</label>
-                    <select name="sheet_name" id="sheet_select" required onchange="loadWorksheets()">
-                        <option value="">Choose a sheet...</option>
-                        {% for sheet in sheets %}
-                        <option value="{{ sheet.id }}">{{ sheet.title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Select Account:</label>
-                    <select name="worksheet_name" id="worksheet_select" required disabled>
-                        <option value="">First select a sheet...</option>
-                    </select>
-                    <div class="form-text">This shows the official account name for each worksheet</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Transaction Type:</label>
-                    <select name="transaction_type" required>
-                        <option value="">Choose transaction type...</option>
-                        <option value="debit">Debit (Money Out)</option>
-                        <option value="credit">Credit (Money In)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Date:</label>
-                    <input type="date" name="date_input" required>
-                    <div class="form-text">Select the date for this transaction</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Amount:</label>
-                    <input type="number" name="amount" step="0.01" required placeholder="Enter amount (always positive)">
-                </div>
-
-                <div class="form-group">
-                    <label>Fund:</label>
-                    <select name="fund_id" required>
-                        <option value="">Choose a fund...</option>
-                        {% for fund in funds %}
-                        <option value="{{ fund.id }}" style="background-color: {{ fund.color }}">
-                            {{ fund.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Cost Center:</label>
-                    <select name="cost_center_id" required>
-                        <option value="">Choose a cost center...</option>
-                        {% for cost_center in cost_centers %}
-                        <option value="{{ cost_center.code }}">
-                            {{ cost_center.name }} ({{ cost_center.category }})
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Description:</label>
-                    <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
-
-                    <!-- Hidden fields populated after upload -->
-                    <input type="hidden" name="file_link" id="fileLinkInput">
-                    <input type="hidden" name="file_name" id="fileNameInput">
-                    <input type="hidden" name="transaction_number" id="transactionNumberInput">
-                </div>
-
-            </form>
-
-            <!-- UPLOAD BILLS SECTION -->
-            <div class="upload-section">
-                <label>Upload Bills:</label>
-                <div class="form-group">
-                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
-                    <div class="form-text">Upload receipts, invoices, or other supporting documents</div>
-                    <button type="button" id="uploadBtn" class="btn btn-secondary">Upload File</button>
-                </div>
-
-                <div id="uploadStatus" style="display: none;">
-                    <div id="uploadProgress" class="alert alert-info">Uploading file...</div>
-                    <div id="uploadResult" style="display: none;">
-                        <div class="alert alert-success">
-                            <strong>File uploaded successfully!</strong>
-                            <div id="fileLink"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SUBMIT BUTTON -->
-            <button type="submit" form="mainForm" class="btn">Submit to Google Sheets</button>
-        </div>
-    </div>
-
-    <script>
-        function loadWorksheets() {
-            console.log('loadWorksheets() called');
-            const sheetSelect = document.getElementById('sheet_select');
-            const worksheetSelect = document.getElementById('worksheet_select');
-            const selectedSheetId = sheetSelect.value;
-            console.log('Selected sheet ID:', selectedSheetId);
-
-            worksheetSelect.innerHTML = '<option value="">Loading worksheets...</option>';
-            worksheetSelect.disabled = true;
-
-            if (!selectedSheetId) {
-                worksheetSelect.innerHTML = '<option value="">First select a sheet...</option>';
-                console.log('No sheet selected, returning');
-                return;
-            }
-
-            console.log('Fetching worksheets for sheet:', selectedSheetId);
-            fetch(`/get_worksheets/${selectedSheetId}`)
-                .then(r => {
-                    console.log('Response status:', r.status);
-                    return r.json();
-                })
-                .then(data => {
-                    console.log('Worksheets data received:', data);
-                    worksheetSelect.innerHTML = '<option value="">Choose an account...</option>';
-                    if (data.length > 0) {
-                        data.forEach(ws => {
-                            console.log('Adding worksheet:', ws);
-                            const o = document.createElement('option');
-                            o.value = ws.title;  // Use worksheet title for backend lookup
-                            o.textContent = ws.title;  // Show just the worksheet title
-                            worksheetSelect.appendChild(o);
-                        });
-                        worksheetSelect.disabled = false;
-                        console.log('Worksheets loaded successfully');
-                    } else {
-                        worksheetSelect.innerHTML = '<option value="">No accounts found</option>';
-                        console.log('No worksheets found');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading worksheets:', error);
-                    worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
-                });
-        }
-
-        function handleFormSubmit(event) {
-            console.log('Form submission started');
-            
-            // Get form data
-            const formData = new FormData(document.getElementById('mainForm'));
-            
-            console.log('Form data:');
-            for (let [key, value] of formData.entries()) {
-                console.log(`  ${key}: "${value}"`);
-            }
-            
-            // Check if required fields are filled
-            const sheetSelect = document.getElementById('sheet_select');
-            const worksheetSelect = document.getElementById('worksheet_select');
-            
-            console.log('Sheet selected:', sheetSelect.value);
-            console.log('Worksheet selected:', worksheetSelect.value);
-            
-            if (!sheetSelect.value) {
-                console.error('No sheet selected');
-                alert('Please select a sheet!');
-                return false;
-            }
-            
-            if (!worksheetSelect.value) {
-                console.error('No worksheet selected');
-                alert('Please select a worksheet!');
-                return false;
-            }
-            
-            console.log('Form validation passed, submitting...');
-            return true; // Allow form to submit normally
-        }
-
-        function generateTransactionNumber() {
-            const now = new Date();
-            const day = String(now.getDate()).padStart(2, '0');
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const year = String(now.getFullYear()).slice(-2);
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            
-            return `${day}${month}${year}-${hours}${minutes}${seconds}`;
-        }
-
-        function uploadFile() {
-            const fileInput = document.getElementById('fileInput');
-            const uploadBtn = document.getElementById('uploadBtn');
-            const uploadStatus = document.getElementById('uploadStatus');
-            const uploadProgress = document.getElementById('uploadProgress');
-            const uploadResult = document.getElementById('uploadResult');
-            const fileLink = document.getElementById('fileLink');
-            const fileLinkInput = document.getElementById('fileLinkInput');
-            const fileNameInput = document.getElementById('fileNameInput');
-            const transactionNumberDisplay = document.getElementById('transactionNumberDisplay');
-            const transactionNumberInput = document.getElementById('transactionNumberInput');
-
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Please select a file first!');
-                return;
-            }
-
-            // Use the existing transaction number from the display field
-            const transactionNumber = transactionNumberDisplay.value;
-            if (!transactionNumber || transactionNumber === 'Generating...') {
-                alert('Please wait for transaction number to be generated');
-                return;
-            }
-
-            console.log('Using transaction number for file:', transactionNumber);
-
-            uploadStatus.style.display = 'block';
-            uploadProgress.style.display = 'block';
-            uploadResult.style.display = 'none';
-            uploadBtn.disabled = true;
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('transaction_number', transactionNumber);
-
-            fetch('/upload_file', { method: 'POST', body: formData })
-                .then(r => r.json())
-                .then(data => {
-                    uploadProgress.style.display = 'none';
-                    uploadResult.style.display = 'block';
-
-                    if (data.success) {
-                        fileLink.innerHTML = `<a href="${data.file_url}" target="_blank">${data.file_name}</a>`;
-                        fileLinkInput.value = data.file_url;   // URL for backend
-                        fileNameInput.value = data.file_name;  // Label for HYPERLINK
-                        transactionNumberInput.value = transactionNumber; // Pass to backend
-                        
-                        console.log('File uploaded successfully with transaction number:', transactionNumber);
-                        console.log('File name:', data.file_name);
-                    } else {
-                        fileLink.innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
-                    }
-                })
-                .catch(err => {
-                    uploadProgress.style.display = 'none';
-                    uploadResult.style.display = 'block';
-                    fileLink.innerHTML = `<div class="alert alert-error">Upload failed: ${err.message}</div>`;
-                })
-                .finally(() => {
-                    uploadBtn.disabled = false;
-                });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Generate transaction number when page loads
-            const transactionNumber = generateTransactionNumber();
-            document.getElementById('transactionNumberDisplay').value = transactionNumber;
-            document.getElementById('transactionNumberInput').value = transactionNumber;
-            console.log('Generated transaction number:', transactionNumber);
-            
-            document.getElementById('uploadBtn').addEventListener('click', uploadFile);
-        });
-    </script>
-</body>
-</html>
+     <!DOCTYPE html>
+<!-- Updated: 2025-09-03 11:28:57 - Ready for GitHub commit -->
+     <html>
+     <head>
+         <title>NGO Accounting - Data Entry</title>
+         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+     </head>
+     
+     <body>
+         <div class="container">
+             <div class="form-container">
+                 <h1>NGO Accounting System</h1>
+     
+                 {% with messages = get_flashed_messages(with_categories=true) %}
+                     {% if messages %}
+                         {% for category, message in messages %}
+                             <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                                 {{ message }}
+                             </div>
+                         {% endfor %}
+                     {% endif %}
+                 {% endwith %}
+     
+                 <!-- MAIN FORM -->
+                 <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
+                     <div class="form-group">
+                         <label>Transaction Number:</label>
+                         <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
+                         <div class="form-text">This number will be used for both the transaction and file naming</div>
+                     </div>
+     
+                     <div class="form-group">
+                         <label>Select Sheet:</label>
+                         <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
+                             <option value="">Choose a sheet...</option>
+                             {% for sheet in sheets %}
+                             <option value="{{ sheet.id }}">{{ sheet.title }}</option>
+                             {% endfor %}
+                         </select>
+                     </div>
+     
+                     <div class="form-group">
+                         <label>Select Account:</label>
+                         <select name="worksheet_name" id="worksheet_select" required disabled>
+                             <option value="">First select a sheet...</option>
+                         </select>
+                         <div class="form-text">This shows the official account name for each worksheet</div>
+                     </div>
+     
+                     <div class="form-group">
+                         <label>Transaction Type:</label>
+                         <select name="transaction_type" required>
+                             <option value="">Choose transaction type...</option>
+                             <option value="debit">Debit (Money Out)</option>
+                             <option value="credit">Credit (Money In)</option>
+                         </select>
+                     </div>
+     
+                     <div class="form-group">
+                         <label>Date:</label>
+                         <input type="date" name="date_input" required>
+                         <div class="form-text">Select the date for this transaction</div>
+                     </div>
+     
+                     <div class="form-group">
+                         <label>Amount:</label>
+                         <input type="number" name="amount" step="0.01" required placeholder="Enter amount (always positive)">
+                     </div>
+     
+                     <div class="form-group">
+                         <label>Fund:</label>
+                         <select name="fund_id" required>
+                             <option value="">Choose a fund...</option>
+                             {% for fund in funds %}
+                             <option value="{{ fund.id }}" style="background-color: {{ fund.color }}">
+                                 {{ fund.name }}
+                             </option>
+                             {% endfor %}
+                         </select>
+                     </div>
+     
+                     <div class="form-group">
+                         <label>Cost Center:</label>
+                         <select name="cost_center_id" required>
+                             <option value="">Choose a cost center...</option>
+                             {% for cost_center in cost_centers %}
+                             <option value="{{ cost_center.code }}">
+                                 {{ cost_center.name }} ({{ cost_center.category }})
+                             </option>
+                             {% endfor %}
+                         </select>
+                     </div>
+                     
+                     <!-- TRANSFER TYPE SECTION -->
+                     <div class="form-group">
+                         <label>
+                             <input type="checkbox" id="internalTransferCheck" name="transfer_type" value="internal" onchange="toggleTransferFields()">
+                             Internal Transfer (between wallets/accounts)
+                         </label>
+                         <div class="form-text">Check this if transferring between internal accounts/wallets</div>
+                     </div>
+                     
+                     <!-- TRANSFER ACCOUNT FIELDS -->
+                     <div id="transferFields" style="display: none;">
+                         <div class="form-group">
+                             <label>Origin Account (Where money is coming FROM):</label>
+                             <select name="origin_account" id="originAccountSelect">
+                                 <option value="">Select origin account...</option>
+                             </select>
+                         </div>
+                         
+                         <div class="form-group">
+                             <label>Destination Account (Where money is going TO):</label>
+                             <select name="destination_account" id="destinationAccountSelect">
+                                 <option value="">Select destination account...</option>
+                             </select>
+                         </div>
+                     </div>
+     
+                     <div class="form-group">
+                         <label>Description:</label>
+                         <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
+     
+                         <!-- Hidden fields populated after upload -->
+                         <input type="hidden" name="file_link" id="fileLinkInput">
+                         <input type="hidden" name="file_name" id="fileNameInput">
+                         <input type="hidden" name="transaction_number" id="transactionNumberInput">
+                     </div>
+     
+                 </form>
+     
+                 <!-- UPLOAD BILLS SECTION -->
+                 <div class="upload-section">
+                     <label>Upload Bills:</label>
+                     <div class="form-group">
+                         <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                         <div class="form-text">Upload receipts, invoices, or other supporting documents</div>
+                         <button type="button" id="uploadBtn" class="btn btn-secondary">Upload File</button>
+                     </div>
+     
+                     <div id="uploadStatus" style="display: none;">
+                         <div id="uploadProgress" class="alert alert-info">Uploading file...</div>
+                         <div id="uploadResult" style="display: none;">
+                             <div class="alert alert-success">
+                                 <strong>File uploaded successfully!</strong>
+                                 <div id="fileLink"></div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+     
+                 <!-- SUBMIT BUTTON -->
+                 <button type="submit" form="mainForm" class="btn">Submit to Google Sheets</button>
+             </div>
+         </div>
+     
+         <script>
+             // Global variable to store all available accounts
+             let allAvailableAccounts = [];
+             
+             // Initialize page when DOM is loaded
+             document.addEventListener('DOMContentLoaded', function() {
+                 // If there's a default sheet selected, load its worksheets
+                 const defaultSheet = document.getElementById('sheet_select').value;
+                 if (defaultSheet) {
+                     loadWorksheets();
+                 }
+             });
+             
+             function toggleTransferFields() {
+                 const checkbox = document.getElementById('internalTransferCheck');
+                 const transferFields = document.getElementById('transferFields');
+                 const originSelect = document.getElementById('originAccountSelect');
+                 const destSelect = document.getElementById('destinationAccountSelect');
+                 
+                 if (checkbox.checked) {
+                     transferFields.style.display = 'block';
+                     // Populate account dropdowns when internal transfer is selected
+                     populateAccountDropdowns();
+                 } else {
+                     transferFields.style.display = 'none';
+                     // Clear selections when unchecked
+                     originSelect.value = '';
+                     destSelect.value = '';
+                 }
+             }
+             
+             function populateAccountDropdowns() {
+                 const originSelect = document.getElementById('originAccountSelect');
+                 const destSelect = document.getElementById('destinationAccountSelect');
+                 
+                 // Clear existing options
+                 originSelect.innerHTML = '<option value="">Select origin account...</option>';
+                 destSelect.innerHTML = '<option value="">Select destination account...</option>';
+                 
+                 // Add all available accounts to both dropdowns
+                 allAvailableAccounts.forEach(account => {
+                     // Origin account options
+                     const originOption = document.createElement('option');
+                     originOption.value = account.title;
+                     originOption.textContent = account.title;
+                     originSelect.appendChild(originOption);
+                     
+                     // Destination account options
+                     const destOption = document.createElement('option');
+                     destOption.value = account.title;
+                     destOption.textContent = account.title;
+                     destSelect.appendChild(destOption);
+                 });
+             }
+             
+             function loadWorksheets() {
+                 console.log('loadWorksheets() called');
+                 const sheetSelect = document.getElementById('sheet_select');
+                 const worksheetSelect = document.getElementById('worksheet_select');
+                 const selectedSheetId = sheetSelect.value;
+                 console.log('Selected sheet ID:', selectedSheetId);
+     
+                 worksheetSelect.innerHTML = '<option value="">Loading worksheets...</option>';
+                 worksheetSelect.disabled = true;
+     
+                 if (!selectedSheetId) {
+                     worksheetSelect.innerHTML = '<option value="">First select a sheet...</option>';
+                     console.log('No sheet selected, returning');
+                     return;
+                 }
+     
+                 console.log('Fetching worksheets for sheet:', selectedSheetId);
+                 fetch(`/get_worksheets/${selectedSheetId}`)
+                     .then(r => {
+                         console.log('Response status:', r.status);
+                         return r.json();
+                     })
+                     .then(data => {
+                         console.log('Worksheets data received:', data);
+                         worksheetSelect.innerHTML = '<option value="">Choose an account...</option>';
+                         
+                         // Store accounts globally for transfer dropdowns
+                         allAvailableAccounts = data;
+                         
+                         if (data.length > 0) {
+                             data.forEach(ws => {
+                                 console.log('Adding worksheet:', ws);
+                                 const o = document.createElement('option');
+                                 o.value = ws.title;  // Use worksheet title for backend lookup
+                                 o.textContent = ws.title;  // Show just the worksheet title
+                                 worksheetSelect.appendChild(o);
+                             });
+                             worksheetSelect.disabled = false;
+                             console.log('Worksheets loaded successfully');
+                         } else {
+                             worksheetSelect.innerHTML = '<option value="">No accounts found</option>';
+                             console.log('No worksheets found');
+                         }
+                     })
+                     .catch(error => {
+                         console.error('Error loading worksheets:', error);
+                         worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
+                     });
+             }
+     
+             function handleFormSubmit(event) {
+                 console.log('Form submission started');
+                 
+                 // Validate internal transfer fields
+                 const internalTransferCheck = document.getElementById('internalTransferCheck');
+                 if (internalTransferCheck.checked) {
+                     const originAccount = document.getElementById('originAccountSelect').value;
+                     const destinationAccount = document.getElementById('destinationAccountSelect').value;
+                     
+                     if (!originAccount || !destinationAccount) {
+                         alert('Please select both origin and destination accounts for internal transfers.');
+                         event.preventDefault();
+                         return false;
+                     }
+                     
+                     if (originAccount === destinationAccount) {
+                         alert('Origin and destination accounts cannot be the same for internal transfers.');
+                         event.preventDefault();
+                         return false;
+                     }
+                 }
+                 
+                 // Get form data
+                 const formData = new FormData(document.getElementById('mainForm'));
+                 
+                 console.log('Form data:');
+                 for (let [key, value] of formData.entries()) {
+                     console.log(`  ${key}: "${value}"`);
+                 }
+                 
+                 // Check if required fields are filled
+                 const sheetSelect = document.getElementById('sheet_select');
+                 const worksheetSelect = document.getElementById('worksheet_select');
+                 
+                 console.log('Sheet selected:', sheetSelect.value);
+                 console.log('Worksheet selected:', worksheetSelect.value);
+                 
+                 if (!sheetSelect.value) {
+                     console.error('No sheet selected');
+                     alert('Please select a sheet!');
+                     return false;
+                 }
+                 
+                 if (!worksheetSelect.value) {
+                     console.error('No worksheet selected');
+                     alert('Please select a worksheet!');
+                     return false;
+                 }
+                 
+                 console.log('Form validation passed, submitting...');
+                 return true; // Allow form to submit normally
+             }
+     
+             function generateTransactionNumber() {
+                 const now = new Date();
+                 const day = String(now.getDate()).padStart(2, '0');
+                 const month = String(now.getMonth() + 1).padStart(2, '0');
+                 const year = String(now.getFullYear()).slice(-2);
+                 const hours = String(now.getHours()).padStart(2, '0');
+                 const minutes = String(now.getMinutes()).padStart(2, '0');
+                 const seconds = String(now.getSeconds()).padStart(2, '0');
+                 
+                 return `${day}${month}${year}-${hours}${minutes}${seconds}`;
+             }
+     
+             function uploadFile() {
+                 const fileInput = document.getElementById('fileInput');
+                 const uploadBtn = document.getElementById('uploadBtn');
+                 const uploadStatus = document.getElementById('uploadStatus');
+                 const uploadProgress = document.getElementById('uploadProgress');
+                 const uploadResult = document.getElementById('uploadResult');
+                 const fileLink = document.getElementById('fileLink');
+                 const fileLinkInput = document.getElementById('fileLinkInput');
+                 const fileNameInput = document.getElementById('fileNameInput');
+                 const transactionNumberDisplay = document.getElementById('transactionNumberDisplay');
+                 const transactionNumberInput = document.getElementById('transactionNumberInput');
+     
+                 const file = fileInput.files[0];
+                 if (!file) {
+                     alert('Please select a file first!');
+                     return;
+                 }
+     
+                 // Use the existing transaction number from the display field
+                 const transactionNumber = transactionNumberDisplay.value;
+                 if (!transactionNumber || transactionNumber === 'Generating...') {
+                     alert('Please wait for transaction number to be generated');
+                     return;
+                 }
+     
+                 console.log('Using transaction number for file:', transactionNumber);
+     
+                 uploadStatus.style.display = 'block';
+                 uploadProgress.style.display = 'block';
+                 uploadResult.style.display = 'none';
+                 uploadBtn.disabled = true;
+     
+                 const formData = new FormData();
+                 formData.append('file', file);
+                 formData.append('transaction_number', transactionNumber);
+     
+                 fetch('/upload_file', { method: 'POST', body: formData })
+                     .then(r => r.json())
+                     .then(data => {
+                         uploadProgress.style.display = 'none';
+                         uploadResult.style.display = 'block';
+     
+                         if (data.success) {
+                             fileLink.innerHTML = `<a href="${data.file_url}" target="_blank">${data.file_name}</a>`;
+                             fileLinkInput.value = data.file_url;   // URL for backend
+                             fileNameInput.value = data.file_name;  // Label for HYPERLINK
+                             transactionNumberInput.value = transactionNumber; // Pass to backend
+                             
+                             console.log('File uploaded successfully with transaction number:', transactionNumber);
+                             console.log('File name:', data.file_name);
+                         } else {
+                             fileLink.innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
+                         }
+                     })
+                     .catch(err => {
+                         uploadProgress.style.display = 'none';
+                         uploadResult.style.display = 'block';
+                         fileLink.innerHTML = `<div class="alert alert-error">Upload failed: ${err.message}</div>`;
+                     })
+                     .finally(() => {
+                         uploadBtn.disabled = false;
+                     });
+             }
+     
+             document.addEventListener('DOMContentLoaded', function() {
+                 // Generate transaction number when page loads
+                 const transactionNumber = generateTransactionNumber();
+                 document.getElementById('transactionNumberDisplay').value = transactionNumber;
+                 document.getElementById('transactionNumberInput').value = transactionNumber;
+                 console.log('Generated transaction number:', transactionNumber);
+                 
+                 document.getElementById('uploadBtn').addEventListener('click', uploadFile);
+             });
+         </script>
+     </body>
+     </html>

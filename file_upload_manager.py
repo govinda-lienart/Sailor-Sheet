@@ -1,4 +1,8 @@
 # =============================================================================
+# Created: 2025-09-03 11:28:57
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-03 11:27:41
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 21:17:10
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 12:20:13
@@ -212,5 +216,52 @@ def upload_file_to_drive(file, transaction_number=None):
             'success': False,
             'error': f'Upload failed: {str(e)}'
         }
+
+# =============================================================================
+# WEB UPLOAD HANDLER
+# =============================================================================
+
+# Handle Web Upload Request
+# -------------------------
+def handle_web_upload(file, transaction_number=None):
+    """
+    Handle web upload request from Flask route
+    Args:
+        file: File object from Flask request
+        transaction_number: Optional transaction number from form
+    Returns: JSON response for web interface
+    """
+    try:
+        print("DEBUG: handle_web_upload called")
+        print(f"DEBUG: File received: {file.filename if file else 'None'}")
+        print(f"DEBUG: Transaction number received: '{transaction_number}'")
+        
+        if not file or not file.filename:
+            print("DEBUG: No file in request")
+            return {'success': False, 'error': 'No file selected'}
+        
+        print(f"DEBUG: Uploading file: {file.filename}")
+        print(f"DEBUG: Transaction number: {transaction_number}")
+        
+        # Upload file to Drive
+        result = upload_file_to_drive(file, transaction_number)
+        
+        if result['success']:
+            print(f"DEBUG: File uploaded successfully: {result}")
+            return {
+                'success': True,
+                'file_name': result['file_name'],
+                'file_url': result['file_url'],
+                'file_id': result['file_id']
+            }
+        else:
+            print(f"DEBUG: File upload failed: {result['error']}")
+            return {'success': False, 'error': result['error']}
+            
+    except Exception as e:
+        print(f"DEBUG: Error in handle_web_upload: {e}")
+        import traceback
+        traceback.print_exc()
+        return {'success': False, 'error': str(e)}
 
 

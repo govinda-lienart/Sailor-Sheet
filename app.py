@@ -1,4 +1,8 @@
 # =============================================================================
+# Created: 2025-09-03 11:28:57
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-03 11:27:32
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 21:17:10
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-02 12:20:13
@@ -13,7 +17,7 @@ import os
 # Import custom modules
 from config import initialize_sheets
 from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_cost_centers_list
-from file_upload_manager import upload_file_to_drive
+import file_upload_manager
 
 # Create Flask web application
 app = Flask(__name__)
@@ -61,7 +65,7 @@ def index():
         # =====================================================================
         
         # Extract data from the web form
-        selected_sheet_id = request.form['sheet_name']
+        selected_sheet_id = request.form['sheet_id']
         selected_worksheet_title = request.form['worksheet_name']  # This is the worksheet title
         amount = request.form['amount']
         description = request.form['description']
@@ -130,7 +134,6 @@ def index():
         print(f"DEBUG: About to call add_transaction_to_selected_sheet with:")
         print(f"  - selected_sheet_id: {selected_sheet_id}")
         print(f"  - selected_worksheet_title: {selected_worksheet_title}")
-        print(f"  - account_name: {account_name}")
         print(f"  - amount: {amount}")
         print(f"  - description: {description}")
         print(f"  - fund_id: {fund_id}")
@@ -139,7 +142,17 @@ def index():
         print(f"  - date_input: {date_input}")
         print(f"  - transaction_number: {transaction_number}")
         
-        transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link_dict, account_name)
+        # Get transfer type and account details from form
+        transfer_type = request.form.get('transfer_type', 'external')
+        origin_account = request.form.get('origin_account', '')
+        destination_account = request.form.get('destination_account', '')
+        
+        print(f"DEBUG: Transfer details:")
+        print(f"  - transfer_type: {transfer_type}")
+        print(f"  - origin_account: {origin_account}")
+        print(f"  - destination_account: {destination_account}")
+        
+        transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link_dict, origin_account, destination_account, transfer_type)
         print(f"DEBUG: Transaction result: {transaction_result}")
         
         if transaction_result:
@@ -206,43 +219,16 @@ def upload_file():
     AJAX route to upload file first, before form submission
     """
     try:
-        print("DEBUG: upload_file route called")
         file = request.files.get('file')
-        transaction_number = request.form.get('transaction_number', '')  # Get transaction number if provided
+        transaction_number = request.form.get('transaction_number', '')
         
-        print(f"DEBUG: File received: {file.filename if file else 'None'}")
-        print(f"DEBUG: Transaction number received: '{transaction_number}'")
-        print(f"DEBUG: Transaction number type: {type(transaction_number)}")
-        print(f"DEBUG: Transaction number length: {len(transaction_number) if transaction_number else 0}")
+        # Use the file upload manager to handle the upload
+        result = file_upload_manager.handle_web_upload(file, transaction_number)
         
-        if not file or not file.filename:
-            print("DEBUG: No file in request")
-            return jsonify({'success': False, 'error': 'No file selected'})
-        
-        print(f"DEBUG: Uploading file: {file.filename}")
-        print(f"DEBUG: Transaction number: {transaction_number}")
-        print(f"DEBUG: File size: {len(file.read())} bytes")
-        file.seek(0)  # Reset file pointer after reading
-        
-        # Upload file to Google Drive using our working upload manager
-        result = upload_file_to_drive(file, transaction_number)
-        
-        if result['success']:
-            print(f"DEBUG: File uploaded successfully: {result}")
-            return jsonify({
-                'success': True,
-                'file_name': result['file_name'],
-                'file_url': result['file_url'],
-                'file_id': result['file_id']
-            })
-        else:
-            print(f"DEBUG: File upload failed: {result['error']}")
-            return jsonify({'success': False, 'error': result['error']})
+        return jsonify(result)
             
     except Exception as e:
         print(f"DEBUG: Error in upload_file route: {e}")
-        import traceback
-        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # =============================================================================
