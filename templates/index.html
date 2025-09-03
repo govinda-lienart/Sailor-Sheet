@@ -8,7 +8,7 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-03 16:09:02 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-03 19:13:13 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
@@ -132,17 +132,17 @@
                          </select>
                      </div>
      
-                     <div class="form-group">
-                         <label>Cost Center:</label>
-                         <select name="cost_center_id" required>
-                             <option value="">Choose a cost center...</option>
-                             {% for cost_center in cost_centers %}
-                             <option value="{{ cost_center.code }}">
-                                 {{ cost_center.name }} ({{ cost_center.category }})
-                             </option>
-                             {% endfor %}
-                         </select>
-                     </div>
+                                         <div class="form-group">
+                        <label>Category:</label>
+                        <select name="category_id" required>
+                            <option value="">Choose a category...</option>
+                            {% for category in categories %}
+                            <option value="{{ category.code }}">
+                                {{ category.name }} ({{ category.category }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                      
 
                      
@@ -216,8 +216,20 @@
              
              // Initialize page when DOM is loaded
              document.addEventListener('DOMContentLoaded', function() {
+                 console.log('DOM loaded, initializing...');
                  // Generate initial transaction number
                  generateTransactionNumber();
+                 
+                 // Debug: Check if categories are loaded
+                 const categorySelect = document.getElementById('category_id');
+                 if (categorySelect) {
+                     console.log('Category select found, options:', categorySelect.options.length);
+                     for (let i = 0; i < categorySelect.options.length; i++) {
+                         console.log(`Option ${i}: ${categorySelect.options[i].text} = ${categorySelect.options[i].value}`);
+                     }
+                 } else {
+                     console.log('Category select not found');
+                 }
                  
                  // If there's a default sheet selected, load its worksheets
                  const defaultSheet = document.getElementById('sheet_select').value;
@@ -231,35 +243,35 @@
                  const transferFields = document.getElementById('transferFields');
                  const destSelect = document.getElementById('destinationAccountSelect');
                  const fundGroup = document.querySelector('.form-group:has(select[name="fund_id"])');
-                 const costCenterGroup = document.querySelector('.form-group:has(select[name="cost_center_id"])');
+                 const categoryGroup = document.querySelector('.form-group:has(select[name="category_id"])');
                  const fundSelect = document.querySelector('select[name="fund_id"]');
-                 const costCenterSelect = document.querySelector('select[name="cost_center_id"]');
+                 const categorySelect = document.querySelector('select[name="category_id"]');
                  
                  if (selectedType === 'internal_transfer') {
                      // Show transfer fields and populate destination dropdown
                      transferFields.style.display = 'block';
                      populateDestinationAccountDropdown();
                      
-                     // Hide Fund and Cost Center fields completely
+                     // Hide Fund and Category fields completely
                      if (fundGroup) fundGroup.style.display = 'none';
-                     if (costCenterGroup) costCenterGroup.style.display = 'none';
+                     if (categoryGroup) categoryGroup.style.display = 'none';
                      
                      // Remove required attribute to prevent validation errors
                      if (fundSelect) fundSelect.removeAttribute('required');
-                     if (costCenterSelect) costCenterSelect.removeAttribute('required');
+                     if (categorySelect) categorySelect.removeAttribute('required');
                  } else {
                      // Hide transfer fields for Donation and Payment
                      transferFields.style.display = 'none';
                      // Clear destination selection
                      if (destSelect) destSelect.value = '';
                      
-                     // Show Fund and Cost Center fields again
+                     // Show Fund and Category fields again
                      if (fundGroup) fundGroup.style.display = 'block';
-                     if (costCenterGroup) costCenterGroup.style.display = 'block';
+                     if (categoryGroup) categoryGroup.style.display = 'block';
                      
                      // Add back required attribute for normal transactions
                      if (fundSelect) fundSelect.setAttribute('required', 'required');
-                     if (costCenterSelect) costCenterSelect.setAttribute('required', 'required');
+                     if (categorySelect) categorySelect.setAttribute('required', 'required');
                  }
              }
              

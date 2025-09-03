@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-03 19:13:13
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 16:09:02
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 15:20:50
@@ -246,7 +248,7 @@ def get_worksheets_from_sheet(gc, sheet_id):
 
 # Add Transaction To Selected Sheet
 # --------------------------------
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link="", origin_account="", destination_account="", transfer_type="external"):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, transaction_type, date_input, transaction_number, file_link="", origin_account="", destination_account="", transfer_type="external"):
     """
     Add transaction to a specific selected sheet and worksheet
     Args:
@@ -256,7 +258,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         amount: Amount from form (always positive)
         description: Description from form
         fund_id: ID of the fund from form
-        cost_center_id: ID of the cost center from form
+        category_id: ID of the category from form
         transaction_type: 'debit' (money out) or 'credit' (money in)
         date_input: Date from form in DD/MM/YY format
         transaction_number: Pre-generated transaction number from form
@@ -276,7 +278,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         print(f"  - origin_account: {origin_account}")
         print(f"  - destination_account: {destination_account}")
         print(f"  - fund_id: {fund_id}")
-        print(f"  - cost_center_id: {cost_center_id}")
+        print(f"  - category_id: {category_id}")
         print(f"  - date_input: {date_input}")
         print(f"  - transaction_number: {transaction_number}")
         print(f"  - file_link: {file_link}")
@@ -342,14 +344,14 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             fund_name = get_fund_name_by_id(gc, fund_id)
             print(f"DEBUG: Found fund name: {fund_name}")
         
-        # Get cost center name from cost center ID (or use directly if it's "Internal Transfer")
-        print(f"DEBUG: Looking up cost center name for cost_center_id: {cost_center_id}")
-        if cost_center_id == "Internal Transfer":
-            cost_center_name = "Internal Transfer"
-            print(f"DEBUG: Using hardcoded cost center name: {cost_center_name}")
+        # Get category name from category ID (or use directly if it's "Internal Transfer")
+        print(f"DEBUG: Looking up category name for category_id: {category_id}")
+        if category_id == "Internal Transfer":
+            category_name = "Internal Transfer"
+            print(f"DEBUG: Using hardcoded category name: {category_name}")
         else:
-            cost_center_name = get_cost_center_name_by_code(gc, cost_center_id)
-            print(f"DEBUG: Found cost center name: {cost_center_name}")
+            category_name = get_category_name_by_code(gc, category_id)
+            print(f"DEBUG: Found category name: {category_name}")
         
         # Handle file link - create HYPERLINK formula if we have both URL and filename
         if isinstance(file_link, dict) and 'filename' in file_link and 'url' in file_link:
@@ -390,7 +392,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             transaction_number,    # A: Transaction Number
             formatted_date,        # B: Date
             fund_name,            # C: Funds
-            cost_center_name,     # D: Cost Center
+            category_name,        # D: Category
             origin_acc,           # E: Origin Account
             dest_acc,             # F: Destination Account
             debit_amount,         # G: Debit (VND)
@@ -436,7 +438,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
                 transaction_number,    # A: Same Transaction Number
                 formatted_date,        # B: Same Date
                 fund_name,            # C: Same Funds
-                cost_center_name,     # D: Same Cost Center
+                category_name,        # D: Same Category
                 origin_acc,           # E: Same Origin Account
                 dest_acc,             # F: Same Destination Account
                 opposite_debit,       # G: Opposite Debit (VND)
@@ -557,72 +559,72 @@ def get_fund_name_by_id(gc, fund_id):
 
 
 # =============================================================================
-# COST CENTERS REFERENCE FUNCTIONS
+# CATEGORIES REFERENCE FUNCTIONS
 # =============================================================================
 
-# Get Cost Centers List
+# Get Categories List
 # ---------------------
-def get_cost_centers_list(gc):
+def get_categories_list(gc):
     """
-    Get cost centers from reference sheet for dropdown
+    Get categories from reference sheet for dropdown
     Args:
         gc: Google Sheets client
-    Returns: List of cost center dictionaries with code, name, and category
+    Returns: List of category dictionaries with code, name, and category
     """
     try:
-        cost_centers_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Cost Centers")
-        cost_centers_data = cost_centers_sheet.get_all_records()
+        categories_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Category")
+        categories_data = categories_sheet.get_all_records()
         
-        # Return only active cost centers
-        active_cost_centers = []
-        for cc in cost_centers_data:
+        # Return only active categories
+        active_categories = []
+        for cat in categories_data:
             # Check if there's an Active column, default to True if not present
-            active_value = cc.get('Active', True)
+            active_value = cat.get('Active', True)
             if active_value == True or active_value == 'TRUE' or active_value == 'true' or str(active_value).upper() == 'TRUE':
-                active_cost_centers.append({
-                    'code': cc['Cost Center Code'],
-                    'name': cc['Cost Center Name'],
-                    'category': cc['Category']
+                active_categories.append({
+                    'code': cat['Category Code'],
+                    'name': cat['Category'],
+                    'category': cat['Description']
                 })
         
-        print(f"DEBUG: Found {len(active_cost_centers)} active cost centers")
-        return active_cost_centers
+        print(f"DEBUG: Found {len(active_categories)} active categories")
+        return active_categories
         
     except Exception as e:
-        print(f"Error getting cost centers: {e}")
+        print(f"Error getting categories: {e}")
         return []
 
-# Get Cost Center Name By Code
+# Get Category Name By Code
 # ----------------------------
-def get_cost_center_name_by_code(gc, cost_center_code):
+def get_category_name_by_code(gc, category_code):
     """
-    Get cost center name by code for transaction saving
+    Get category name by code for transaction saving
     Args:
         gc: Google Sheets client
-        cost_center_code: Code of the cost center to look up
-    Returns: Cost center name or "Unknown Cost Center" if not found
+        category_code: Code of the category to look up
+    Returns: Category name or "Unknown Category" if not found
     """
     try:
-        print(f"DEBUG: get_cost_center_name_by_code called with cost_center_code: {cost_center_code}")
-        cost_centers_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Cost Centers")
-        cost_centers_data = cost_centers_sheet.get_all_records()
-        print(f"DEBUG: Retrieved {len(cost_centers_data)} cost center records")
+        print(f"DEBUG: get_category_name_by_code called with category_code: {category_code}")
+        categories_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Category")
+        categories_data = categories_sheet.get_all_records()
+        print(f"DEBUG: Retrieved {len(categories_data)} category records")
         
-        for i, cc in enumerate(cost_centers_data):
-            print(f"DEBUG: Cost Center {i}: Code='{cc.get('Cost Center Code')}', Name='{cc.get('Cost Center Name')}'")
-            if str(cc['Cost Center Code']) == str(cost_center_code):
-                print(f"DEBUG: Found matching cost center: {cc['Cost Center Name']}")
-                return cc['Cost Center Name']
+        for i, cat in enumerate(categories_data):
+            print(f"DEBUG: Category {i}: Code='{cat.get('Category Code')}', Name='{cat.get('Category')}'")
+            if str(cat['Category Code']) == str(category_code):
+                print(f"DEBUG: Found matching category: {cat['Category']}")
+                return cat['Category']
         
-        print(f"WARNING: Cost Center Code {cost_center_code} not found")
-        print(f"DEBUG: Available cost center codes: {[str(cc.get('Cost Center Code')) for cc in cost_centers_data]}")
-        return "Unknown Cost Center"
+        print(f"WARNING: Category Code {category_code} not found")
+        print(f"DEBUG: Available category codes: {[str(cat.get('Category Code')) for cat in categories_data]}")
+        return "Unknown Category"
         
     except Exception as e:
-        print(f"ERROR in get_cost_center_name_by_code: {e}")
+        print(f"ERROR in get_category_name_by_code: {e}")
         import traceback
         traceback.print_exc()
-        return "Unknown Cost Center"
+        return "Unknown Category"
 
 
 

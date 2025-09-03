@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-03 19:13:13
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 16:09:02
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 15:20:50
@@ -20,7 +22,7 @@ import os
 
 # Import custom modules
 from config import initialize_sheets
-from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_cost_centers_list
+from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_categories_list
 import file_upload_manager
 
 # Create Flask web application
@@ -74,7 +76,7 @@ def index():
         amount = request.form['amount']
         description = request.form['description']
         fund_id = request.form['fund_id']
-        cost_center_id = request.form['cost_center_id']
+        category_id = request.form['category_id']
         transaction_type = request.form['transaction_type']  # 'debit' or 'credit'
         date_input = request.form.get('date_input', '')  # Date in DD/MM/YYYY format
         transaction_number = request.form.get('transaction_number', '')  # Pre-generated transaction number
@@ -89,7 +91,7 @@ def index():
         print(f"  - Amount: {amount}")
         print(f"  - Description: {description}")
         print(f"  - Fund ID: {fund_id}")
-        print(f"  - Cost Center ID: {cost_center_id}")
+        print(f"  - Category ID: {category_id}")
         print(f"  - Transaction Type: {transaction_type}")
         print(f"  - Date: {date_input}")
         print(f"  - Transaction Number: {transaction_number}")
@@ -119,16 +121,16 @@ def index():
             flash('Please select a sheet!', 'error')
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
-            cost_centers = get_cost_centers_list(gc)
-            return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
+            categories = get_categories_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories)
                                                                                         # ↑ HTML name ↑ Python data
 
         if not selected_worksheet_title:
             flash('Please select a worksheet!', 'error')
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
-            cost_centers = get_cost_centers_list(gc)
-            return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
+            categories = get_categories_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories)
         
         # Use the worksheet title directly as the account name
         print(f"DEBUG: Using worksheet title as account name: {selected_worksheet_title}")
@@ -141,7 +143,7 @@ def index():
         print(f"  - amount: {amount}")
         print(f"  - description: {description}")
         print(f"  - fund_id: {fund_id}")
-        print(f"  - cost_center_id: {cost_center_id}")
+        print(f"  - category_id: {category_id}")
         print(f"  - transaction_type: {transaction_type}")
         print(f"  - date_input: {date_input}")
         print(f"  - transaction_number: {transaction_number}")
@@ -154,9 +156,9 @@ def index():
         if transfer_type == 'internal':
             origin_account = selected_worksheet_title  # Use selected sheet as origin
             fund_id = 'Internal Transfer'
-            cost_center_id = 'Internal Transfer'
+            category_id = 'Internal Transfer'
             print(f"DEBUG: Internal transfer - using selected worksheet as origin account")
-            print(f"DEBUG: Internal transfer - overriding fund and cost center to 'Internal Transfer'")
+            print(f"DEBUG: Internal transfer - overriding fund and category to 'Internal Transfer'")
         else:
             origin_account = ''  # Not used for external transactions
         
@@ -165,9 +167,9 @@ def index():
         print(f"  - origin_account: {origin_account}")
         print(f"  - destination_account: {destination_account}")
         print(f"  - fund_id: {fund_id}")
-        print(f"  - cost_center_id: {cost_center_id}")
+        print(f"  - category_id: {category_id}")
         
-        transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link_dict, origin_account, destination_account, transfer_type)
+        transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, category_id, transaction_type, date_input, transaction_number, file_link_dict, origin_account, destination_account, transfer_type)
         print(f"DEBUG: Transaction result: {transaction_result}")
         
         if transaction_result:
@@ -179,8 +181,8 @@ def index():
             flash('Error adding transaction!', 'error')
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
-            cost_centers = get_cost_centers_list(gc)
-            return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
+            categories = get_categories_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories)
     
     # =====================================================================
     # SHOW THE FORM WITH SHEET SELECTION (GET request)
@@ -192,11 +194,11 @@ def index():
     # Get available funds for dropdown
     funds = get_funds_list(gc)
     
-    # Get available cost centers for dropdown
-    cost_centers = get_cost_centers_list(gc)
+    # Get available categories for dropdown
+    categories = get_categories_list(gc)
     
-    # Show the form with sheet selection, funds, and cost centers
-    return render_template('index.html', sheets=available_sheets, funds=funds, cost_centers=cost_centers)
+    # Show the form with sheet selection, funds, and categories
+    return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories)
 
 # =============================================================================
 # AJAX ROUTE FOR WORKSHEET SELECTION
