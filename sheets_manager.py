@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-03 19:28:04
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 19:13:13
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 16:09:02
@@ -556,6 +558,72 @@ def get_fund_name_by_id(gc, fund_id):
         import traceback
         traceback.print_exc()
         return "Unknown Fund"
+
+
+# =============================================================================
+# ACCOUNTS REFERENCE FUNCTIONS
+# =============================================================================
+
+# Get Accounts List
+# -----------------
+def get_accounts_list(gc):
+    """
+    Get accounts from reference sheet for dropdown
+    Args:
+        gc: Google Sheets client
+    Returns: List of account dictionaries with code, name, and type
+    """
+    try:
+        accounts_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Accounts")
+        accounts_data = accounts_sheet.get_all_records()
+        
+        # Return all accounts (assuming they're all active)
+        accounts_list = []
+        for acc in accounts_data:
+            accounts_list.append({
+                'code': acc.get('Category Code', ''),
+                'name': acc.get('Account Name', ''),
+                'type': acc.get('Type of Account', '')
+            })
+        
+        print(f"DEBUG: Found {len(accounts_list)} accounts")
+        return accounts_list
+        
+    except Exception as e:
+        print(f"Error getting accounts: {e}")
+        return []
+
+# Get Account Name By Code
+# ------------------------
+def get_account_name_by_code(gc, account_code):
+    """
+    Get account name by code for transaction saving
+    Args:
+        gc: Google Sheets client
+        account_code: Code of the account to look up
+    Returns: Account name or "Unknown Account" if not found
+    """
+    try:
+        print(f"DEBUG: get_account_name_by_code called with account_code: {account_code}")
+        accounts_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Accounts")
+        accounts_data = accounts_sheet.get_all_records()
+        print(f"DEBUG: Retrieved {len(accounts_data)} account records")
+        
+        for i, acc in enumerate(accounts_data):
+            print(f"DEBUG: Account {i}: Code='{acc.get('Category Code')}', Name='{acc.get('Account Name')}'")
+            if str(acc.get('Category Code', '')) == str(account_code):
+                print(f"DEBUG: Found matching account: {acc.get('Account Name')}")
+                return acc.get('Account Name', '')
+        
+        print(f"WARNING: Account Code {account_code} not found")
+        print(f"DEBUG: Available account codes: {[str(acc.get('Category Code', '')) for acc in accounts_data]}")
+        return "Unknown Account"
+        
+    except Exception as e:
+        print(f"ERROR in get_account_name_by_code: {e}")
+        import traceback
+        traceback.print_exc()
+        return "Unknown Account"
 
 
 # =============================================================================

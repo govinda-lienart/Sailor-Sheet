@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-03 19:28:04
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 19:13:13
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 16:09:02
@@ -22,7 +24,7 @@ import os
 
 # Import custom modules
 from config import initialize_sheets
-from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_categories_list
+from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_categories_list, get_accounts_list
 import file_upload_manager
 
 # Create Flask web application
@@ -77,6 +79,7 @@ def index():
         description = request.form['description']
         fund_id = request.form['fund_id']
         category_id = request.form['category_id']
+        account_id = request.form['account_id']
         transaction_type = request.form['transaction_type']  # 'debit' or 'credit'
         date_input = request.form.get('date_input', '')  # Date in DD/MM/YYYY format
         transaction_number = request.form.get('transaction_number', '')  # Pre-generated transaction number
@@ -92,6 +95,7 @@ def index():
         print(f"  - Description: {description}")
         print(f"  - Fund ID: {fund_id}")
         print(f"  - Category ID: {category_id}")
+        print(f"  - Account ID: {account_id}")
         print(f"  - Transaction Type: {transaction_type}")
         print(f"  - Date: {date_input}")
         print(f"  - Transaction Number: {transaction_number}")
@@ -122,7 +126,8 @@ def index():
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
             categories = get_categories_list(gc)
-            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories)
+            accounts = get_accounts_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
                                                                                         # ↑ HTML name ↑ Python data
 
         if not selected_worksheet_title:
@@ -130,7 +135,8 @@ def index():
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
             categories = get_categories_list(gc)
-            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories)
+            accounts = get_accounts_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
         
         # Use the worksheet title directly as the account name
         print(f"DEBUG: Using worksheet title as account name: {selected_worksheet_title}")
@@ -144,6 +150,7 @@ def index():
         print(f"  - description: {description}")
         print(f"  - fund_id: {fund_id}")
         print(f"  - category_id: {category_id}")
+        print(f"  - account_id: {account_id}")
         print(f"  - transaction_type: {transaction_type}")
         print(f"  - date_input: {date_input}")
         print(f"  - transaction_number: {transaction_number}")
@@ -182,7 +189,8 @@ def index():
             available_sheets = get_available_sheets(gc)
             funds = get_funds_list(gc)
             categories = get_categories_list(gc)
-            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories)
+            accounts = get_accounts_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
     
     # =====================================================================
     # SHOW THE FORM WITH SHEET SELECTION (GET request)
@@ -197,8 +205,11 @@ def index():
     # Get available categories for dropdown
     categories = get_categories_list(gc)
     
-    # Show the form with sheet selection, funds, and categories
-    return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories)
+    # Get available accounts for dropdown
+    accounts = get_accounts_list(gc)
+    
+    # Show the form with sheet selection, funds, categories, and accounts
+    return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
 
 # =============================================================================
 # AJAX ROUTE FOR WORKSHEET SELECTION
