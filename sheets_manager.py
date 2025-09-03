@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-03 22:51:02
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 19:28:04
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 19:13:13
@@ -250,9 +252,10 @@ def get_worksheets_from_sheet(gc, sheet_id):
 
 # Add Transaction To Selected Sheet
 # --------------------------------
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, transaction_type, date_input, transaction_number, file_link="", origin_account="", destination_account="", transfer_type="external"):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_link="", origin_account="", destination_account="", transfer_type="external"):
     """
-    Add transaction to a specific selected sheet and worksheet
+    Add double-entry transaction to a specific selected sheet and worksheet
+    Creates TWO entries: one debit entry and one credit entry
     Args:
         gc: Google Sheets client
         sheet_id: ID of the specific sheet
@@ -261,13 +264,15 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         description: Description from form
         fund_id: ID of the fund from form
         category_id: ID of the category from form
-        transaction_type: 'debit' (money out) or 'credit' (money in)
+        debit_account_id: ID of the account to be debited
+        credit_account_id: ID of the account to be credited
+        transaction_type: Legacy parameter (kept for compatibility)
         date_input: Date from form in DD/MM/YY format
         transaction_number: Pre-generated transaction number from form
         file_link: Optional file link dict with filename and url
-        origin_account: Account where money is coming FROM
-        destination_account: Account where money is going TO
-        transfer_type: 'internal' or 'external' transfer
+        origin_account: Legacy parameter (kept for compatibility)
+        destination_account: Legacy parameter (kept for compatibility)
+        transfer_type: Legacy parameter (kept for compatibility)
     Returns: True if successful, False otherwise
     """
     try:
@@ -355,6 +360,15 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             category_name = get_category_name_by_code(gc, category_id)
             print(f"DEBUG: Found category name: {category_name}")
         
+        # Get account names from account IDs
+        print(f"DEBUG: Looking up debit account name for debit_account_id: {debit_account_id}")
+        debit_account_name = get_account_name_by_code(gc, debit_account_id)
+        print(f"DEBUG: Found debit account name: {debit_account_name}")
+        
+        print(f"DEBUG: Looking up credit account name for credit_account_id: {credit_account_id}")
+        credit_account_name = get_account_name_by_code(gc, credit_account_id)
+        print(f"DEBUG: Found credit account name: {credit_account_name}")
+        
         # Handle file link - create HYPERLINK formula if we have both URL and filename
         if isinstance(file_link, dict) and 'filename' in file_link and 'url' in file_link:
             # Create the HYPERLINK formula as recommended by your colleague
@@ -362,121 +376,76 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         else:
             link_value = file_link if file_link else ""
         
-        # Determine Debit/Credit values based on transaction type
-        if transaction_type == 'debit':
-            debit_amount = numeric_amount
-            credit_amount = ""  # Empty for debit transactions
-        elif transaction_type == 'credit':
-            debit_amount = ""   # Empty for credit transactions
-            credit_amount = numeric_amount
-        else:
-            raise Exception(f"Invalid transaction type: {transaction_type}. Must be 'debit' or 'credit'.")
-        
         # Get worksheet title for reference
         worksheet_title = worksheet.title
         print(f"DEBUG: Worksheet title: {worksheet_title}")
         
-        # Prepare data row to match EXACT Google Sheet column order
-        # A=Transaction Number, B=Date, C=Funds, D=Cost Center, E=Origin Account, F=Destination Account, G=Debit(VND), H=Credit(VND), I=Description, J=Link Bill
+        # DOUBLE-ENTRY BOOKKEEPING: Create TWO entries
+        print(f"DEBUG: Creating double-entry bookkeeping entries")
         
-        # Handle origin and destination accounts based on transfer type
-        print(f"DEBUG: Processing transfer type: {transfer_type}")
-        if transfer_type == "internal":
-            origin_acc = origin_account if origin_account else "Internal Transfer"
-            dest_acc = destination_account if destination_account else "Internal Transfer"
-            print(f"DEBUG: Internal transfer - Origin: {origin_acc}, Destination: {dest_acc}")
-        else:
-            origin_acc = origin_account if origin_account else "External"
-            dest_acc = destination_account if destination_account else "External"
-            print(f"DEBUG: External transfer - Origin: {origin_acc}, Destination: {dest_acc}")
-        
-        row = [
+        # Entry 1: DEBIT entry (amount goes in Debit column)
+        debit_row = [
             transaction_number,    # A: Transaction Number
             formatted_date,        # B: Date
             fund_name,            # C: Funds
-            category_name,        # D: Category
-            origin_acc,           # E: Origin Account
-            dest_acc,             # F: Destination Account
-            debit_amount,         # G: Debit (VND)
-            credit_amount,        # H: Credit (VND)
-            description,          # I: Description
-            link_value            # J: Link Bill
+            debit_account_name,   # D: Account (the account being debited)
+            category_name,        # E: Category
+            numeric_amount,       # F: Debit (VND) - amount goes here
+            "",                   # G: Credit (VND) - empty for debit entry
+            description,          # H: Description
+            link_value            # I: Link Bill
         ]
         
-        print(f"DEBUG: Prepared row data:")
-        for i, cell in enumerate(row):
+        # Entry 2: CREDIT entry (amount goes in Credit column)
+        credit_row = [
+            transaction_number,    # A: Transaction Number
+            formatted_date,        # B: Date
+            fund_name,            # C: Funds
+            credit_account_name,  # D: Account (the account being credited)
+            category_name,        # E: Category
+            "",                   # F: Debit (VND) - empty for credit entry
+            numeric_amount,       # G: Credit (VND) - amount goes here
+            description,          # H: Description
+            link_value            # I: Link Bill
+        ]
+        
+        print(f"DEBUG: Prepared DEBIT entry:")
+        for i, cell in enumerate(debit_row):
+            column_letter = chr(65 + i)  # A=65, B=66, etc.
+            print(f"  - Column {column_letter}: '{cell}' (type: {type(cell)})")
+            
+        print(f"DEBUG: Prepared CREDIT entry:")
+        for i, cell in enumerate(credit_row):
             column_letter = chr(65 + i)  # A=65, B=66, etc.
             print(f"  - Column {column_letter}: '{cell}' (type: {type(cell)})")
         
-        # Add to next empty row
-        print(f"DEBUG: About to append row to worksheet: {worksheet.title}")
-        worksheet.append_row(row)
-        print(f"DEBUG: Row successfully appended to worksheet")
+        # Add both entries to the worksheet
+        print(f"DEBUG: Adding DEBIT entry to worksheet: {worksheet.title}")
+        worksheet.append_row(debit_row)
+        print(f"DEBUG: DEBIT entry successfully added")
         
-        # If we added a HYPERLINK formula, we need to format it properly with USER_ENTERED
+        print(f"DEBUG: Adding CREDIT entry to worksheet: {worksheet.title}")
+        worksheet.append_row(credit_row)
+        print(f"DEBUG: CREDIT entry successfully added")
+        
+        # If we added a HYPERLINK formula, we need to format it properly with USER_ENTERED for both entries
         if link_value.startswith('=HYPERLINK('):
             print(f"DEBUG: Processing HYPERLINK formula: {link_value}")
-            # Get the last row number (where we just added data)
+            # Get the current row count to find the last two rows we just added
             all_values = worksheet.get_all_values()
             last_row = len(all_values)
             
-            # Set the formula in the LINK column (column J) with USER_ENTERED
-            cell_address = f'J{last_row}'
-            print(f"DEBUG: Updating cell {cell_address} with HYPERLINK formula")
-            worksheet.update(cell_address, link_value, value_input_option='USER_ENTERED')
-            print(f"DEBUG: HYPERLINK formula updated successfully")
-        
-        # FOR INTERNAL TRANSFERS: Create the opposite entry in the destination account
-        if transfer_type == "internal" and destination_account and destination_account != worksheet.title:
-            print(f"DEBUG: Creating opposite entry for internal transfer in destination account: {destination_account}")
+            # Update HYPERLINK for debit entry (second to last row)
+            debit_cell_address = f'I{last_row - 1}'
+            print(f"DEBUG: Updating debit entry cell {debit_cell_address} with HYPERLINK formula")
+            worksheet.update(debit_cell_address, link_value, value_input_option='USER_ENTERED')
             
-            # Create opposite transaction type
-            opposite_transaction_type = 'credit' if transaction_type == 'debit' else 'debit'
-            opposite_debit = numeric_amount if opposite_transaction_type == 'debit' else ""
-            opposite_credit = numeric_amount if opposite_transaction_type == 'credit' else ""
+            # Update HYPERLINK for credit entry (last row)
+            credit_cell_address = f'I{last_row}'
+            print(f"DEBUG: Updating credit entry cell {credit_cell_address} with HYPERLINK formula")
+            worksheet.update(credit_cell_address, link_value, value_input_option='USER_ENTERED')
             
-            # Prepare opposite row
-            opposite_row = [
-                transaction_number,    # A: Same Transaction Number
-                formatted_date,        # B: Same Date
-                fund_name,            # C: Same Funds
-                category_name,        # D: Same Category
-                origin_acc,           # E: Same Origin Account
-                dest_acc,             # F: Same Destination Account
-                opposite_debit,       # G: Opposite Debit (VND)
-                opposite_credit,      # H: Opposite Credit (VND)
-                f"{description} (Internal Transfer)", # I: Modified Description
-                link_value            # J: Same Link Bill
-            ]
-            
-            try:
-                # Find the destination worksheet by title
-                destination_worksheet = None
-                for ws in sheet.worksheets():
-                    if ws.title == destination_account:
-                        destination_worksheet = ws
-                        break
-                
-                if destination_worksheet:
-                    print(f"DEBUG: Found destination worksheet: {destination_worksheet.title}")
-                    print(f"DEBUG: Adding opposite entry to destination account")
-                    destination_worksheet.append_row(opposite_row)
-                    print(f"DEBUG: Opposite entry successfully added to {destination_account}")
-                    
-                    # Handle HYPERLINK in destination sheet too
-                    if link_value.startswith('=HYPERLINK('):
-                        dest_all_values = destination_worksheet.get_all_values()
-                        dest_last_row = len(dest_all_values)
-                        dest_cell_address = f'J{dest_last_row}'
-                        destination_worksheet.update(dest_cell_address, link_value, value_input_option='USER_ENTERED')
-                        print(f"DEBUG: HYPERLINK updated in destination sheet")
-                else:
-                    print(f"WARNING: Destination worksheet '{destination_account}' not found in sheet")
-                    print(f"DEBUG: Available worksheets: {[ws.title for ws in sheet.worksheets()]}")
-                    
-            except Exception as dest_error:
-                print(f"WARNING: Could not create opposite entry in destination account: {dest_error}")
-                # Don't fail the main transaction if destination entry fails
+            print(f"DEBUG: HYPERLINK formulas updated successfully for both entries")
         
         print(f"DEBUG: Transaction completed successfully!")
         return True

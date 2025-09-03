@@ -8,7 +8,7 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-03 19:28:04 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-03 22:51:02 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
@@ -64,11 +64,11 @@
                      <div class="form-group transaction-type-group">
                          <label>Transaction Type:</label>
                          <div class="radio-group">
-                             <label class="radio-option">
-                                 <input type="radio" name="transaction_category" value="donation" required onchange="handleTransactionTypeChange()">
-                                 <span class="radio-custom"></span>
-                                 Donation
-                             </label>
+                                                         <label class="radio-option">
+                                <input type="radio" name="transaction_category" value="donation" required onchange="handleTransactionTypeChange()" checked>
+                                <span class="radio-custom"></span>
+                                Donation
+                            </label>
                              <label class="radio-option">
                                  <input type="radio" name="transaction_category" value="internal_transfer" required onchange="handleTransactionTypeChange()">
                                  <span class="radio-custom"></span>
@@ -91,22 +91,21 @@
      
                      <div class="form-group">
                          <label>Select Sheet:</label>
-                         <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
-                             <option value="">Choose a sheet...</option>
-                             {% for sheet in sheets %}
-                             <option value="{{ sheet.id }}">{{ sheet.title }}</option>
-                             {% endfor %}
-                         </select>
+                                                 <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
+                            <option value="">Choose a sheet...</option>
+                            {% for sheet in sheets %}
+                            <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
+                            {% endfor %}
+                        </select>
                      </div>
      
-                     <div class="form-group">
-                         <label>Select Account:</label>
-                         <select name="worksheet_name" id="worksheet_select" required disabled>
-                             <option value="">First select a sheet...</option>
-                         </select>
-                         <div class="form-text">This shows the official account name for each worksheet</div>
-                     </div>
-     
+                                         <div class="form-group">
+                        <label>Select Worksheet:</label>
+                        <select name="worksheet_name" id="worksheet_select" required disabled>
+                            <option value="">First select a sheet...</option>
+                        </select>
+                        <div class="form-text">This shows the name of each worksheet</div>
+                    </div>
 
      
                      <div class="form-group">
@@ -145,16 +144,29 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Account:</label>
-                        <select name="account_id" required>
-                            <option value="">Choose an account...</option>
+                        <label>Debit:</label>
+                        <select name="debit_account_id" required>
+                            <option value="">Choose account to debit...</option>
                             {% for account in accounts %}
                             <option value="{{ account.code }}">
                                 {{ account.name }} ({{ account.type }})
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Select the account from the master list</div>
+                        <div class="form-text">Select the account to be debited</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Credit:</label>
+                        <select name="credit_account_id" required>
+                            <option value="">Choose account to credit...</option>
+                            {% for account in accounts %}
+                            <option value="{{ account.code }}">
+                                {{ account.name }} ({{ account.type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Select the account to be credited</div>
                     </div>
                      
 
@@ -244,49 +256,102 @@
                      console.log('Category select not found');
                  }
                  
-                 // If there's a default sheet selected, load its worksheets
-                 const defaultSheet = document.getElementById('sheet_select').value;
-                 if (defaultSheet) {
-                     loadWorksheets();
-                 }
+                                 // Auto-select default sheet and load its worksheets
+                const sheetSelect = document.getElementById('sheet_select');
+                const defaultOption = sheetSelect.querySelector('option[selected]');
+                if (defaultOption) {
+                    sheetSelect.value = defaultOption.value;
+                    loadWorksheets();
+                }
+                
+                // Apply default settings for the pre-selected donation transaction type
+                setTimeout(function() {
+                    const donationRadio = document.querySelector('input[name="transaction_category"][value="donation"]');
+                    if (donationRadio && donationRadio.checked) {
+                        handleTransactionTypeChange();
+                    }
+                }, 500); // Small delay to ensure dropdowns are loaded
              });
              
-             function handleTransactionTypeChange() {
-                 const selectedType = document.querySelector('input[name="transaction_category"]:checked').value;
-                 const transferFields = document.getElementById('transferFields');
-                 const destSelect = document.getElementById('destinationAccountSelect');
-                 const fundGroup = document.querySelector('.form-group:has(select[name="fund_id"])');
-                 const categoryGroup = document.querySelector('.form-group:has(select[name="category_id"])');
-                 const fundSelect = document.querySelector('select[name="fund_id"]');
-                 const categorySelect = document.querySelector('select[name="category_id"]');
-                 
-                 if (selectedType === 'internal_transfer') {
-                     // Show transfer fields and populate destination dropdown
-                     transferFields.style.display = 'block';
-                     populateDestinationAccountDropdown();
-                     
-                     // Hide Fund and Category fields completely
-                     if (fundGroup) fundGroup.style.display = 'none';
-                     if (categoryGroup) categoryGroup.style.display = 'none';
-                     
-                     // Remove required attribute to prevent validation errors
-                     if (fundSelect) fundSelect.removeAttribute('required');
-                     if (categorySelect) categorySelect.removeAttribute('required');
-                 } else {
-                     // Hide transfer fields for Donation and Payment
-                     transferFields.style.display = 'none';
-                     // Clear destination selection
-                     if (destSelect) destSelect.value = '';
-                     
-                     // Show Fund and Category fields again
-                     if (fundGroup) fundGroup.style.display = 'block';
-                     if (categoryGroup) categoryGroup.style.display = 'block';
-                     
-                     // Add back required attribute for normal transactions
-                     if (fundSelect) fundSelect.setAttribute('required', 'required');
-                     if (categorySelect) categorySelect.setAttribute('required', 'required');
-                 }
-             }
+                         function handleTransactionTypeChange() {
+                const selectedType = document.querySelector('input[name="transaction_category"]:checked').value;
+                const transferFields = document.getElementById('transferFields');
+                const destSelect = document.getElementById('destinationAccountSelect');
+                const fundGroup = document.querySelector('.form-group:has(select[name="fund_id"])');
+                const categoryGroup = document.querySelector('.form-group:has(select[name="category_id"])');
+                const fundSelect = document.querySelector('select[name="fund_id"]');
+                const categorySelect = document.querySelector('select[name="category_id"]');
+                const debitAccountSelect = document.querySelector('select[name="debit_account_id"]');
+                const creditAccountSelect = document.querySelector('select[name="credit_account_id"]');
+                
+                if (selectedType === 'internal_transfer') {
+                    // Show transfer fields and populate destination dropdown
+                    transferFields.style.display = 'block';
+                    populateDestinationAccountDropdown();
+                    
+                    // Hide Fund and Category fields completely
+                    if (fundGroup) fundGroup.style.display = 'none';
+                    if (categoryGroup) categoryGroup.style.display = 'none';
+                    
+                    // Remove required attribute to prevent validation errors
+                    if (fundSelect) fundSelect.removeAttribute('required');
+                    if (categorySelect) categorySelect.removeAttribute('required');
+                } else {
+                    // Hide transfer fields for Donation and Payment
+                    transferFields.style.display = 'none';
+                    // Clear destination selection
+                    if (destSelect) destSelect.value = '';
+                    
+                    // Show Fund and Category fields again
+                    if (fundGroup) fundGroup.style.display = 'block';
+                    if (categoryGroup) categoryGroup.style.display = 'block';
+                    
+                    // Add back required attribute for normal transactions
+                    if (fundSelect) fundSelect.setAttribute('required', 'required');
+                    if (categorySelect) categorySelect.setAttribute('required', 'required');
+                    
+                    // Clear previous selections first
+                    if (debitAccountSelect) debitAccountSelect.value = '';
+                    if (creditAccountSelect) creditAccountSelect.value = '';
+                    
+                    // Set default accounts and category based on transaction type
+                    if (selectedType === 'donation') {
+                        // For donations: Debit Bank (asset increases), Credit Equity (income)
+                        if (debitAccountSelect) {
+                            const bankOption = Array.from(debitAccountSelect.options).find(option => 
+                                option.textContent.toLowerCase().includes('bank')
+                            );
+                            if (bankOption) {
+                                debitAccountSelect.value = bankOption.value;
+                                console.log('Auto-selected Bank account for debit (donation received)');
+                            }
+                        }
+                        
+                        if (creditAccountSelect) {
+                            // For donations, always credit Revenue account
+                            const revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                                option.textContent.toLowerCase().includes('revenue')
+                            );
+                            
+                            if (revenueOption) {
+                                creditAccountSelect.value = revenueOption.value;
+                                console.log('Auto-selected Revenue account for credit (donation):', revenueOption.textContent);
+                            }
+                        }
+                        
+                        // Auto-select Donation category for donations
+                        if (categorySelect) {
+                            const donationOption = Array.from(categorySelect.options).find(option => 
+                                option.textContent.toLowerCase().includes('donation')
+                            );
+                            if (donationOption) {
+                                categorySelect.value = donationOption.value;
+                                console.log('Auto-selected Donation category for donation');
+                            }
+                        }
+                    }
+                }
+            }
              
              function populateDestinationAccountDropdown() {
                  console.log('populateDestinationAccountDropdown() called');
@@ -346,16 +411,25 @@
                          // Store accounts globally for transfer dropdowns
                          allAvailableAccounts = data;
                          
-                         if (data.length > 0) {
-                             data.forEach(ws => {
-                                 console.log('Adding worksheet:', ws);
-                                 const o = document.createElement('option');
-                                 o.value = ws.title;  // Use worksheet title for backend lookup
-                                 o.textContent = ws.title;  // Show just the worksheet title
-                                 worksheetSelect.appendChild(o);
-                             });
-                             worksheetSelect.disabled = false;
-                             console.log('Worksheets loaded successfully');
+                                                 if (data.length > 0) {
+                            data.forEach(ws => {
+                                console.log('Adding worksheet:', ws);
+                                const o = document.createElement('option');
+                                o.value = ws.title;  // Use worksheet title for backend lookup
+                                o.textContent = ws.title;  // Show just the worksheet title
+                                worksheetSelect.appendChild(o);
+                            });
+                            worksheetSelect.disabled = false;
+                            console.log('Worksheets loaded successfully');
+                            
+                            // Auto-select "Master Ledger" if it exists
+                            const masterLedgerOption = Array.from(worksheetSelect.options).find(option => 
+                                option.textContent.includes('Master Ledger')
+                            );
+                            if (masterLedgerOption) {
+                                worksheetSelect.value = masterLedgerOption.value;
+                                console.log('Auto-selected Master Ledger worksheet');
+                            }
                              
                              // If internal transfer is checked, populate destination dropdown
                              const internalTransferCheck = document.getElementById('internalTransferCheck');

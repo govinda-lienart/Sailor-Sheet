@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-03 22:51:02
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 19:28:04
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 19:13:13
@@ -73,16 +75,27 @@ def index():
         # =====================================================================
         
         # Extract data from the web form
-        selected_sheet_id = request.form['sheet_id']
-        selected_worksheet_title = request.form['worksheet_name']  # This is the worksheet title
-        amount = request.form['amount']
-        description = request.form['description']
-        fund_id = request.form['fund_id']
-        category_id = request.form['category_id']
-        account_id = request.form['account_id']
-        transaction_type = request.form['transaction_type']  # 'debit' or 'credit'
-        date_input = request.form.get('date_input', '')  # Date in DD/MM/YYYY format
-        transaction_number = request.form.get('transaction_number', '')  # Pre-generated transaction number
+        try:
+            selected_sheet_id = request.form['sheet_id']
+            selected_worksheet_title = request.form['worksheet_name']  # This is the worksheet title
+            amount = request.form['amount']
+            description = request.form['description']
+            fund_id = request.form['fund_id']
+            category_id = request.form['category_id']
+            debit_account_id = request.form['debit_account_id']
+            credit_account_id = request.form['credit_account_id']
+            transaction_type = request.form.get('transaction_type', 'external')  # Default to external for double-entry
+            date_input = request.form.get('date_input', '')  # Date in DD/MM/YYYY format
+            transaction_number = request.form.get('transaction_number', '')  # Pre-generated transaction number
+        except KeyError as e:
+            print(f"ERROR: Missing required form field: {e}")
+            print(f"DEBUG: Available form fields: {list(request.form.keys())}")
+            flash(f'Missing required field: {e}', 'error')
+            available_sheets = get_available_sheets(gc)
+            funds = get_funds_list(gc)
+            categories = get_categories_list(gc)
+            accounts = get_accounts_list(gc)
+            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
         
         # Debug: Show what we're working with
         print(f"\n" + "="*50)
@@ -95,7 +108,8 @@ def index():
         print(f"  - Description: {description}")
         print(f"  - Fund ID: {fund_id}")
         print(f"  - Category ID: {category_id}")
-        print(f"  - Account ID: {account_id}")
+        print(f"  - Debit Account ID: {debit_account_id}")
+        print(f"  - Credit Account ID: {credit_account_id}")
         print(f"  - Transaction Type: {transaction_type}")
         print(f"  - Date: {date_input}")
         print(f"  - Transaction Number: {transaction_number}")
@@ -150,7 +164,8 @@ def index():
         print(f"  - description: {description}")
         print(f"  - fund_id: {fund_id}")
         print(f"  - category_id: {category_id}")
-        print(f"  - account_id: {account_id}")
+        print(f"  - debit_account_id: {debit_account_id}")
+        print(f"  - credit_account_id: {credit_account_id}")
         print(f"  - transaction_type: {transaction_type}")
         print(f"  - date_input: {date_input}")
         print(f"  - transaction_number: {transaction_number}")
@@ -176,7 +191,7 @@ def index():
         print(f"  - fund_id: {fund_id}")
         print(f"  - category_id: {category_id}")
         
-        transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, category_id, transaction_type, date_input, transaction_number, file_link_dict, origin_account, destination_account, transfer_type)
+        transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_link_dict, origin_account, destination_account, transfer_type)
         print(f"DEBUG: Transaction result: {transaction_result}")
         
         if transaction_result:
