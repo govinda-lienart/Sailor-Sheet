@@ -8,7 +8,7 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-03 11:28:57 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-03 15:20:50 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
@@ -112,17 +112,11 @@
                      <!-- TRANSFER ACCOUNT FIELDS -->
                      <div id="transferFields" style="display: none;">
                          <div class="form-group">
-                             <label>Origin Account (Where money is coming FROM):</label>
-                             <select name="origin_account" id="originAccountSelect">
-                                 <option value="">Select origin account...</option>
-                             </select>
-                         </div>
-                         
-                         <div class="form-group">
                              <label>Destination Account (Where money is going TO):</label>
                              <select name="destination_account" id="destinationAccountSelect">
                                  <option value="">Select destination account...</option>
                              </select>
+                             <div class="form-text">Origin account is the selected sheet above</div>
                          </div>
                      </div>
      
@@ -167,8 +161,27 @@
              // Global variable to store all available accounts
              let allAvailableAccounts = [];
              
+             // Generate transaction number
+             function generateTransactionNumber() {
+                 const now = new Date();
+                 const transactionNumber = now.getDate().toString().padStart(2, '0') +
+                                         (now.getMonth() + 1).toString().padStart(2, '0') +
+                                         now.getFullYear().toString().slice(-2) + '-' +
+                                         now.getHours().toString().padStart(2, '0') +
+                                         now.getMinutes().toString().padStart(2, '0') +
+                                         now.getSeconds().toString().padStart(2, '0');
+                 
+                 document.getElementById('transactionNumberDisplay').value = transactionNumber;
+                 document.getElementById('transactionNumberInput').value = transactionNumber;
+                 console.log('Generated transaction number:', transactionNumber);
+                 return transactionNumber;
+             }
+             
              // Initialize page when DOM is loaded
              document.addEventListener('DOMContentLoaded', function() {
+                 // Generate initial transaction number
+                 generateTransactionNumber();
+                 
                  // If there's a default sheet selected, load its worksheets
                  const defaultSheet = document.getElementById('sheet_select').value;
                  if (defaultSheet) {
@@ -179,43 +192,66 @@
              function toggleTransferFields() {
                  const checkbox = document.getElementById('internalTransferCheck');
                  const transferFields = document.getElementById('transferFields');
-                 const originSelect = document.getElementById('originAccountSelect');
                  const destSelect = document.getElementById('destinationAccountSelect');
+                 const fundGroup = document.querySelector('.form-group:has(select[name="fund_id"])');
+                 const costCenterGroup = document.querySelector('.form-group:has(select[name="cost_center_id"])');
+                 const fundSelect = document.querySelector('select[name="fund_id"]');
+                 const costCenterSelect = document.querySelector('select[name="cost_center_id"]');
                  
                  if (checkbox.checked) {
                      transferFields.style.display = 'block';
-                     // Populate account dropdowns when internal transfer is selected
-                     populateAccountDropdowns();
+                     // Populate destination account dropdown when internal transfer is selected
+                     populateDestinationAccountDropdown();
+                     
+                     // Hide Fund and Cost Center fields completely
+                     if (fundGroup) fundGroup.style.display = 'none';
+                     if (costCenterGroup) costCenterGroup.style.display = 'none';
+                     
+                     // Remove required attribute to prevent validation errors
+                     if (fundSelect) fundSelect.removeAttribute('required');
+                     if (costCenterSelect) costCenterSelect.removeAttribute('required');
                  } else {
                      transferFields.style.display = 'none';
-                     // Clear selections when unchecked
-                     originSelect.value = '';
+                     // Clear destination selection when unchecked
                      destSelect.value = '';
+                     
+                     // Show Fund and Cost Center fields again
+                     if (fundGroup) fundGroup.style.display = 'block';
+                     if (costCenterGroup) costCenterGroup.style.display = 'block';
+                     
+                     // Add back required attribute for normal transactions
+                     if (fundSelect) fundSelect.setAttribute('required', 'required');
+                     if (costCenterSelect) costCenterSelect.setAttribute('required', 'required');
                  }
              }
              
-             function populateAccountDropdowns() {
-                 const originSelect = document.getElementById('originAccountSelect');
+             function populateDestinationAccountDropdown() {
+                 console.log('populateDestinationAccountDropdown() called');
                  const destSelect = document.getElementById('destinationAccountSelect');
+                 const currentWorksheet = document.getElementById('worksheet_select').value;
+                 
+                 console.log('Current worksheet:', currentWorksheet);
+                 console.log('Available accounts:', allAvailableAccounts);
                  
                  // Clear existing options
-                 originSelect.innerHTML = '<option value="">Select origin account...</option>';
                  destSelect.innerHTML = '<option value="">Select destination account...</option>';
                  
-                 // Add all available accounts to both dropdowns
+                 // Add all available accounts to destination dropdown (except current worksheet)
                  allAvailableAccounts.forEach(account => {
-                     // Origin account options
-                     const originOption = document.createElement('option');
-                     originOption.value = account.title;
-                     originOption.textContent = account.title;
-                     originSelect.appendChild(originOption);
-                     
-                     // Destination account options
-                     const destOption = document.createElement('option');
-                     destOption.value = account.title;
-                     destOption.textContent = account.title;
-                     destSelect.appendChild(destOption);
+                     console.log('Processing account:', account.title);
+                     // Skip the current worksheet (origin account)
+                     if (account.title !== currentWorksheet) {
+                         const destOption = document.createElement('option');
+                         destOption.value = account.title;
+                         destOption.textContent = account.title;
+                         destSelect.appendChild(destOption);
+                         console.log('Added destination option:', account.title);
+                     } else {
+                         console.log('Skipped current worksheet:', account.title);
+                     }
                  });
+                 
+                 console.log('Destination dropdown populated with', destSelect.options.length - 1, 'options');
              }
              
              function loadWorksheets() {
@@ -257,6 +293,12 @@
                              });
                              worksheetSelect.disabled = false;
                              console.log('Worksheets loaded successfully');
+                             
+                             // If internal transfer is checked, populate destination dropdown
+                             const internalTransferCheck = document.getElementById('internalTransferCheck');
+                             if (internalTransferCheck && internalTransferCheck.checked) {
+                                 populateDestinationAccountDropdown();
+                             }
                          } else {
                              worksheetSelect.innerHTML = '<option value="">No accounts found</option>';
                              console.log('No worksheets found');
@@ -274,11 +316,15 @@
                  // Validate internal transfer fields
                  const internalTransferCheck = document.getElementById('internalTransferCheck');
                  if (internalTransferCheck.checked) {
-                     const originAccount = document.getElementById('originAccountSelect').value;
+                     console.log('Internal transfer checkbox is checked');
                      const destinationAccount = document.getElementById('destinationAccountSelect').value;
+                     const originAccount = document.getElementById('worksheet_select').value;
                      
-                     if (!originAccount || !destinationAccount) {
-                         alert('Please select both origin and destination accounts for internal transfers.');
+                     console.log('Destination account:', destinationAccount);
+                     console.log('Origin account (worksheet):', originAccount);
+                     
+                     if (!destinationAccount) {
+                         alert('Please select a destination account for internal transfers.');
                          event.preventDefault();
                          return false;
                      }
@@ -288,6 +334,8 @@
                          event.preventDefault();
                          return false;
                      }
+                 } else {
+                     console.log('Internal transfer checkbox is NOT checked');
                  }
                  
                  // Get form data
@@ -298,9 +346,17 @@
                      console.log(`  ${key}: "${value}"`);
                  }
                  
-                 // Check if required fields are filled
-                 const sheetSelect = document.getElementById('sheet_select');
-                 const worksheetSelect = document.getElementById('worksheet_select');
+                 // Check if transaction number is generated
+                 const transactionNumber = document.getElementById('transactionNumberInput').value;
+                 console.log('Transaction number:', transactionNumber);
+                 
+                 if (!transactionNumber) {
+                     console.log('No transaction number found, generating one...');
+                     generateTransactionNumber();
+                 }
+                 
+                 console.log('Validation passed, form should submit');
+                 return true;
                  
                  console.log('Sheet selected:', sheetSelect.value);
                  console.log('Worksheet selected:', worksheetSelect.value);

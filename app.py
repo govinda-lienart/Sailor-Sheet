@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-03 15:20:50
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 11:28:57
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 11:27:32
@@ -144,13 +146,24 @@ def index():
         
         # Get transfer type and account details from form
         transfer_type = request.form.get('transfer_type', 'external')
-        origin_account = request.form.get('origin_account', '')
         destination_account = request.form.get('destination_account', '')
+        
+        # For internal transfers, use selected worksheet as origin account
+        if transfer_type == 'internal':
+            origin_account = selected_worksheet_title  # Use selected sheet as origin
+            fund_id = 'Internal Transfer'
+            cost_center_id = 'Internal Transfer'
+            print(f"DEBUG: Internal transfer - using selected worksheet as origin account")
+            print(f"DEBUG: Internal transfer - overriding fund and cost center to 'Internal Transfer'")
+        else:
+            origin_account = ''  # Not used for external transactions
         
         print(f"DEBUG: Transfer details:")
         print(f"  - transfer_type: {transfer_type}")
         print(f"  - origin_account: {origin_account}")
         print(f"  - destination_account: {destination_account}")
+        print(f"  - fund_id: {fund_id}")
+        print(f"  - cost_center_id: {cost_center_id}")
         
         transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, cost_center_id, transaction_type, date_input, transaction_number, file_link_dict, origin_account, destination_account, transfer_type)
         print(f"DEBUG: Transaction result: {transaction_result}")

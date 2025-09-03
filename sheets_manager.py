@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-03 15:20:50
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 11:28:57
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 11:27:32
@@ -329,15 +331,23 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         except ValueError:
             raise Exception(f"Invalid amount: {amount}. Please enter a valid number.")
         
-        # Get fund name from fund ID
+        # Get fund name from fund ID (or use directly if it's "Internal Transfer")
         print(f"DEBUG: Looking up fund name for fund_id: {fund_id}")
-        fund_name = get_fund_name_by_id(gc, fund_id)
-        print(f"DEBUG: Found fund name: {fund_name}")
+        if fund_id == "Internal Transfer":
+            fund_name = "Internal Transfer"
+            print(f"DEBUG: Using hardcoded fund name: {fund_name}")
+        else:
+            fund_name = get_fund_name_by_id(gc, fund_id)
+            print(f"DEBUG: Found fund name: {fund_name}")
         
-        # Get cost center name from cost center ID
+        # Get cost center name from cost center ID (or use directly if it's "Internal Transfer")
         print(f"DEBUG: Looking up cost center name for cost_center_id: {cost_center_id}")
-        cost_center_name = get_cost_center_name_by_code(gc, cost_center_id)
-        print(f"DEBUG: Found cost center name: {cost_center_name}")
+        if cost_center_id == "Internal Transfer":
+            cost_center_name = "Internal Transfer"
+            print(f"DEBUG: Using hardcoded cost center name: {cost_center_name}")
+        else:
+            cost_center_name = get_cost_center_name_by_code(gc, cost_center_id)
+            print(f"DEBUG: Found cost center name: {cost_center_name}")
         
         # Handle file link - create HYPERLINK formula if we have both URL and filename
         if isinstance(file_link, dict) and 'filename' in file_link and 'url' in file_link:
