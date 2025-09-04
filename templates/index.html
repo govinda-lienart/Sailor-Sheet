@@ -8,7 +8,7 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-04 14:01:24 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-04 14:23:56 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
@@ -133,30 +133,98 @@
                         </select>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Debit:</label>
-                        <select name="debit_account_id" required>
-                            <option value="">Choose account to debit...</option>
-                            {% for account in accounts %}
-                            <option value="{{ account.code }}">
-                                {{ account.name }} ({{ account.type }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <div class="form-text">Select the account to be debited</div>
+                    <!-- INTERBANKING TRANSFER SECTIONS (ONLY VISIBLE FOR INTERBANKING TRANSFERS) -->
+                    <div id="interbankingSections" style="display: none;">
+                        <!-- ORIGIN ACCOUNT SECTION -->
+                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f8fff8;">
+                            <h4 style="color: #28a745; margin-bottom: 15px;">📍 Origin Account</h4>
+                            
+                            <div class="form-group">
+                                <label>Origin Debit:</label>
+                                <select name="origin_debit_account_id">
+                                    <option value="">Choose origin debit account...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.code }}">
+                                        {{ account.name }} ({{ account.type }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Account to debit at origin</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Origin Credit:</label>
+                                <select name="origin_credit_account_id">
+                                    <option value="">Choose origin credit account...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.code }}">
+                                        {{ account.name }} ({{ account.type }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Account to credit at origin</div>
+                            </div>
+                        </div>
+                        
+                        <!-- DESTINATION ACCOUNT SECTION -->
+                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff8f8;">
+                            <h4 style="color: #dc3545; margin-bottom: 15px;">🎯 Destination Account</h4>
+                            
+                            <div class="form-group">
+                                <label>Destination Debit:</label>
+                                <select name="debit_account_id">
+                                    <option value="">Choose destination debit account...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.code }}">
+                                        {{ account.name }} ({{ account.type }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Account to debit at destination</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Destination Credit:</label>
+                                <select name="credit_account_id">
+                                    <option value="">Choose destination credit account...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.code }}">
+                                        {{ account.name }} ({{ account.type }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Account to credit at destination</div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Credit:</label>
-                        <select name="credit_account_id" required>
-                            <option value="">Choose account to credit...</option>
-                            {% for account in accounts %}
-                            <option value="{{ account.code }}">
-                                {{ account.name }} ({{ account.type }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <div class="form-text">Select the account to be credited</div>
+                    <!-- REGULAR ACCOUNT SECTIONS (FOR NON-INTERBANKING TRANSFERS) -->
+                    <div id="regularAccountSections">
+                        <div class="form-group">
+                            <label>Debit:</label>
+                            <select name="regular_debit_account_id" required>
+                                <option value="">Choose account to debit...</option>
+                                {% for account in accounts %}
+                                <option value="{{ account.code }}">
+                                    {{ account.name }} ({{ account.type }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Select the account to be debited</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Credit:</label>
+                            <select name="regular_credit_account_id" required>
+                                <option value="">Choose account to credit...</option>
+                                {% for account in accounts %}
+                                <option value="{{ account.code }}">
+                                    {{ account.name }} ({{ account.type }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Select the account to be credited</div>
+                        </div>
                     </div>
                      
 
@@ -253,9 +321,53 @@
                 }, 1000); // Increased delay to ensure all dropdowns are fully loaded
              });
              
-                                     function handleTransactionTypeChange() {
+            function handleTransactionTypeChange() {
                 const selectedType = document.getElementById('transaction_category').value;
                 console.log('🚀 Transaction type changed to:', selectedType, '(using JSON data - no API calls!)');
+                
+                // Get all account field elements
+                const interbankingSections = document.getElementById('interbankingSections');
+                const regularAccountSections = document.getElementById('regularAccountSections');
+                
+                // Get all required fields in both sections
+                const regularDebitField = document.querySelector('select[name="regular_debit_account_id"]');
+                const regularCreditField = document.querySelector('select[name="regular_credit_account_id"]');
+                const destinationDebitField = document.querySelector('select[name="debit_account_id"]');
+                const destinationCreditField = document.querySelector('select[name="credit_account_id"]');
+                const originDebitField = document.querySelector('select[name="origin_debit_account_id"]');
+                const originCreditField = document.querySelector('select[name="origin_credit_account_id"]');
+                
+                if (selectedType === 'interbanking_transfer') {
+                    // Show interbanking sections, hide regular sections
+                    if (interbankingSections) interbankingSections.style.display = 'block';
+                    if (regularAccountSections) regularAccountSections.style.display = 'none';
+                    
+                    // Remove required from hidden regular fields, add required to visible interbanking fields
+                    if (regularDebitField) regularDebitField.removeAttribute('required');
+                    if (regularCreditField) regularCreditField.removeAttribute('required');
+                    if (destinationDebitField) destinationDebitField.setAttribute('required', 'required');
+                    if (destinationCreditField) destinationCreditField.setAttribute('required', 'required');
+                    if (originDebitField) originDebitField.setAttribute('required', 'required');
+                    if (originCreditField) originCreditField.setAttribute('required', 'required');
+                    
+                    console.log('✅ Showing interbanking transfer sections (Origin + Destination)');
+                    console.log('✅ Required attributes updated for interbanking transfer');
+                } else {
+                    // Show regular sections, hide interbanking sections
+                    if (interbankingSections) interbankingSections.style.display = 'none';
+                    if (regularAccountSections) regularAccountSections.style.display = 'block';
+                    
+                    // Add required to visible regular fields, remove required from hidden interbanking fields
+                    if (regularDebitField) regularDebitField.setAttribute('required', 'required');
+                    if (regularCreditField) regularCreditField.setAttribute('required', 'required');
+                    if (destinationDebitField) destinationDebitField.removeAttribute('required');
+                    if (destinationCreditField) destinationCreditField.removeAttribute('required');
+                    if (originDebitField) originDebitField.removeAttribute('required');
+                    if (originCreditField) originCreditField.removeAttribute('required');
+                    
+                    console.log('✅ Showing regular account sections');
+                    console.log('✅ Required attributes updated for regular transactions');
+                }
                 
                 // Apply transaction type specific defaults immediately
                 // No need for AJAX calls or caching - data is already loaded from JSON!
@@ -467,25 +579,52 @@
                         }
                     }
                 } else if (selectedType === 'interbanking_transfer') {
-                    // For interbanking transfers: Debit one bank, Credit another bank
-                    if (debitAccountSelect) {
-                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('bank')
+                    console.log('🔄 Applying interbanking transfer defaults...');
+                    
+                    // Set defaults for Origin Account (typically Belgium)
+                    const originDebitSelect = document.querySelector('select[name="origin_debit_account_id"]');
+                    const originCreditSelect = document.querySelector('select[name="origin_credit_account_id"]');
+                    
+                    if (originDebitSelect) {
+                        const belfiusOption = Array.from(originDebitSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('belfius')
                         );
-                        if (bankOption) {
-                            debitAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected Bank account for interbanking transfer debit');
+                        if (belfiusOption) {
+                            originDebitSelect.value = belfiusOption.value;
+                            console.log('✅ Auto-selected BE-Belfius for origin debit:', belfiusOption.textContent);
+                        }
+                    }
+                    
+                    if (originCreditSelect) {
+                        const expensesOption = Array.from(originCreditSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('be') && 
+                            option.textContent.toLowerCase().includes('expenses')
+                        );
+                        if (expensesOption) {
+                            originCreditSelect.value = expensesOption.value;
+                            console.log('✅ Auto-selected BE-Expenses for origin credit:', expensesOption.textContent);
+                        }
+                    }
+                    
+                    // Set defaults for Destination Account (typically Vietnam) - using the regular debit/credit selectors
+                    if (debitAccountSelect) {
+                        const indovinaOption = Array.from(debitAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('indovina')
+                        );
+                        if (indovinaOption) {
+                            debitAccountSelect.value = indovinaOption.value;
+                            console.log('✅ Auto-selected VN-Indovina Bank for destination debit:', indovinaOption.textContent);
                         }
                     }
                     
                     if (creditAccountSelect) {
-                        const bankOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('bank') && 
-                            option.value !== debitAccountSelect.value
+                        const revenuesOption = Array.from(creditAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('vn') && 
+                            option.textContent.toLowerCase().includes('revenues')
                         );
-                        if (bankOption) {
-                            creditAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected different Bank account for interbanking transfer credit');
+                        if (revenuesOption) {
+                            creditAccountSelect.value = revenuesOption.value;
+                            console.log('✅ Auto-selected VN-Revenues for destination credit:', revenuesOption.textContent);
                         }
                     }
                 } else if (selectedType === 'expense') {
