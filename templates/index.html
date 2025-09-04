@@ -8,7 +8,7 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-04 14:26:30 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-04 14:49:11 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
@@ -60,84 +60,112 @@
      
                  <!-- MAIN FORM -->
                  <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
-                                          <!-- TRANSACTION TYPE SELECTOR - TOP PRIORITY -->
-                     <div class="form-group">
-                         <label>Transaction Type:</label>
-                         <select name="transaction_category" id="transaction_category" required onchange="handleTransactionTypeChange()">
-                            <option value="payment">Payment</option>
-                            <option value="internal_transfer">Internal Transfer</option>
-                            <option value="interbanking_transfer">Interbanking Transfer</option>
-                            <option value="donation" selected>Donation</option>
-                            <option value="grant">Grant</option>
-                         </select>
-                         <div class="form-text">Select the type of transaction you are recording</div>
+                     <!-- TRANSACTION TYPE SECTION -->
+                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #ffc107; border-radius: 8px; background-color: #fffbf0;">
+                         <h4 style="color: #ffc107; margin-bottom: 15px;">⚡ Transaction Type</h4>
+                         <div class="form-group">
+                             <label>Transaction Type:</label>
+                             <select name="transaction_category" id="transaction_category" required onchange="handleTransactionTypeChange()">
+                                <option value="payment">Payment</option>
+                                <option value="internal_transfer">Internal Transfer</option>
+                                <option value="interbanking_transfer">Interbanking Transfer</option>
+                                <option value="donation" selected>Donation</option>
+                                <option value="grant">Grant</option>
+                             </select>
+                             <div class="form-text">Select the type of transaction you are recording</div>
+                         </div>
                      </div>
                      
-                     <div class="form-group">
-                         <label>Transaction Number:</label>
-                         <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
-                         <div class="form-text">This number will be used for both the transaction and file naming</div>
+                     <!-- TRANSACTION NUMBER SECTION -->
+                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #6c757d; border-radius: 8px; background-color: #f8f9fa;">
+                         <h4 style="color: #6c757d; margin-bottom: 15px;">🔢 Transaction Number</h4>
+                         <div class="form-group">
+                             <label>Transaction Number:</label>
+                             <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
+                             <div class="form-text">This number will be used for both the transaction and file naming</div>
+                         </div>
                      </div>
      
-                     <div class="form-group">
-                         <label>Select Sheet:</label>
-                                                 <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
-                            <option value="">Choose a sheet...</option>
-                            {% for sheet in sheets %}
-                            <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
-                            {% endfor %}
-                        </select>
+                     <!-- SHEET & WORKSHEET SELECTION SECTION -->
+                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #fd7e14; border-radius: 8px; background-color: #fff8f0;">
+                         <h4 style="color: #fd7e14; margin-bottom: 15px;">📊 Sheet & Worksheet Selection</h4>
+                         
+                         <div class="form-group">
+                             <label>Select Sheet:</label>
+                             <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
+                                 <option value="">Choose a sheet...</option>
+                                 {% for sheet in sheets %}
+                                 <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
+                                 {% endfor %}
+                             </select>
+                         </div>
+                         
+                         <div class="form-group">
+                             <label>Select Worksheet:</label>
+                             <select name="worksheet_name" id="worksheet_select" required disabled>
+                                 <option value="">First select a sheet...</option>
+                             </select>
+                             <div class="form-text">This shows the name of each worksheet</div>
+                         </div>
                      </div>
-     
-                                         <div class="form-group">
-                        <label>Select Worksheet:</label>
-                        <select name="worksheet_name" id="worksheet_select" required disabled>
-                            <option value="">First select a sheet...</option>
-                        </select>
-                        <div class="form-text">This shows the name of each worksheet</div>
-                    </div>
 
      
-                     <div class="form-group">
-                         <label>Date:</label>
-                         <input type="date" name="date_input" required>
-                         <div class="form-text">Select the date for this transaction</div>
+                     <!-- DATE SECTION -->
+                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f8fff8;">
+                         <h4 style="color: #28a745; margin-bottom: 15px;">📅 Date</h4>
+                         <div class="form-group">
+                             <label>Date:</label>
+                             <input type="date" name="date_input" required>
+                             <div class="form-text">Select the date for this transaction</div>
+                         </div>
                      </div>
      
-                     <div class="form-group">
-                         <label>Amount:</label>
-                         <input type="number" name="amount" step="0.01" required placeholder="Enter amount (always positive)">
+                     <!-- AMOUNT SECTION -->
+                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff5f5;">
+                         <h4 style="color: #dc3545; margin-bottom: 15px;">💰 Amount</h4>
+                         <div class="form-group">
+                             <label>Amount:</label>
+                             <input type="number" name="amount" step="0.01" required placeholder="Enter amount (always positive)">
+                         </div>
                      </div>
      
-                     <div class="form-group">
-                         <label>Fund:</label>
-                         <select name="fund_id" required>
-                             <option value="">Choose a fund...</option>
-                             {% for fund in funds %}
-                             <option value="{{ fund.id }}" style="background-color: {{ fund.color }}">
-                                 {{ fund.name }}
-                             </option>
-                             {% endfor %}
-                         </select>
+                     <!-- FUND SECTION -->
+                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #20c997; border-radius: 8px; background-color: #f0fffe;">
+                         <h4 style="color: #20c997; margin-bottom: 15px;">🏦 Fund</h4>
+                         <div class="form-group">
+                             <label>Fund:</label>
+                             <select name="fund_id" required>
+                                 <option value="">Choose a fund...</option>
+                                 {% for fund in funds %}
+                                 <option value="{{ fund.id }}" style="background-color: {{ fund.color }}">
+                                     {{ fund.name }}
+                                 </option>
+                                 {% endfor %}
+                             </select>
+                         </div>
                      </div>
      
-                                         <div class="form-group">
-                        <label>Category:</label>
-                        <select name="category_id" required>
-                            <option value="">Choose a category...</option>
-                            {% for category in categories %}
-                            <option value="{{ category.code }}">
-                                {{ category.name }} ({{ category.category }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                     <!-- CATEGORY SECTION -->
+                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #8b4513; border-radius: 8px; background-color: #fdf5e6;">
+                         <h4 style="color: #8b4513; margin-bottom: 15px;">📂 Category</h4>
+                         <div class="form-group">
+                             <label>Category:</label>
+                             <select name="category_id" required>
+                                 <option value="">Choose a category...</option>
+                                 {% for category in categories %}
+                                 <option value="{{ category.code }}">
+                                     {{ category.name }} ({{ category.category }})
+                                 </option>
+                                 {% endfor %}
+                             </select>
+                         </div>
+                     </div>
                     
                     <!-- INTERBANKING TRANSFER SECTIONS (ONLY VISIBLE FOR INTERBANKING TRANSFERS) -->
                     <div id="interbankingSections" style="display: none;">
                         <!-- ORIGIN ACCOUNT SECTION -->
-                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f8fff8;">
-                            <h4 style="color: #28a745; margin-bottom: 15px;">📍 Origin Account</h4>
+                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
+                            <h4 style="color: #6f42c1; margin-bottom: 15px;">📍 Origin Account</h4>
                             
                             <div class="form-group">
                                 <label>Origin Debit:</label>
@@ -167,8 +195,8 @@
                         </div>
                         
                         <!-- DESTINATION ACCOUNT SECTION -->
-                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff8f8;">
-                            <h4 style="color: #dc3545; margin-bottom: 15px;">🎯 Destination Account</h4>
+                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
+                            <h4 style="color: #6f42c1; margin-bottom: 15px;">🎯 Destination Account</h4>
                             
                             <div class="form-group">
                                 <label>Destination Debit:</label>
@@ -200,30 +228,38 @@
                     
                     <!-- REGULAR ACCOUNT SECTIONS (FOR NON-INTERBANKING TRANSFERS) -->
                     <div id="regularAccountSections">
-                        <div class="form-group">
-                            <label>Debit:</label>
-                            <select name="regular_debit_account_id" required>
-                                <option value="">Choose account to debit...</option>
-                                {% for account in accounts %}
-                                <option value="{{ account.code }}">
-                                    {{ account.name }} ({{ account.type }})
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <div class="form-text">Select the account to be debited</div>
+                        <!-- DEBIT SECTION -->
+                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 8px; background-color: #f0f8ff;">
+                            <h4 style="color: #007bff; margin-bottom: 15px;">💳 Debit Account</h4>
+                            <div class="form-group">
+                                <label>Debit:</label>
+                                <select name="regular_debit_account_id" required>
+                                    <option value="">Choose account to debit...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.code }}">
+                                        {{ account.name }} ({{ account.type }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Select the account to be debited</div>
+                            </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label>Credit:</label>
-                            <select name="regular_credit_account_id" required>
-                                <option value="">Choose account to credit...</option>
-                                {% for account in accounts %}
-                                <option value="{{ account.code }}">
-                                    {{ account.name }} ({{ account.type }})
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <div class="form-text">Select the account to be credited</div>
+                        <!-- CREDIT SECTION -->
+                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
+                            <h4 style="color: #6f42c1; margin-bottom: 15px;">💰 Credit Account</h4>
+                            <div class="form-group">
+                                <label>Credit:</label>
+                                <select name="regular_credit_account_id" required>
+                                    <option value="">Choose account to credit...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.code }}">
+                                        {{ account.name }} ({{ account.type }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Select the account to be credited</div>
+                            </div>
                         </div>
                     </div>
                      
@@ -231,10 +267,14 @@
                      
 
      
-                     <div class="form-group">
-                         <label>Description:</label>
-                         <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
-     
+                     <!-- DESCRIPTION SECTION -->
+                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #000000; border-radius: 8px; background-color: #ffffff;">
+                         <h4 style="color: #000000; margin-bottom: 15px;">📝 Description</h4>
+                         <div class="form-group">
+                             <label>Description:</label>
+                             <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
+                         </div>
+                         
                          <!-- Hidden fields populated after upload -->
                          <input type="hidden" name="file_link" id="fileLinkInput">
                          <input type="hidden" name="file_name" id="fileNameInput">
@@ -244,9 +284,10 @@
                  </form>
      
                  <!-- UPLOAD BILLS SECTION -->
-                 <div class="upload-section">
-                     <label>Upload Bills:</label>
+                 <div class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #000000; border-radius: 8px; background-color: #ffffff;">
+                     <h4 style="color: #000000; margin-bottom: 15px;">📎 Upload Bills</h4>
                      <div class="form-group">
+                         <label>Upload Bills:</label>
                          <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
                          <div class="form-text">Upload receipts, invoices, or other supporting documents</div>
                          <button type="button" id="uploadBtn" class="btn btn-secondary">Upload File</button>
