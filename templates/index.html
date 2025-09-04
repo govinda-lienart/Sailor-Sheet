@@ -8,7 +8,7 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-03 22:51:02 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-04 04:26:36 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
@@ -60,26 +60,16 @@
      
                  <!-- MAIN FORM -->
                  <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
-                     <!-- TRANSACTION TYPE SELECTOR - TOP PRIORITY -->
-                     <div class="form-group transaction-type-group">
+                                          <!-- TRANSACTION TYPE SELECTOR - TOP PRIORITY -->
+                     <div class="form-group">
                          <label>Transaction Type:</label>
-                         <div class="radio-group">
-                                                         <label class="radio-option">
-                                <input type="radio" name="transaction_category" value="donation" required onchange="handleTransactionTypeChange()" checked>
-                                <span class="radio-custom"></span>
-                                Donation
-                            </label>
-                             <label class="radio-option">
-                                 <input type="radio" name="transaction_category" value="internal_transfer" required onchange="handleTransactionTypeChange()">
-                                 <span class="radio-custom"></span>
-                                 Internal Transfer
-                             </label>
-                             <label class="radio-option">
-                                 <input type="radio" name="transaction_category" value="payment" required onchange="handleTransactionTypeChange()">
-                                 <span class="radio-custom"></span>
-                                 Payment
-                             </label>
-                         </div>
+                         <select name="transaction_category" id="transaction_category" required onchange="handleTransactionTypeChange()">
+                            <option value="payment">Payment</option>
+                            <option value="internal_transfer">Internal Transfer</option>
+                            <option value="interbanking_transfer">Interbanking Transfer</option>
+                            <option value="donation" selected>Donation</option>
+                            <option value="grant">Grant</option>
+                         </select>
                          <div class="form-text">Select the type of transaction you are recording</div>
                      </div>
                      
@@ -171,16 +161,7 @@
                      
 
                      
-                     <!-- TRANSFER ACCOUNT FIELDS -->
-                     <div id="transferFields" style="display: none;">
-                         <div class="form-group">
-                             <label>Destination Account (Where money is going TO):</label>
-                             <select name="destination_account" id="destinationAccountSelect">
-                                 <option value="">Select destination account...</option>
-                             </select>
-                             <div class="form-text">Origin account is the selected sheet above</div>
-                         </div>
-                     </div>
+
      
                      <div class="form-group">
                          <label>Description:</label>
@@ -220,8 +201,7 @@
          </div>
      
          <script>
-             // Global variable to store all available accounts
-             let allAvailableAccounts = [];
+             // Global variable no longer needed for internal transfers
              
              // Generate transaction number
              function generateTransactionNumber() {
@@ -266,121 +246,379 @@
                 
                 // Apply default settings for the pre-selected donation transaction type
                 setTimeout(function() {
-                    const donationRadio = document.querySelector('input[name="transaction_category"][value="donation"]');
-                    if (donationRadio && donationRadio.checked) {
+                    const transactionSelect = document.getElementById('transaction_category');
+                    if (transactionSelect && transactionSelect.value === 'donation') {
                         handleTransactionTypeChange();
                     }
-                }, 500); // Small delay to ensure dropdowns are loaded
+                }, 1000); // Increased delay to ensure all dropdowns are fully loaded
              });
              
-                         function handleTransactionTypeChange() {
-                const selectedType = document.querySelector('input[name="transaction_category"]:checked').value;
-                const transferFields = document.getElementById('transferFields');
-                const destSelect = document.getElementById('destinationAccountSelect');
-                const fundGroup = document.querySelector('.form-group:has(select[name="fund_id"])');
-                const categoryGroup = document.querySelector('.form-group:has(select[name="category_id"])');
-                const fundSelect = document.querySelector('select[name="fund_id"]');
+                                     function handleTransactionTypeChange() {
+                const selectedType = document.getElementById('transaction_category').value;
+                console.log('Transaction type changed to:', selectedType);
+                
+                // Show loading state
+                const debitSelect = document.querySelector('select[name="debit_account_id"]');
+                const creditSelect = document.querySelector('select[name="credit_account_id"]');
                 const categorySelect = document.querySelector('select[name="category_id"]');
+                
+                if (debitSelect) {
+                    debitSelect.innerHTML = '<option value="">Loading...</option>';
+                    debitSelect.disabled = true;
+                }
+                if (creditSelect) {
+                    creditSelect.innerHTML = '<option value="">Loading...</option>';
+                    creditSelect.disabled = true;
+                }
+                if (categorySelect) {
+                    categorySelect.innerHTML = '<option value="">Loading...</option>';
+                    categorySelect.disabled = true;
+                }
+                
+                // Make AJAX call to refresh form data and apply defaults
+                fetch('/refresh_form_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        transaction_type: selectedType
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Form data refreshed:', data);
+                    
+                    // Update dropdowns with fresh data
+                    updateDropdowns(data);
+                    
+                    // Apply transaction type specific defaults after a small delay
+                    // to ensure dropdowns are fully populated
+                    setTimeout(() => {
+                        applyTransactionDefaults(selectedType);
+                    }, 100);
+                })
+                .catch(error => {
+                    console.error('Error refreshing form data:', error);
+                    // Fallback to original method if AJAX fails
+                    applyTransactionDefaults(selectedType);
+                });
+            }
+            
+            function updateDropdowns(data) {
+                const debitSelect = document.querySelector('select[name="debit_account_id"]');
+                const creditSelect = document.querySelector('select[name="credit_account_id"]');
+                const categorySelect = document.querySelector('select[name="category_id"]');
+                
+                // Update debit accounts
+                if (debitSelect && data.accounts) {
+                    debitSelect.innerHTML = '<option value="">Choose account to debit...</option>';
+                    data.accounts.forEach(account => {
+                        const option = document.createElement('option');
+                        option.value = account.code || account.name; // Use code if available, fallback to name
+                        option.textContent = `${account.name} (${account.type})`;
+                        console.log('💫 Adding debit option:', option.textContent, 'with value:', option.value);
+                        debitSelect.appendChild(option);
+                    });
+                    debitSelect.disabled = false;
+                }
+                
+                // Update credit accounts
+                if (creditSelect && data.accounts) {
+                    creditSelect.innerHTML = '<option value="">Choose account to credit...</option>';
+                    data.accounts.forEach(account => {
+                        const option = document.createElement('option');
+                        option.value = account.code || account.name; // Use code if available, fallback to name
+                        option.textContent = `${account.name} (${account.type})`;
+                        console.log('💫 Adding credit option:', option.textContent, 'with value:', option.value);
+                        creditSelect.appendChild(option);
+                    });
+                    creditSelect.disabled = false;
+                }
+                
+                // Update categories
+                if (categorySelect && data.categories) {
+                    categorySelect.innerHTML = '<option value="">Choose a category...</option>';
+                    data.categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.code;
+                        option.textContent = `${category.name} (${category.category})`;
+                        categorySelect.appendChild(option);
+                    });
+                    categorySelect.disabled = false;
+                }
+            }
+            
+            function applyTransactionDefaults(selectedType) {
                 const debitAccountSelect = document.querySelector('select[name="debit_account_id"]');
                 const creditAccountSelect = document.querySelector('select[name="credit_account_id"]');
+                const categorySelect = document.querySelector('select[name="category_id"]');
                 
-                if (selectedType === 'internal_transfer') {
-                    // Show transfer fields and populate destination dropdown
-                    transferFields.style.display = 'block';
-                    populateDestinationAccountDropdown();
+                // Clear previous selections first
+                if (debitAccountSelect) debitAccountSelect.value = '';
+                if (creditAccountSelect) creditAccountSelect.value = '';
+                if (categorySelect) categorySelect.value = '';
+                
+                // Set default accounts and category based on transaction type
+                if (selectedType === 'donation') {
+                    // For donations: Debit Indovina Bank (asset increases), Credit Revenue (income)
+                    if (debitAccountSelect) {
+                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('indovina bank')
+                        );
+                        if (bankOption) {
+                            debitAccountSelect.value = bankOption.value;
+                            console.log('Auto-selected Indovina Bank for debit (donation received)');
+                        }
+                    }
                     
-                    // Hide Fund and Category fields completely
-                    if (fundGroup) fundGroup.style.display = 'none';
-                    if (categoryGroup) categoryGroup.style.display = 'none';
+                    if (creditAccountSelect) {
+                        const revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('revenue')
+                        );
+                        if (revenueOption) {
+                            creditAccountSelect.value = revenueOption.value;
+                            console.log('Auto-selected Revenue account for credit (donation):', revenueOption.textContent);
+                        }
+                    }
                     
-                    // Remove required attribute to prevent validation errors
-                    if (fundSelect) fundSelect.removeAttribute('required');
-                    if (categorySelect) categorySelect.removeAttribute('required');
-                } else {
-                    // Hide transfer fields for Donation and Payment
-                    transferFields.style.display = 'none';
-                    // Clear destination selection
-                    if (destSelect) destSelect.value = '';
+                    // Auto-select Donation category for donations
+                    if (categorySelect) {
+                        const donationOption = Array.from(categorySelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('donation')
+                        );
+                        if (donationOption) {
+                            categorySelect.value = donationOption.value;
+                            console.log('Auto-selected Donation category for donation');
+                        }
+                    }
+                } else if (selectedType === 'payment') {
+                    console.log('🔄 Applying payment defaults...');
+                    console.log('🔄 Payment mode detected - starting account selection process');
                     
-                    // Show Fund and Category fields again
-                    if (fundGroup) fundGroup.style.display = 'block';
-                    if (categoryGroup) categoryGroup.style.display = 'block';
-                    
-                    // Add back required attribute for normal transactions
-                    if (fundSelect) fundSelect.setAttribute('required', 'required');
-                    if (categorySelect) categorySelect.setAttribute('required', 'required');
-                    
-                    // Clear previous selections first
-                    if (debitAccountSelect) debitAccountSelect.value = '';
-                    if (creditAccountSelect) creditAccountSelect.value = '';
-                    
-                    // Set default accounts and category based on transaction type
-                    if (selectedType === 'donation') {
-                        // For donations: Debit Bank (asset increases), Credit Equity (income)
-                        if (debitAccountSelect) {
-                            const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('bank')
+                    // For payments: Debit VN - Expenses, Credit VN - Indovina Bank
+                    if (debitAccountSelect) {
+                        console.log('🔍 Looking for VN - Expenses in debit options:');
+                        Array.from(debitAccountSelect.options).forEach((opt, index) => {
+                            console.log(`  ${index}: "${opt.textContent}" (value: "${opt.value}")`);
+                        });
+                        
+                        // Try exact match first, then partial matches
+                        let expenseOption = Array.from(debitAccountSelect.options).find(option => 
+                            option.textContent.trim() === 'VN - Expenses (Nominal Accounts)'
+                        );
+                        
+                        if (!expenseOption) {
+                            expenseOption = Array.from(debitAccountSelect.options).find(option => 
+                                option.textContent.toLowerCase().includes('vn - expenses (nominal accounts)')
                             );
-                            if (bankOption) {
-                                debitAccountSelect.value = bankOption.value;
-                                console.log('Auto-selected Bank account for debit (donation received)');
-                            }
                         }
                         
-                        if (creditAccountSelect) {
-                            // For donations, always credit Revenue account
-                            const revenueOption = Array.from(creditAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('revenue')
+                        if (!expenseOption) {
+                            expenseOption = Array.from(debitAccountSelect.options).find(option => 
+                                option.textContent.toLowerCase().includes('expenses (nominal accounts)')
                             );
+                        }
+                        
+                        if (expenseOption) {
+                            // Find the index of the option
+                            const optionIndex = Array.from(debitAccountSelect.options).indexOf(expenseOption);
+                            console.log('🔧 Setting debit by index:', optionIndex, 'for option:', expenseOption.textContent);
                             
-                            if (revenueOption) {
-                                creditAccountSelect.value = revenueOption.value;
-                                console.log('Auto-selected Revenue account for credit (donation):', revenueOption.textContent);
-                            }
+                            // Set by both methods
+                            debitAccountSelect.selectedIndex = optionIndex;
+                            debitAccountSelect.value = expenseOption.value;
+                            
+                            // Force browser refresh
+                            debitAccountSelect.style.display = 'none';
+                            debitAccountSelect.offsetHeight; // Trigger reflow
+                            debitAccountSelect.style.display = '';
+                            
+                            console.log('🔧 After setting - selectedIndex:', debitAccountSelect.selectedIndex, 'value:', debitAccountSelect.value);
+                            console.log('✅ Auto-selected VN - Expenses account for payment debit:', expenseOption.textContent);
+                        } else {
+                            console.log('❌ Could not find VN - Expenses account for debit');
+                        }
+                    }
+                    
+                    if (creditAccountSelect) {
+                        console.log('🔍 Looking for VN - Indovina Bank in credit options:');
+                        Array.from(creditAccountSelect.options).forEach((opt, index) => {
+                            console.log(`  ${index}: "${opt.textContent}" (value: "${opt.value}")`);
+                        });
+                        
+                        // Try exact match first, then partial matches
+                        let bankOption = Array.from(creditAccountSelect.options).find(option => 
+                            option.textContent.trim() === 'VN - Indovina Bank (Real Accounts)'
+                        );
+                        
+                        if (!bankOption) {
+                            bankOption = Array.from(creditAccountSelect.options).find(option => 
+                                option.textContent.toLowerCase().includes('vn - indovina bank (real accounts)')
+                            );
                         }
                         
-                        // Auto-select Donation category for donations
-                        if (categorySelect) {
-                            const donationOption = Array.from(categorySelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('donation')
+                        if (!bankOption) {
+                            bankOption = Array.from(creditAccountSelect.options).find(option => 
+                                option.textContent.toLowerCase().includes('indovina bank (real accounts)')
                             );
-                            if (donationOption) {
-                                categorySelect.value = donationOption.value;
-                                console.log('Auto-selected Donation category for donation');
-                            }
+                        }
+                        
+                        if (bankOption) {
+                            // Find the index of the option
+                            const optionIndex = Array.from(creditAccountSelect.options).indexOf(bankOption);
+                            console.log('🔧 Setting credit by index:', optionIndex, 'for option:', bankOption.textContent);
+                            
+                            // Set by both methods
+                            creditAccountSelect.selectedIndex = optionIndex;
+                            creditAccountSelect.value = bankOption.value;
+                            
+                            // Force browser refresh
+                            creditAccountSelect.style.display = 'none';
+                            creditAccountSelect.offsetHeight; // Trigger reflow
+                            creditAccountSelect.style.display = '';
+                            
+                            console.log('🔧 After setting - selectedIndex:', creditAccountSelect.selectedIndex, 'value:', creditAccountSelect.value);
+                            console.log('✅ Auto-selected VN - Indovina Bank for payment credit:', bankOption.textContent);
+                        } else {
+                            console.log('❌ Could not find VN - Indovina Bank account for credit');
+                        }
+                    }
+                    
+                    // Auto-select Food & Meals category for payments
+                    if (categorySelect) {
+                        console.log('🔍 Looking for Food & Meals in category options:');
+                        const foodOption = Array.from(categorySelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('food') || 
+                            option.textContent.toLowerCase().includes('meals')
+                        );
+                        if (foodOption) {
+                            categorySelect.value = foodOption.value;
+                            console.log('✅ Auto-selected Food & Meals category for payment:', foodOption.textContent);
+                        } else {
+                            console.log('❌ Could not find Food & Meals category');
+                        }
+                    }
+                } else if (selectedType === 'internal_transfer') {
+                    console.log('🔄 Applying internal transfer defaults...');
+                    
+                    // Auto-set standard internal transfer accounts
+                    if (debitAccountSelect) {
+                        const walletOption = Array.from(debitAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('wallet')
+                        );
+                        if (walletOption) {
+                            debitAccountSelect.value = walletOption.value;
+                            console.log('✅ Auto-selected Wallet for internal transfer debit:', walletOption.textContent);
+                        }
+                    }
+                    
+                    if (creditAccountSelect) {
+                        const bankOption = Array.from(creditAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('indovina bank')
+                        );
+                        if (bankOption) {
+                            creditAccountSelect.value = bankOption.value;
+                            console.log('✅ Auto-selected Indovina Bank for internal transfer credit:', bankOption.textContent);
+                        }
+                    }
+                    
+                    // Auto-select Internal Transfer for Fund
+                    const fundSelect = document.querySelector('select[name="fund_id"]');
+                    if (fundSelect) {
+                        console.log('🔍 Looking for Internal Transfer in fund options:');
+                        const internalTransferFund = Array.from(fundSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('internal transfer')
+                        );
+                        if (internalTransferFund) {
+                            fundSelect.value = internalTransferFund.value;
+                            console.log('✅ Auto-selected Internal Transfer fund:', internalTransferFund.textContent);
+                        } else {
+                            console.log('❌ Could not find Internal Transfer fund option');
+                        }
+                    }
+                    
+                    // Auto-select Internal Transfer for Category
+                    if (categorySelect) {
+                        console.log('🔍 Looking for Internal Transfer in category options:');
+                        const internalTransferCategory = Array.from(categorySelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('internal transfer')
+                        );
+                        if (internalTransferCategory) {
+                            categorySelect.value = internalTransferCategory.value;
+                            console.log('✅ Auto-selected Internal Transfer category:', internalTransferCategory.textContent);
+                        } else {
+                            console.log('❌ Could not find Internal Transfer category option');
+                        }
+                    }
+                } else if (selectedType === 'interbanking_transfer') {
+                    // For interbanking transfers: Debit one bank, Credit another bank
+                    if (debitAccountSelect) {
+                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('bank')
+                        );
+                        if (bankOption) {
+                            debitAccountSelect.value = bankOption.value;
+                            console.log('Auto-selected Bank account for interbanking transfer debit');
+                        }
+                    }
+                    
+                    if (creditAccountSelect) {
+                        const bankOption = Array.from(creditAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('bank') && 
+                            option.value !== debitAccountSelect.value
+                        );
+                        if (bankOption) {
+                            creditAccountSelect.value = bankOption.value;
+                            console.log('Auto-selected different Bank account for interbanking transfer credit');
+                        }
+                    }
+                } else if (selectedType === 'expense') {
+                    // For expenses: Debit Expense account, Credit Bank account
+                    if (debitAccountSelect) {
+                        const expenseOption = Array.from(debitAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('expense')
+                        );
+                        if (expenseOption) {
+                            debitAccountSelect.value = expenseOption.value;
+                            console.log('Auto-selected Expense account for debit');
+                        }
+                    }
+                    
+                    if (creditAccountSelect) {
+                        const bankOption = Array.from(creditAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('bank')
+                        );
+                        if (bankOption) {
+                            creditAccountSelect.value = bankOption.value;
+                            console.log('Auto-selected Bank account for expense credit');
+                        }
+                    }
+                } else if (selectedType === 'grant') {
+                    // For grants: Debit Bank account (asset increases), Credit Revenue account
+                    if (debitAccountSelect) {
+                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('bank')
+                        );
+                        if (bankOption) {
+                            debitAccountSelect.value = bankOption.value;
+                            console.log('Auto-selected Bank account for grant debit');
+                        }
+                    }
+                    
+                    if (creditAccountSelect) {
+                        const revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('revenue')
+                        );
+                        if (revenueOption) {
+                            creditAccountSelect.value = revenueOption.value;
+                            console.log('Auto-selected Revenue account for grant credit');
                         }
                     }
                 }
             }
              
-             function populateDestinationAccountDropdown() {
-                 console.log('populateDestinationAccountDropdown() called');
-                 const destSelect = document.getElementById('destinationAccountSelect');
-                 const currentWorksheet = document.getElementById('worksheet_select').value;
-                 
-                 console.log('Current worksheet:', currentWorksheet);
-                 console.log('Available accounts:', allAvailableAccounts);
-                 
-                 // Clear existing options
-                 destSelect.innerHTML = '<option value="">Select destination account...</option>';
-                 
-                 // Add all available accounts to destination dropdown (except current worksheet)
-                 allAvailableAccounts.forEach(account => {
-                     console.log('Processing account:', account.title);
-                     // Skip the current worksheet (origin account)
-                     if (account.title !== currentWorksheet) {
-                         const destOption = document.createElement('option');
-                         destOption.value = account.title;
-                         destOption.textContent = account.title;
-                         destSelect.appendChild(destOption);
-                         console.log('Added destination option:', account.title);
-                     } else {
-                         console.log('Skipped current worksheet:', account.title);
-                     }
-                 });
-                 
-                 console.log('Destination dropdown populated with', destSelect.options.length - 1, 'options');
-             }
+             // Internal transfer accounts are now auto-selected, no need for destination dropdown
              
              function loadWorksheets() {
                  console.log('loadWorksheets() called');
@@ -408,8 +646,7 @@
                          console.log('Worksheets data received:', data);
                          worksheetSelect.innerHTML = '<option value="">Choose an account...</option>';
                          
-                         // Store accounts globally for transfer dropdowns
-                         allAvailableAccounts = data;
+                         // Accounts loaded successfully
                          
                                                  if (data.length > 0) {
                             data.forEach(ws => {
@@ -422,20 +659,27 @@
                             worksheetSelect.disabled = false;
                             console.log('Worksheets loaded successfully');
                             
-                            // Auto-select "Master Ledger" if it exists
-                            const masterLedgerOption = Array.from(worksheetSelect.options).find(option => 
-                                option.textContent.includes('Master Ledger')
-                            );
-                            if (masterLedgerOption) {
-                                worksheetSelect.value = masterLedgerOption.value;
-                                console.log('Auto-selected Master Ledger worksheet');
-                            }
+                                             // Auto-select "Master Ledger" if it exists
+                 const masterLedgerOption = Array.from(worksheetSelect.options).find(option => 
+                     option.textContent.includes('Master Ledger')
+                 );
+                 if (masterLedgerOption) {
+                     worksheetSelect.value = masterLedgerOption.value;
+                     console.log('Auto-selected Master Ledger worksheet');
+                 }
+                 
+                 // Note: Account defaults are now handled by handleTransactionTypeChange() function
+                 // to avoid conflicts with transaction type-specific defaults
+                 
+                 // Apply transaction type defaults after worksheets are loaded
+                 setTimeout(() => {
+                     const transactionSelect = document.getElementById('transaction_category');
+                     if (transactionSelect) {
+                         handleTransactionTypeChange();
+                     }
+                 }, 500);
                              
-                             // If internal transfer is checked, populate destination dropdown
-                             const internalTransferCheck = document.getElementById('internalTransferCheck');
-                             if (internalTransferCheck && internalTransferCheck.checked) {
-                                 populateDestinationAccountDropdown();
-                             }
+                             // Internal transfer accounts are now auto-selected
                          } else {
                              worksheetSelect.innerHTML = '<option value="">No accounts found</option>';
                              console.log('No worksheets found');
@@ -450,30 +694,8 @@
              function handleFormSubmit(event) {
                  console.log('Form submission started');
                  
-                 // Validate internal transfer fields
-                 const internalTransferCheck = document.getElementById('internalTransferCheck');
-                 if (internalTransferCheck.checked) {
-                     console.log('Internal transfer checkbox is checked');
-                     const destinationAccount = document.getElementById('destinationAccountSelect').value;
-                     const originAccount = document.getElementById('worksheet_select').value;
-                     
-                     console.log('Destination account:', destinationAccount);
-                     console.log('Origin account (worksheet):', originAccount);
-                     
-                     if (!destinationAccount) {
-                         alert('Please select a destination account for internal transfers.');
-                         event.preventDefault();
-                         return false;
-                     }
-                     
-                     if (originAccount === destinationAccount) {
-                         alert('Origin and destination accounts cannot be the same for internal transfers.');
-                         event.preventDefault();
-                         return false;
-                     }
-                 } else {
-                     console.log('Internal transfer checkbox is NOT checked');
-                 }
+                 // Note: Internal transfer validation removed as those elements don't exist in current HTML
+                 console.log('Form submission validation passed');
                  
                  // Get form data
                  const formData = new FormData(document.getElementById('mainForm'));

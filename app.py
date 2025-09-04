@@ -1,4 +1,6 @@
 # =============================================================================
+# Created: 2025-09-04 04:26:36
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 22:51:02
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 19:28:04
@@ -272,6 +274,45 @@ def upload_file():
             
     except Exception as e:
         print(f"DEBUG: Error in upload_file route: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Refresh Form Data Route
+# ------------------------
+@app.route('/refresh_form_data', methods=['POST'])
+def refresh_form_data():
+    """
+    AJAX route to refresh form data when transaction type changes
+    """
+    try:
+        data = request.get_json()
+        transaction_type = data.get('transaction_type', 'donation')
+        
+        print(f"\n" + "="*50)
+        print(f"DEBUG: REFRESH_FORM_DATA CALLED")
+        print(f"  - Transaction Type: {transaction_type}")
+        print(f"="*50)
+        
+        # Get fresh data from Google Sheets
+        accounts = get_accounts_list(gc)
+        categories = get_categories_list(gc)
+        funds = get_funds_list(gc)
+        
+        print(f"DEBUG: Retrieved fresh data:")
+        print(f"  - Accounts: {len(accounts)} items")
+        print(f"  - Categories: {len(categories)} items")
+        print(f"  - Funds: {len(funds)} items")
+        print(f"="*50)
+        
+        return jsonify({
+            'success': True,
+            'accounts': accounts,
+            'categories': categories,
+            'funds': funds,
+            'transaction_type': transaction_type
+        })
+        
+    except Exception as e:
+        print(f"ERROR in refresh_form_data: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # =============================================================================
