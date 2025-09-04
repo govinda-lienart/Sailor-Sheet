@@ -133,30 +133,70 @@
                         </select>
                     </div>
                     
+                    
+                    <!-- DUAL ACCOUNT SECTIONS FOR INTERBANKING TRANSFERS -->
+                    <div id="dualAccountSections" style="display: none; margin-top: 20px; padding: 15px; border: 3px solid #007bff; border-radius: 8px; background-color: #e3f2fd; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h3 style="color: #007bff; margin-bottom: 15px;">🌍 Dual-Entry Accounting (Interbanking Transfer)</h3>
+                        
+                        <!-- ORIGIN ACCOUNT SECTION -->
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #28a745; margin-bottom: 10px;">📍 Origin Account</h4>
+                            <div class="form-group">
+                                <label>Origin Debit:</label>
+                                <select name="origin_debit_account_id">
+                                    <option value="">Choose origin debit account...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.code }}">
+                                        {{ account.name }} ({{ account.type }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Account to debit at origin</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Origin Credit:</label>
+                                <select name="origin_credit_account_id">
+                                    <option value="">Choose origin credit account...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.code }}">
+                                        {{ account.name }} ({{ account.type }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Account to credit at origin</div>
+                            </div>
+                        </div>
+                        
+                        <!-- DESTINATION ACCOUNT SECTION -->
+                        <div>
+                            <h4 style="color: #dc3545; margin-bottom: 10px;">🎯 Destination Account</h4>
                     <div class="form-group">
-                        <label>Debit:</label>
-                        <select name="debit_account_id" required>
-                            <option value="">Choose account to debit...</option>
+                                <label>Destination Debit:</label>
+                                <select name="destination_debit_account_id">
+                                    <option value="">Choose destination debit account...</option>
                             {% for account in accounts %}
                             <option value="{{ account.code }}">
                                 {{ account.name }} ({{ account.type }})
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Select the account to be debited</div>
+                                <div class="form-text">Account to debit at destination</div>
                     </div>
                     
                     <div class="form-group">
-                        <label>Credit:</label>
-                        <select name="credit_account_id" required>
-                            <option value="">Choose account to credit...</option>
+                                <label>Destination Credit:</label>
+                                <select name="destination_credit_account_id">
+                                    <option value="">Choose destination credit account...</option>
                             {% for account in accounts %}
                             <option value="{{ account.code }}">
                                 {{ account.name }} ({{ account.type }})
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Select the account to be credited</div>
+                                <div class="form-text">Account to credit at destination</div>
+                            </div>
+                        </div>
                     </div>
                      
 
@@ -244,10 +284,11 @@
                     loadWorksheets();
                 }
                 
-                // Apply default settings for the pre-selected payment transaction type
+                // Apply default settings for the pre-selected transaction type
                 setTimeout(function() {
                     const transactionSelect = document.getElementById('transaction_category');
-                    if (transactionSelect && transactionSelect.value === 'payment') {
+                    if (transactionSelect) {
+                        console.log('🔄 Initial page load - calling handleTransactionTypeChange for:', transactionSelect.value);
                         handleTransactionTypeChange();
                     }
                 }, 1000); // Increased delay to ensure all dropdowns are fully loaded
@@ -257,6 +298,22 @@
                 const selectedType = document.getElementById('transaction_category').value;
                 console.log('🚀 Transaction type changed to:', selectedType, '(using JSON data - no API calls!)');
                 
+                // Show/hide dual account sections based on transaction type
+                const dualSections = document.getElementById('dualAccountSections');
+                console.log('🔍 Looking for dualAccountSections element:', dualSections);
+                
+                if (dualSections) {
+                    if (selectedType === 'interbanking_transfer') {
+                        dualSections.style.display = 'block';
+                        console.log('✅ Showing dual account sections for interbanking transfer');
+                    } else {
+                        dualSections.style.display = 'none';
+                        console.log('✅ Hiding dual account sections for other transaction types');
+                    }
+                } else {
+                    console.error('❌ Could not find dualAccountSections element!');
+                }
+                
                 // Apply transaction type specific defaults immediately
                 // No need for AJAX calls or caching - data is already loaded from JSON!
                 applyTransactionDefaults(selectedType);
@@ -265,38 +322,13 @@
             // updateDropdowns function removed - no longer needed since data is loaded from JSON!
             
             function applyTransactionDefaults(selectedType) {
-                const debitAccountSelect = document.querySelector('select[name="debit_account_id"]');
-                const creditAccountSelect = document.querySelector('select[name="credit_account_id"]');
                 const categorySelect = document.querySelector('select[name="category_id"]');
                 
                 // Clear previous selections first
-                if (debitAccountSelect) debitAccountSelect.value = '';
-                if (creditAccountSelect) creditAccountSelect.value = '';
                 if (categorySelect) categorySelect.value = '';
                 
-                // Set default accounts and category based on transaction type
+                // Set default category based on transaction type
                 if (selectedType === 'donation') {
-                    // For donations: Debit Indovina Bank (asset increases), Credit Revenue (income)
-                    if (debitAccountSelect) {
-                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('indovina bank')
-                        );
-                        if (bankOption) {
-                            debitAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected Indovina Bank for debit (donation received)');
-                        }
-                    }
-                    
-                    if (creditAccountSelect) {
-                        const revenueOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('revenue')
-                        );
-                        if (revenueOption) {
-                            creditAccountSelect.value = revenueOption.value;
-                            console.log('Auto-selected Revenue account for credit (donation):', revenueOption.textContent);
-                        }
-                    }
-                    
                     // Auto-select Donation category for donations
                     if (categorySelect) {
                         const donationOption = Array.from(categorySelect.options).find(option => 
@@ -309,96 +341,6 @@
                     }
                 } else if (selectedType === 'payment') {
                     console.log('🔄 Applying payment defaults...');
-                    console.log('🔄 Payment mode detected - starting account selection process');
-                    
-                    // For payments: Debit VN - Expenses, Credit VN - Indovina Bank
-                    if (debitAccountSelect) {
-                        console.log('🔍 Looking for VN - Expenses in debit options:');
-                        Array.from(debitAccountSelect.options).forEach((opt, index) => {
-                            console.log(`  ${index}: "${opt.textContent}" (value: "${opt.value}")`);
-                        });
-                        
-                        // Try exact match first, then partial matches
-                        let expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.trim() === 'VN - Expenses (Nominal Accounts)'
-                        );
-                        
-                        if (!expenseOption) {
-                            expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('vn - expenses (nominal accounts)')
-                            );
-                        }
-                        
-                        if (!expenseOption) {
-                            expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('expenses (nominal accounts)')
-                            );
-                        }
-                        
-                        if (expenseOption) {
-                            // Find the index of the option
-                            const optionIndex = Array.from(debitAccountSelect.options).indexOf(expenseOption);
-                            console.log('🔧 Setting debit by index:', optionIndex, 'for option:', expenseOption.textContent);
-                            
-                            // Set by both methods
-                            debitAccountSelect.selectedIndex = optionIndex;
-                            debitAccountSelect.value = expenseOption.value;
-                            
-                            // Force browser refresh
-                            debitAccountSelect.style.display = 'none';
-                            debitAccountSelect.offsetHeight; // Trigger reflow
-                            debitAccountSelect.style.display = '';
-                            
-                            console.log('🔧 After setting - selectedIndex:', debitAccountSelect.selectedIndex, 'value:', debitAccountSelect.value);
-                            console.log('✅ Auto-selected VN - Expenses account for payment debit:', expenseOption.textContent);
-                        } else {
-                            console.log('❌ Could not find VN - Expenses account for debit');
-                        }
-                    }
-                    
-                    if (creditAccountSelect) {
-                        console.log('🔍 Looking for VN - Indovina Bank in credit options:');
-                        Array.from(creditAccountSelect.options).forEach((opt, index) => {
-                            console.log(`  ${index}: "${opt.textContent}" (value: "${opt.value}")`);
-                        });
-                        
-                        // Try exact match first, then partial matches
-                        let bankOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.trim() === 'VN - Indovina Bank (Real Accounts)'
-                        );
-                        
-                        if (!bankOption) {
-                            bankOption = Array.from(creditAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('vn - indovina bank (real accounts)')
-                            );
-                        }
-                        
-                        if (!bankOption) {
-                            bankOption = Array.from(creditAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('indovina bank (real accounts)')
-                            );
-                        }
-                        
-                        if (bankOption) {
-                            // Find the index of the option
-                            const optionIndex = Array.from(creditAccountSelect.options).indexOf(bankOption);
-                            console.log('🔧 Setting credit by index:', optionIndex, 'for option:', bankOption.textContent);
-                            
-                            // Set by both methods
-                            creditAccountSelect.selectedIndex = optionIndex;
-                            creditAccountSelect.value = bankOption.value;
-                            
-                            // Force browser refresh
-                            creditAccountSelect.style.display = 'none';
-                            creditAccountSelect.offsetHeight; // Trigger reflow
-                            creditAccountSelect.style.display = '';
-                            
-                            console.log('🔧 After setting - selectedIndex:', creditAccountSelect.selectedIndex, 'value:', creditAccountSelect.value);
-                            console.log('✅ Auto-selected VN - Indovina Bank for payment credit:', bankOption.textContent);
-                        } else {
-                            console.log('❌ Could not find VN - Indovina Bank account for credit');
-                        }
-                    }
                     
                     // Auto-select Food & Meals category for payments
                     if (categorySelect) {
@@ -416,27 +358,6 @@
                     }
                 } else if (selectedType === 'internal_transfer') {
                     console.log('🔄 Applying internal transfer defaults...');
-                    
-                    // Auto-set standard internal transfer accounts
-                    if (debitAccountSelect) {
-                        const walletOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('wallet')
-                        );
-                        if (walletOption) {
-                            debitAccountSelect.value = walletOption.value;
-                            console.log('✅ Auto-selected Wallet for internal transfer debit:', walletOption.textContent);
-                        }
-                    }
-                    
-                    if (creditAccountSelect) {
-                        const bankOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('indovina bank')
-                        );
-                        if (bankOption) {
-                            creditAccountSelect.value = bankOption.value;
-                            console.log('✅ Auto-selected Indovina Bank for internal transfer credit:', bankOption.textContent);
-                        }
-                    }
                     
                     // Auto-select Internal Transfer for Fund
                     const fundSelect = document.querySelector('select[name="fund_id"]');
@@ -467,67 +388,55 @@
                         }
                     }
                 } else if (selectedType === 'interbanking_transfer') {
-                    // For interbanking transfers: Debit one bank, Credit another bank
-                    if (debitAccountSelect) {
-                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('bank')
+                    console.log('🔄 Applying interbanking transfer defaults for dual-entry sections...');
+                    
+                    // Set defaults for dual account sections
+                    const originDebitSelect = document.querySelector('select[name="origin_debit_account_id"]');
+                    const originCreditSelect = document.querySelector('select[name="origin_credit_account_id"]');
+                    const destinationDebitSelect = document.querySelector('select[name="destination_debit_account_id"]');
+                    const destinationCreditSelect = document.querySelector('select[name="destination_credit_account_id"]');
+                    
+                    // 📍 Origin Account defaults
+                    if (originDebitSelect) {
+                        const indovinaOption = Array.from(originDebitSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('indovina')
                         );
-                        if (bankOption) {
-                            debitAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected Bank account for interbanking transfer debit');
+                        if (indovinaOption) {
+                            originDebitSelect.value = indovinaOption.value;
+                            console.log('✅ Auto-selected VN-Indovina Bank for origin debit:', indovinaOption.textContent);
                         }
                     }
                     
-                    if (creditAccountSelect) {
-                        const bankOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('bank') && 
-                            option.value !== debitAccountSelect.value
+                    if (originCreditSelect) {
+                        const revenuesOption = Array.from(originCreditSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('vn') && 
+                            option.textContent.toLowerCase().includes('revenues')
                         );
-                        if (bankOption) {
-                            creditAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected different Bank account for interbanking transfer credit');
-                        }
-                    }
-                } else if (selectedType === 'expense') {
-                    // For expenses: Debit Expense account, Credit Bank account
-                    if (debitAccountSelect) {
-                        const expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('expense')
-                        );
-                        if (expenseOption) {
-                            debitAccountSelect.value = expenseOption.value;
-                            console.log('Auto-selected Expense account for debit');
+                        if (revenuesOption) {
+                            originCreditSelect.value = revenuesOption.value;
+                            console.log('✅ Auto-selected VN-Revenues for origin credit:', revenuesOption.textContent);
                         }
                     }
                     
-                    if (creditAccountSelect) {
-                        const bankOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('bank')
+                    // 🎯 Destination Account defaults
+                    if (destinationDebitSelect) {
+                        const expensesOption = Array.from(destinationDebitSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('be') && 
+                            option.textContent.toLowerCase().includes('expenses')
                         );
-                        if (bankOption) {
-                            creditAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected Bank account for expense credit');
+                        if (expensesOption) {
+                            destinationDebitSelect.value = expensesOption.value;
+                            console.log('✅ Auto-selected BE-Expenses for destination debit:', expensesOption.textContent);
                         }
                     }
-                } else if (selectedType === 'grant') {
-                    // For grants: Debit Bank account (asset increases), Credit Revenue account
-                        if (debitAccountSelect) {
-                            const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('bank')
-                            );
-                            if (bankOption) {
-                                debitAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected Bank account for grant debit');
-                        }
-                        }
-                        
-                        if (creditAccountSelect) {
-                            const revenueOption = Array.from(creditAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('revenue')
-                            );
-                            if (revenueOption) {
-                                creditAccountSelect.value = revenueOption.value;
-                            console.log('Auto-selected Revenue account for grant credit');
+                    
+                    if (destinationCreditSelect) {
+                        const belfiusOption = Array.from(destinationCreditSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('belfius')
+                        );
+                        if (belfiusOption) {
+                            destinationCreditSelect.value = belfiusOption.value;
+                            console.log('✅ Auto-selected BE-Belfius for destination credit:', belfiusOption.textContent);
                         }
                     }
                 }

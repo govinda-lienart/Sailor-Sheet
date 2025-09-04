@@ -272,21 +272,90 @@ def index():
         print(f"  - fund_id: {fund_id}")
         print(f"  - category_id: {category_id}")
         
-        transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_link_dict, origin_account, destination_account, transfer_type)
-        print(f"DEBUG: Transaction result: {transaction_result}")
+        # Get the actual transaction type from the form
+        form_transaction_type = request.form.get('transaction_category', transaction_type)
+        print(f"DEBUG: Form transaction type: {form_transaction_type}")
         
-        if transaction_result:
-            print("DEBUG: Transaction successful! Redirecting to thank you page")
-            # Transaction successful! Redirect to thank you page
-            return redirect(url_for('thank_you'))
+        # Check if this is an interbanking transfer that needs dual-entry
+        if form_transaction_type == 'interbanking_transfer':
+            print("🔄 Processing INTERBANKING TRANSFER with dual-entry accounting...")
+            
+            # Get dual account selections from form
+            origin_debit = request.form.get('origin_debit_account_id', '')
+            origin_credit = request.form.get('origin_credit_account_id', '')
+            destination_debit = request.form.get('destination_debit_account_id', '')
+            destination_credit = request.form.get('destination_credit_account_id', '')
+            
+            print(f"📋 Dual form data:")
+            print(f"  - Origin Debit: {origin_debit}")
+            print(f"  - Origin Credit: {origin_credit}")
+            print(f"  - Destination Debit: {destination_debit}")
+            print(f"  - Destination Credit: {destination_credit}")
+            
+            # Validate that all dual fields are filled
+            if not all([origin_debit, origin_credit, destination_debit, destination_credit]):
+                print("❌ Missing dual account selections")
+                flash('Please fill in all origin and destination account fields for interbanking transfer!', 'error')
+                available_sheets = get_available_sheets(gc)
+                funds = get_funds_from_json()
+                categories = get_categories_from_json()
+                accounts = get_accounts_from_json()
+                return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
+            
+            # Create Vietnam entry using origin accounts
+            print(f"🇻🇳 Creating Vietnam entry: Debit {origin_debit}, Credit {origin_credit}")
+            vietnam_result = add_transaction_to_selected_sheet(
+                gc, selected_sheet_id, selected_worksheet_title, amount, description, 
+                fund_id, category_id, origin_debit, origin_credit, 
+                transaction_type, date_input, transaction_number, file_link_dict, 
+                origin_account, destination_account, transfer_type
+            )
+            
+            # Create Belgium entry using destination accounts
+            belgium_sheet_id = "1o5RnuAmm00YAqZzLkyrhZx7CocEETBhi-snPGUzbqSk"  # Belgium Master Ledger
+            belgium_worksheet = "BE - Master Ledger"
+            
+            print(f"🇧🇪 Creating Belgium entry: Debit {destination_debit}, Credit {destination_credit}")
+            belgium_result = add_transaction_to_selected_sheet(
+                gc, belgium_sheet_id, belgium_worksheet, amount, 
+                f"Interbanking Transfer - {description}", 
+                fund_id, category_id, destination_debit, destination_credit, 
+                transaction_type, date_input, transaction_number, file_link_dict, 
+                origin_account, destination_account, transfer_type
+            )
+            
+            print(f"🇻🇳 Vietnam transaction result: {vietnam_result}")
+            print(f"🇧🇪 Belgium transaction result: {belgium_result}")
+            
+            if vietnam_result and belgium_result:
+                print("✅ DUAL-ENTRY SUCCESS: Both Vietnam and Belgium entries created!")
+                flash('Interbanking transfer recorded in both Vietnam and Belgium accounting systems!', 'success')
+                return redirect(url_for('thank_you'))
+            else:
+                print("❌ DUAL-ENTRY FAILED: One or both entries failed")
+                flash('Error creating dual-entry transaction! Please check both accounting systems.', 'error')
+                available_sheets = get_available_sheets(gc)
+                funds = get_funds_from_json()
+                categories = get_categories_from_json()
+                accounts = get_accounts_from_json()
+                return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
         else:
-            print("ERROR: Transaction failed!")
-            flash('Error adding transaction!', 'error')
-            available_sheets = get_available_sheets(gc)
-            funds = get_funds_from_json()
-            categories = get_categories_from_json()
-            accounts = get_accounts_from_json()
-            return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
+            # Regular single-entry transaction
+            transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_link_dict, origin_account, destination_account, transfer_type)
+            print(f"DEBUG: Transaction result: {transaction_result}")
+            
+            if transaction_result:
+                print("DEBUG: Transaction successful! Redirecting to thank you page")
+                # Transaction successful! Redirect to thank you page
+                return redirect(url_for('thank_you'))
+            else:
+                print("ERROR: Transaction failed!")
+                flash('Error adding transaction!', 'error')
+                available_sheets = get_available_sheets(gc)
+                funds = get_funds_from_json()
+                categories = get_categories_from_json()
+                accounts = get_accounts_from_json()
+                return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
     
     # =====================================================================
     # SHOW THE FORM WITH SHEET SELECTION (GET request)

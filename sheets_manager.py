@@ -581,19 +581,34 @@ def get_account_name_by_code(gc, account_code):
     Returns: Account name or "Unknown Account" if not found
     """
     try:
+        import json
+        import os
+        
         print(f"DEBUG: get_account_name_by_code called with account_code: {account_code}")
-        accounts_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Accounts")
-        accounts_data = accounts_sheet.get_all_records()
-        print(f"DEBUG: Retrieved {len(accounts_data)} account records")
         
-        for i, acc in enumerate(accounts_data):
-            print(f"DEBUG: Account {i}: Code='{acc.get('Category Code')}', Name='{acc.get('Account Name')}'")
-            if str(acc.get('Category Code', '')) == str(account_code):
-                print(f"DEBUG: Found matching account: {acc.get('Account Name')}")
-                return acc.get('Account Name', '')
+        # Load accounts from JSON file instead of Google Sheets
+        json_file_path = os.path.join('data', 'accounts.json')
+        if not os.path.exists(json_file_path):
+            print(f"ERROR: JSON file not found: {json_file_path}")
+            return "Unknown Account"
         
-        print(f"WARNING: Account Code {account_code} not found")
-        print(f"DEBUG: Available account codes: {[str(acc.get('Category Code', '')) for acc in accounts_data]}")
+        with open(json_file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        
+        accounts = data.get('accounts', [])
+        print(f"DEBUG: Retrieved {len(accounts)} account records from JSON")
+        
+        # Look for matching account by code or name
+        for acc in accounts:
+            # Check if account_code matches either the code or name
+            if (str(acc.get('code', '')) == str(account_code) or 
+                str(acc.get('name', '')) == str(account_code)):
+                account_name = acc.get('name', '')
+                print(f"DEBUG: Found matching account: {account_name}")
+                return account_name
+        
+        print(f"WARNING: Account Code/Name '{account_code}' not found in JSON")
+        print(f"DEBUG: Available accounts: {[acc.get('code') + ' - ' + acc.get('name') for acc in accounts]}")
         return "Unknown Account"
         
     except Exception as e:
