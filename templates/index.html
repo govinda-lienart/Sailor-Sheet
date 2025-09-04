@@ -8,7 +8,7 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-04 14:23:56 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-04 14:26:30 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
@@ -565,17 +565,17 @@
                         }
                     }
                     
-                    // Auto-select Internal Transfer for Category
+                    // Auto-select Internal Bank Transfer for Category
                     if (categorySelect) {
-                        console.log('🔍 Looking for Internal Transfer in category options:');
-                        const internalTransferCategory = Array.from(categorySelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('internal transfer')
+                        console.log('🔍 Looking for Internal Bank Transfer in category options:');
+                        const internalBankTransferCategory = Array.from(categorySelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('internal bank transfer')
                         );
-                        if (internalTransferCategory) {
-                            categorySelect.value = internalTransferCategory.value;
-                            console.log('✅ Auto-selected Internal Transfer category:', internalTransferCategory.textContent);
+                        if (internalBankTransferCategory) {
+                            categorySelect.value = internalBankTransferCategory.value;
+                            console.log('✅ Auto-selected Internal Bank Transfer category:', internalBankTransferCategory.textContent);
                         } else {
-                            console.log('❌ Could not find Internal Transfer category option');
+                            console.log('❌ Could not find Internal Bank Transfer category option');
                         }
                     }
                 } else if (selectedType === 'interbanking_transfer') {
@@ -625,6 +625,20 @@
                         if (revenuesOption) {
                             creditAccountSelect.value = revenuesOption.value;
                             console.log('✅ Auto-selected VN-Revenues for destination credit:', revenuesOption.textContent);
+                        }
+                    }
+                    
+                    // Auto-select Internal Bank Transfer for Category
+                    if (categorySelect) {
+                        console.log('🔍 Looking for Internal Bank Transfer in category options:');
+                        const internalBankTransferCategory = Array.from(categorySelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('internal bank transfer')
+                        );
+                        if (internalBankTransferCategory) {
+                            categorySelect.value = internalBankTransferCategory.value;
+                            console.log('✅ Auto-selected Internal Bank Transfer category:', internalBankTransferCategory.textContent);
+                        } else {
+                            console.log('❌ Could not find Internal Bank Transfer category option');
                         }
                     }
                 } else if (selectedType === 'expense') {
