@@ -1,4 +1,14 @@
-# =============================================================================
+# Created: 2025-09-04 16:37:37
+# Status: ✅ WORKING - Ready for GitHub commit
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-04 16:31:47
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-04 16:31:35
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-04 16:29:50
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-04 15:31:47
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-04 15:18:55
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-04 14:57:08
@@ -486,11 +496,13 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
 # --------------
 def get_funds_list(gc):
     """
-    Get funds from reference sheet for dropdown
+    DEPRECATED: Get funds from reference sheet for dropdown
+    THIS FUNCTION IS NO LONGER USED - USE get_funds_from_json() IN app.py INSTEAD
     Args:
         gc: Google Sheets client
     Returns: List of fund dictionaries with id, name, and color
     """
+    print("WARNING: get_funds_list() is deprecated - use get_funds_from_json() instead")
     try:
         funds_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Funds Reference")
         funds_data = funds_sheet.get_all_records()
@@ -522,24 +534,35 @@ def get_fund_name_by_id(gc, fund_id):
     """
     Get fund name by ID for transaction saving
     Args:
-        gc: Google Sheets client
+        gc: Google Sheets client (kept for compatibility but not used)
         fund_id: ID of the fund to look up
     Returns: Fund name or "Unknown Fund" if not found
     """
     try:
         print(f"DEBUG: get_fund_name_by_id called with fund_id: {fund_id}")
-        funds_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Funds Reference")
-        funds_data = funds_sheet.get_all_records()
-        print(f"DEBUG: Retrieved {len(funds_data)} fund records")
         
-        for i, fund in enumerate(funds_data):
-            print(f"DEBUG: Fund {i}: Fund_ID='{fund.get('Fund_ID')}', Fund_Name='{fund.get('Fund_Name')}'")
-            if str(fund['Fund_ID']) == str(fund_id):
-                print(f"DEBUG: Found matching fund: {fund['Fund_Name']}")
-                return fund['Fund_Name']
+        # Load funds from JSON file instead of Google Sheets
+        import json
+        import os
+        
+        # Get the directory of the current script
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        json_file_path = os.path.join(current_dir, 'data', 'funds.json')
+        
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        funds = data.get('funds', [])
+        print(f"DEBUG: Retrieved {len(funds)} fund records from JSON")
+        
+        for i, fund in enumerate(funds):
+            print(f"DEBUG: Fund {i}: ID='{fund.get('id')}', Name='{fund.get('name')}'")
+            if str(fund.get('id', '')) == str(fund_id):
+                print(f"DEBUG: Found matching fund: {fund.get('name')}")
+                return fund.get('name', '')
         
         print(f"WARNING: Fund ID {fund_id} not found")
-        print(f"DEBUG: Available fund IDs: {[str(f.get('Fund_ID')) for f in funds_data]}")
+        print(f"DEBUG: Available fund IDs: {[str(f.get('id', '')) for f in funds]}")
         return "Unknown Fund"
         
     except Exception as e:
@@ -557,11 +580,13 @@ def get_fund_name_by_id(gc, fund_id):
 # -----------------
 def get_accounts_list(gc):
     """
-    Get accounts from reference sheet for dropdown
+    DEPRECATED: Get accounts from reference sheet for dropdown
+    THIS FUNCTION IS NO LONGER USED - USE get_accounts_from_json() IN app.py INSTEAD
     Args:
         gc: Google Sheets client
     Returns: List of account dictionaries with code, name, and type
     """
+    print("WARNING: get_accounts_list() is deprecated - use get_accounts_from_json() instead")
     try:
         accounts_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Accounts")
         accounts_data = accounts_sheet.get_all_records()
@@ -588,24 +613,35 @@ def get_account_name_by_code(gc, account_code):
     """
     Get account name by code for transaction saving
     Args:
-        gc: Google Sheets client
+        gc: Google Sheets client (kept for compatibility but not used)
         account_code: Code of the account to look up
     Returns: Account name or "Unknown Account" if not found
     """
     try:
         print(f"DEBUG: get_account_name_by_code called with account_code: {account_code}")
-        accounts_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Accounts")
-        accounts_data = accounts_sheet.get_all_records()
-        print(f"DEBUG: Retrieved {len(accounts_data)} account records")
         
-        for i, acc in enumerate(accounts_data):
-            print(f"DEBUG: Account {i}: Code='{acc.get('Category Code')}', Name='{acc.get('Account Name')}'")
-            if str(acc.get('Category Code', '')) == str(account_code):
-                print(f"DEBUG: Found matching account: {acc.get('Account Name')}")
-                return acc.get('Account Name', '')
+        # Load accounts from JSON file instead of Google Sheets
+        import json
+        import os
+        
+        # Get the directory of the current script
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        json_file_path = os.path.join(current_dir, 'data', 'accounts.json')
+        
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        accounts = data.get('accounts', [])
+        print(f"DEBUG: Retrieved {len(accounts)} account records from JSON")
+        
+        for i, acc in enumerate(accounts):
+            print(f"DEBUG: Account {i}: Code='{acc.get('code')}', Name='{acc.get('name')}'")
+            if str(acc.get('code', '')) == str(account_code):
+                print(f"DEBUG: Found matching account: {acc.get('name')}")
+                return acc.get('name', '')
         
         print(f"WARNING: Account Code {account_code} not found")
-        print(f"DEBUG: Available account codes: {[str(acc.get('Category Code', '')) for acc in accounts_data]}")
+        print(f"DEBUG: Available account codes: {[str(acc.get('code', '')) for acc in accounts]}")
         return "Unknown Account"
         
     except Exception as e:
@@ -623,11 +659,13 @@ def get_account_name_by_code(gc, account_code):
 # ---------------------
 def get_categories_list(gc):
     """
-    Get categories from reference sheet for dropdown
+    DEPRECATED: Get categories from reference sheet for dropdown
+    THIS FUNCTION IS NO LONGER USED - USE get_categories_from_json() IN app.py INSTEAD
     Args:
         gc: Google Sheets client
     Returns: List of category dictionaries with code, name, and category
     """
+    print("WARNING: get_categories_list() is deprecated - use get_categories_from_json() instead")
     try:
         categories_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Category")
         categories_data = categories_sheet.get_all_records()
@@ -657,24 +695,35 @@ def get_category_name_by_code(gc, category_code):
     """
     Get category name by code for transaction saving
     Args:
-        gc: Google Sheets client
+        gc: Google Sheets client (kept for compatibility but not used)
         category_code: Code of the category to look up
     Returns: Category name or "Unknown Category" if not found
     """
     try:
         print(f"DEBUG: get_category_name_by_code called with category_code: {category_code}")
-        categories_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Category")
-        categories_data = categories_sheet.get_all_records()
-        print(f"DEBUG: Retrieved {len(categories_data)} category records")
         
-        for i, cat in enumerate(categories_data):
-            print(f"DEBUG: Category {i}: Code='{cat.get('Category Code')}', Name='{cat.get('Category')}'")
-            if str(cat['Category Code']) == str(category_code):
-                print(f"DEBUG: Found matching category: {cat['Category']}")
-                return cat['Category']
+        # Load categories from JSON file instead of Google Sheets
+        import json
+        import os
+        
+        # Get the directory of the current script
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        json_file_path = os.path.join(current_dir, 'data', 'categories.json')
+        
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        categories = data.get('categories', [])
+        print(f"DEBUG: Retrieved {len(categories)} category records from JSON")
+        
+        for i, cat in enumerate(categories):
+            print(f"DEBUG: Category {i}: Code='{cat.get('code')}', Name='{cat.get('name')}'")
+            if str(cat.get('code', '')) == str(category_code):
+                print(f"DEBUG: Found matching category: {cat.get('name')}")
+                return cat.get('name', '')
         
         print(f"WARNING: Category Code {category_code} not found")
-        print(f"DEBUG: Available category codes: {[str(cat.get('Category Code')) for cat in categories_data]}")
+        print(f"DEBUG: Available category codes: {[str(cat.get('code', '')) for cat in categories]}")
         return "Unknown Category"
         
     except Exception as e:

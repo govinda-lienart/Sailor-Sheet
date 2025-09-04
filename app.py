@@ -1,4 +1,5 @@
-# =============================================================================
+# Created: 2025-09-04 16:37:37
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-04 15:18:55
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-04 14:57:08
@@ -47,7 +48,7 @@ import json
 
 # Import custom modules
 from config import initialize_sheets
-from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet, get_funds_list, get_categories_list, get_accounts_list
+from sheets_manager import get_available_sheets, get_worksheets_from_sheet, add_transaction_to_selected_sheet
 import file_upload_manager
 
 # Create Flask web application
@@ -175,9 +176,17 @@ def index():
             description = request.form['description']
             fund_id = request.form['fund_id']
             category_id = request.form['category_id']
-            debit_account_id = request.form['debit_account_id']
-            credit_account_id = request.form['credit_account_id']
-            transaction_type = request.form.get('transaction_type', 'external')  # Default to external for double-entry
+            # Get account IDs based on transaction type
+            transaction_type = request.form.get('transaction_type', 'external')
+            
+            if transaction_type == 'interbanking_transfer':
+                # For interbanking transfers, use the destination account fields
+                debit_account_id = request.form['debit_account_id']
+                credit_account_id = request.form['credit_account_id']
+            else:
+                # For regular transactions, use the regular account fields
+                debit_account_id = request.form['regular_debit_account_id']
+                credit_account_id = request.form['regular_credit_account_id']
             date_input = request.form.get('date_input', '')  # Date in DD/MM/YYYY format
             transaction_number = request.form.get('transaction_number', '')  # Pre-generated transaction number
         except KeyError as e:

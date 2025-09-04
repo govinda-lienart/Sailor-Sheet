@@ -8,7 +8,7 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-04 15:18:55 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-04 16:37:37 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
@@ -108,8 +108,15 @@
                  loadingDiv.style.display = 'block';
                  loadingDiv.innerHTML = '<div class="simple-loading"><div class="loading-text">Loading: Google Accounting System...</div></div>';
                  
-                 // Insert at the very beginning of body
-                 document.body.insertBefore(loadingDiv, document.body.firstChild);
+                 // Insert at the very beginning of body (with safety check)
+                 if (document.body) {
+                     document.body.insertBefore(loadingDiv, document.body.firstChild);
+                 } else {
+                     // If body doesn't exist yet, wait for it
+                     document.addEventListener('DOMContentLoaded', function() {
+                         document.body.insertBefore(loadingDiv, document.body.firstChild);
+                     });
+                 }
                  
                  // Hide it after DOM is ready
                  document.addEventListener('DOMContentLoaded', function() {
@@ -469,7 +476,8 @@
                 // Apply default settings for the pre-selected donation transaction type
                 setTimeout(function() {
                     const transactionSelect = document.getElementById('transaction_category');
-                    if (transactionSelect && transactionSelect.value === 'donation') {
+                    if (transactionSelect) {
+                        // Call handleTransactionTypeChange for whatever is currently selected
                         handleTransactionTypeChange();
                     }
                 }, 1000); // Increased delay to ensure all dropdowns are fully loaded
@@ -580,8 +588,19 @@
             // updateDropdowns function removed - no longer needed since data is loaded from JSON!
             
             function applyTransactionDefaults(selectedType) {
-                const debitAccountSelect = document.querySelector('select[name="debit_account_id"]');
-                const creditAccountSelect = document.querySelector('select[name="credit_account_id"]');
+                // Get the correct selectors based on transaction type
+                let debitAccountSelect, creditAccountSelect;
+                
+                if (selectedType === 'interbanking_transfer') {
+                    // For interbanking transfers, use the destination account fields
+                    debitAccountSelect = document.querySelector('select[name="debit_account_id"]');
+                    creditAccountSelect = document.querySelector('select[name="credit_account_id"]');
+                } else {
+                    // For regular transactions, use the regular account fields
+                    debitAccountSelect = document.querySelector('select[name="regular_debit_account_id"]');
+                    creditAccountSelect = document.querySelector('select[name="regular_credit_account_id"]');
+                }
+                
                 const categorySelect = document.querySelector('select[name="category_id"]');
                 
                 // Clear previous selections first
