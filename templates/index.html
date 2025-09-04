@@ -60,15 +60,15 @@
      
                  <!-- MAIN FORM -->
                  <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
-                     <!-- TRANSACTION TYPE SELECTOR - TOP PRIORITY -->
+                                          <!-- TRANSACTION TYPE SELECTOR - TOP PRIORITY -->
                      <div class="form-group">
                          <label>Transaction Type:</label>
-                                                 <select name="transaction_category" id="transaction_category" required onchange="handleTransactionTypeChange()">
-                           <option value="payment" selected>Payment</option>
-                           <option value="internal_transfer">Internal Transfer</option>
-                           <option value="interbanking_transfer">Interbanking Transfer</option>
-                           <option value="donation">Donation</option>
-                           <option value="grant">Grant</option>
+                         <select name="transaction_category" id="transaction_category" required onchange="handleTransactionTypeChange()">
+                            <option value="payment">Payment</option>
+                            <option value="internal_transfer">Internal Transfer</option>
+                            <option value="interbanking_transfer">Interbanking Transfer</option>
+                            <option value="donation" selected>Donation</option>
+                            <option value="grant">Grant</option>
                          </select>
                          <div class="form-text">Select the type of transaction you are recording</div>
                      </div>
@@ -244,16 +244,16 @@
                     loadWorksheets();
                 }
                 
-                // Apply default settings for the pre-selected payment transaction type
+                // Apply default settings for the pre-selected donation transaction type
                 setTimeout(function() {
                     const transactionSelect = document.getElementById('transaction_category');
-                    if (transactionSelect && transactionSelect.value === 'payment') {
+                    if (transactionSelect && transactionSelect.value === 'donation') {
                         handleTransactionTypeChange();
                     }
                 }, 1000); // Increased delay to ensure all dropdowns are fully loaded
              });
              
-                         function handleTransactionTypeChange() {
+                                     function handleTransactionTypeChange() {
                 const selectedType = document.getElementById('transaction_category').value;
                 console.log('🚀 Transaction type changed to:', selectedType, '(using JSON data - no API calls!)');
                 
@@ -511,22 +511,22 @@
                     }
                 } else if (selectedType === 'grant') {
                     // For grants: Debit Bank account (asset increases), Credit Revenue account
-                        if (debitAccountSelect) {
-                            const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('bank')
-                            );
-                            if (bankOption) {
-                                debitAccountSelect.value = bankOption.value;
+                    if (debitAccountSelect) {
+                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('bank')
+                        );
+                        if (bankOption) {
+                            debitAccountSelect.value = bankOption.value;
                             console.log('Auto-selected Bank account for grant debit');
                         }
-                        }
-                        
-                        if (creditAccountSelect) {
-                            const revenueOption = Array.from(creditAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('revenue')
-                            );
-                            if (revenueOption) {
-                                creditAccountSelect.value = revenueOption.value;
+                    }
+                    
+                    if (creditAccountSelect) {
+                        const revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('revenue')
+                        );
+                        if (revenueOption) {
+                            creditAccountSelect.value = revenueOption.value;
                             console.log('Auto-selected Revenue account for grant credit');
                         }
                     }
