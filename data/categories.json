@@ -1,0 +1,129 @@
+{
+  "categories": [
+    {
+      "code": "1001",
+      "name": "Internal Transfer",
+      "category": "Movement of funds within the organization (e.g. bank → wallet)",
+      "active": true
+    },
+    {
+      "code": "2001",
+      "name": "Internal Bank Transfer",
+      "category": "Transfers between different bank accounts within the organization",
+      "active": true
+    },
+    {
+      "code": "3001",
+      "name": "Grant",
+      "category": "Grants received from donors or institutions",
+      "active": true
+    },
+    {
+      "code": "4001",
+      "name": "Donation",
+      "category": "Individual or corporate donations",
+      "active": true
+    },
+    {
+      "code": "5001",
+      "name": "Legal & Compliance",
+      "category": "Registration fees, permits, licenses, legal services",
+      "active": true
+    },
+    {
+      "code": "5002",
+      "name": "Field Operations",
+      "category": "Fieldwork activities, site visits, community engagement",
+      "active": true
+    },
+    {
+      "code": "5003",
+      "name": "Transportation",
+      "category": "Travel costs: flights, taxis, fuel, vehicle maintenance",
+      "active": true
+    },
+    {
+      "code": "5004",
+      "name": "Food & Meals",
+      "category": "Meals for staff/teams, field food, hospitality expenses",
+      "active": true
+    },
+    {
+      "code": "5005",
+      "name": "Office Operations",
+      "category": "Rent, utilities, office supplies, internet, cleaning",
+      "active": true
+    },
+    {
+      "code": "5006",
+      "name": "Staff Salaries",
+      "category": "Salaries for full-time and part-time employees",
+      "active": true
+    },
+    {
+      "code": "5007",
+      "name": "Consultant Fees",
+      "category": "Fees for external consultants, technical experts, advisors",
+      "active": true
+    },
+    {
+      "code": "5008",
+      "name": "Benefits",
+      "category": "Staff benefits: health insurance, allowances, pensions",
+      "active": true
+    },
+    {
+      "code": "5009",
+      "name": "Contractor Services",
+      "category": "External contractors: maintenance, repairs, outsourced services",
+      "active": true
+    },
+    {
+      "code": "5010",
+      "name": "Communications",
+      "category": "Phone, internet, software, postage, printing",
+      "active": true
+    },
+    {
+      "code": "5011",
+      "name": "Program Materials",
+      "category": "Educational materials, equipment, project tools",
+      "active": true
+    },
+    {
+      "code": "5012",
+      "name": "Monitoring & Evaluation",
+      "category": "Data collection, surveys, assessments, reporting",
+      "active": true
+    },
+    {
+      "code": "6001",
+      "name": "Personal Income Tax",
+      "category": "Employee income tax payable (PIT)",
+      "active": true
+    },
+    {
+      "code": "6002",
+      "name": "Social Insurance",
+      "category": "Employer/employee contributions to social insurance",
+      "active": true
+    },
+    {
+      "code": "6003",
+      "name": "Health Insurance",
+      "category": "Employer/employee contributions to health insurance",
+      "active": true
+    },
+    {
+      "code": "7000",
+      "name": "Other Tax Related Costs",
+      "category": "Any other tax obligations not listed above",
+      "active": true
+    }
+  ],
+  "_metadata": {
+    "updated": "2025-09-04 16:37:37",
+    "status": "Ready for GitHub commit",
+    "version": "1.0.0"
+  }
+}

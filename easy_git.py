@@ -1,10 +1,8 @@
 # COMMANDS
 
-# python easy_git.py stage app.py config.py sheets_manager.py file_upload_manager.py
-# python easy_git.py stage templates/index.html templates/thank_you.html
-# python easy_git.py stage static/css/style.css
-# python easy_git.py stage data/
+# python easy_git.py stage --force app.py config.py sheets_manager.py file_upload_manager.py templates/index.html templates/thank_you.html static/css/style.css data/
 
+#one
 
 #!/usr/bin/env python3
 """
@@ -64,19 +62,26 @@ def easy_commit(message=None, push=True):
         print(f"❌ Error: {e}")
         return False
 
-def stage_files(file_patterns):
+def stage_files(file_patterns, force=False):
     """
     Stage specific files or patterns
     
     Args:
         file_patterns: List of file paths or patterns
+        force: If True, stage files even if they have no changes
     """
     try:
         repo = Repo('.')
         
         for pattern in file_patterns:
-            repo.git.add(pattern)
-            print(f"📁 Staged: {pattern}")
+            if force:
+                # Force stage files even if no changes
+                repo.git.add(pattern, force=True)
+                print(f"📁 Force staged: {pattern}")
+            else:
+                # Normal staging (only files with changes)
+                repo.git.add(pattern)
+                print(f"📁 Staged: {pattern}")
         
         print("✅ Files staged successfully!")
         return True
@@ -130,10 +135,22 @@ if __name__ == "__main__":
             show_status()
         elif command == "stage":
             if len(sys.argv) > 2:
-                files = sys.argv[2:]
-                stage_files(files)
+                # Check for --force option
+                force = False
+                files = []
+                
+                for arg in sys.argv[2:]:
+                    if arg == "--force":
+                        force = True
+                    else:
+                        files.append(arg)
+                
+                if files:
+                    stage_files(files, force=force)
+                else:
+                    print("Usage: python easy_git.py stage [--force] file1 file2 ...")
             else:
-                print("Usage: python easy_git.py stage file1 file2 ...")
+                print("Usage: python easy_git.py stage [--force] file1 file2 ...")
         elif command == "commit":
             message = sys.argv[2] if len(sys.argv) > 2 else None
             easy_commit(message)
@@ -141,6 +158,7 @@ if __name__ == "__main__":
             print("Available commands:")
             print("  python easy_git.py status          - Show Git status")
             print("  python easy_git.py stage file1     - Stage specific files")
+            print("  python easy_git.py stage --force file1 - Force stage files (even without changes)")
             print("  python easy_git.py commit [msg]    - Commit with message")
     else:
         # Default: show status and ask what to do
@@ -148,4 +166,5 @@ if __name__ == "__main__":
         print("\n💡 Usage examples:")
         print("  python easy_git.py commit 'Fix bug'   - Commit with message")
         print("  python easy_git.py stage app.py       - Stage specific file")
+        print("  python easy_git.py stage --force data/ - Force stage directory (even without changes)")
         print("  python easy_git.py status             - Show current status")

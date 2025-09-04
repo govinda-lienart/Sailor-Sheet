@@ -1,43 +1,4 @@
-# Created: 2025-09-04 16:37:37
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 15:18:55
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 14:57:08
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 14:49:11
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 14:26:30
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 14:23:56
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 14:01:24
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 04:52:11
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 04:50:11
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 04:49:54
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-04 04:26:36
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-03 22:51:02
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-03 19:28:04
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-03 19:13:13
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-03 16:09:02
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-03 15:20:50
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-03 11:28:57
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-03 11:27:32
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-02 21:17:10
-# Status: ✅ WORKING - Ready for GitHub commit
-# Created: 2025-09-02 12:20:13
-# Status: ✅ WORKING - Ready for GitHub commit
+
 
 # =============================================================================
 
@@ -299,64 +260,73 @@ def index():
         
         # Check if this is an interbanking transfer that needs dual-entry
         if form_transaction_type == 'interbanking_transfer':
-            print("🔄 Processing INTERBANKING TRANSFER with dual-entry accounting...")
+            print("🔄 Processing INTERBANKING TRANSFER with Master Ledger A and B...")
             
-            # Get origin account selections from form
-            origin_debit = request.form.get('origin_debit_account_id', '')
-            origin_credit = request.form.get('origin_credit_account_id', '')
+            # Get Master Ledger A selections from form (typically Belgium)
+            master_ledger_a_sheet_id = request.form.get('master_ledger_a_sheet_id', '')
+            master_ledger_a_worksheet_id = request.form.get('master_ledger_a_worksheet_id', '')
+            master_ledger_a_debit = request.form.get('master_ledger_a_debit_account_id', '')
+            master_ledger_a_credit = request.form.get('master_ledger_a_credit_account_id', '')
             
-            # Destination accounts are the regular debit/credit fields
-            destination_debit = debit_account_id
-            destination_credit = credit_account_id
+            # Get Master Ledger B selections from form (typically Vietnam)
+            master_ledger_b_sheet_id = request.form.get('master_ledger_b_sheet_id', '')
+            master_ledger_b_worksheet_id = request.form.get('master_ledger_b_worksheet_id', '')
+            master_ledger_b_debit = request.form.get('master_ledger_b_debit_account_id', '')
+            master_ledger_b_credit = request.form.get('master_ledger_b_credit_account_id', '')
             
-            print(f"📋 Dual form data:")
-            print(f"  - Origin Debit: {origin_debit}")
-            print(f"  - Origin Credit: {origin_credit}")
-            print(f"  - Destination Debit: {destination_debit}")
-            print(f"  - Destination Credit: {destination_credit}")
+            print(f"📋 Master Ledger A form data:")
+            print(f"  - Sheet ID: {master_ledger_a_sheet_id}")
+            print(f"  - Worksheet: {master_ledger_a_worksheet_id}")
+            print(f"  - Debit: {master_ledger_a_debit}")
+            print(f"  - Credit: {master_ledger_a_credit}")
             
-            # Validate that all dual fields are filled
-            if not all([origin_debit, origin_credit, destination_debit, destination_credit]):
-                print("❌ Missing dual account selections")
-                flash('Please fill in all origin and destination account fields for interbanking transfer!', 'error')
+            print(f"📋 Master Ledger B form data:")
+            print(f"  - Sheet ID: {master_ledger_b_sheet_id}")
+            print(f"  - Worksheet: {master_ledger_b_worksheet_id}")
+            print(f"  - Debit: {master_ledger_b_debit}")
+            print(f"  - Credit: {master_ledger_b_credit}")
+            
+            # Validate that all Master Ledger fields are filled
+            if not all([master_ledger_a_sheet_id, master_ledger_a_worksheet_id, master_ledger_a_debit, master_ledger_a_credit,
+                       master_ledger_b_sheet_id, master_ledger_b_worksheet_id, master_ledger_b_debit, master_ledger_b_credit]):
+                print("❌ Missing Master Ledger selections")
+                flash('Please fill in all Master Ledger A and B fields for interbanking transfer!', 'error')
                 available_sheets = get_available_sheets(gc)
                 funds = get_funds_from_json()
                 categories = get_categories_from_json()
                 accounts = get_accounts_from_json()
                 return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
             
-            # Create Origin entry (typically Belgium)
-            belgium_sheet_id = "1o5RnuAmm00YAqZzLkyrhZx7CocEETBhi-snPGUzbqSk"  # Belgium Master Ledger
-            belgium_worksheet = "BE - Master Ledger"
-            
-            print(f"📍 Creating Origin entry: Debit {origin_debit}, Credit {origin_credit}")
-            origin_result = add_transaction_to_selected_sheet(
-                gc, belgium_sheet_id, belgium_worksheet, amount, 
+            # Create Master Ledger A entry
+            print(f"🏦 Creating Master Ledger A entry: Debit {master_ledger_a_debit}, Credit {master_ledger_a_credit}")
+            master_ledger_a_result = add_transaction_to_selected_sheet(
+                gc, master_ledger_a_sheet_id, master_ledger_a_worksheet_id, amount, 
                 f"Interbanking Transfer - {description}", 
-                fund_id, category_id, origin_debit, origin_credit, 
+                fund_id, category_id, master_ledger_a_debit, master_ledger_a_credit, 
                 transaction_type, date_input, transaction_number, file_link_dict, 
-                origin_account, destination_account, transfer_type
+                master_ledger_a_debit, master_ledger_a_credit, transfer_type
             )
             
-            # Create Destination entry (typically Vietnam) using selected sheet
-            print(f"🎯 Creating Destination entry: Debit {destination_debit}, Credit {destination_credit}")
-            destination_result = add_transaction_to_selected_sheet(
-                gc, selected_sheet_id, selected_worksheet_title, amount, description, 
-                fund_id, category_id, destination_debit, destination_credit, 
+            # Create Master Ledger B entry
+            print(f"🎯 Creating Master Ledger B entry: Debit {master_ledger_b_debit}, Credit {master_ledger_b_credit}")
+            master_ledger_b_result = add_transaction_to_selected_sheet(
+                gc, master_ledger_b_sheet_id, master_ledger_b_worksheet_id, amount, 
+                f"Interbanking Transfer - {description}", 
+                fund_id, category_id, master_ledger_b_debit, master_ledger_b_credit, 
                 transaction_type, date_input, transaction_number, file_link_dict, 
-                origin_account, destination_account, transfer_type
+                master_ledger_b_debit, master_ledger_b_credit, transfer_type
             )
             
-            print(f"📍 Origin transaction result: {origin_result}")
-            print(f"🎯 Destination transaction result: {destination_result}")
+            print(f"🏦 Master Ledger A transaction result: {master_ledger_a_result}")
+            print(f"🎯 Master Ledger B transaction result: {master_ledger_b_result}")
             
-            if origin_result and destination_result:
-                print("✅ DUAL-ENTRY SUCCESS: Both Origin and Destination entries created!")
-                flash('Interbanking transfer recorded in both Origin and Destination accounting systems!', 'success')
+            if master_ledger_a_result and master_ledger_b_result:
+                print("✅ DUAL-ENTRY SUCCESS: Both Master Ledger A and B entries created!")
+                flash('Interbanking transfer recorded in both Master Ledger A and B accounting systems!', 'success')
                 return redirect(url_for('thank_you'))
             else:
-                print("❌ DUAL-ENTRY FAILED: One or both entries failed")
-                flash('Error creating dual-entry transaction! Please check both accounting systems.', 'error')
+                print("❌ DUAL-ENTRY FAILED: One or both Master Ledger entries failed")
+                flash('Error creating dual-entry transaction! Please check both Master Ledger systems.', 'error')
                 available_sheets = get_available_sheets(gc)
                 funds = get_funds_from_json()
                 categories = get_categories_from_json()

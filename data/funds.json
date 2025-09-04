@@ -1,0 +1,51 @@
+{
+  "funds": [
+    {
+      "id": "IT",
+      "name": "Internal Transfer",
+      "color": "#007bff",
+      "active": true
+    },
+    {
+      "id": "U",
+      "name": "Unrestricted",
+      "color": "#28a745",
+      "active": true
+    },
+    {
+      "id": "MBZ",
+      "name": "MBZ Funds",
+      "color": "#ffc107",
+      "active": true
+    },
+    {
+      "id": "F3",
+      "name": "Kansas Funds",
+      "color": "#17a2b8",
+      "active": true
+    },
+    {
+      "id": "F4",
+      "name": "Ostrava Zoo",
+      "color": "#fd7e14",
+      "active": true
+    },
+    {
+      "id": "F5",
+      "name": "ZGEP Funds",
+      "color": "#6610f2",
+      "active": true
+    },
+    {
+      "id": "F7",
+      "name": "Foundation",
+      "color": "#e83e8c",
+      "active": true
+    }
+  ],
+  "_metadata": {
+    "updated": "2025-09-04 16:37:37",
+    "status": "Ready for GitHub commit",
+    "version": "1.0.0"
+  }
+}

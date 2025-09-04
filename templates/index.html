@@ -1,11 +1,4 @@
-<!-- =============================================================================
-     INDEX.HTML - Main Form Template
-     Version: 1.1.0 - Adds file_name hidden field + passes it to backend
-     Created: 2025-01-27 19:30:00
-     Updated: 2025-08-30
-     Status: ✅ WORKING
-     Language: HTML
-     ============================================================================= -->
+
 
      <!DOCTYPE html>
 <!-- Updated: 2025-09-04 16:37:37 - Ready for GitHub commit -->
@@ -152,8 +145,11 @@
                     <a href="#credit-account-section" class="nav-link regular-account" style="background-color: #6f42c1; color: #fff;">💰 Credit</a>
                     <a href="#description-section" class="nav-link" style="background-color: #ffc107; color: #000;">📝 Description</a>
                     <a href="#upload-bills-section" class="nav-link" style="background-color: #000000; color: #fff;">📎 Upload</a>
-                    <a href="#origin-account-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">📍 Origin</a>
-                    <a href="#destination-account-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">🎯 Destination</a>
+                    <a href="#sheet-worksheet-section" class="nav-link interbanking-account" style="background-color: #fd7e14; color: #fff; display: none;">📊 Ledger Sheets</a>
+                    <a href="#master-ledger-a-debit-section" class="nav-link interbanking-account" style="background-color: #007bff; color: #fff; display: none;">💳 A Debit</a>
+                    <a href="#master-ledger-a-credit-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">💰 A Credit</a>
+                    <a href="#master-ledger-b-debit-section" class="nav-link interbanking-account" style="background-color: #007bff; color: #fff; display: none;">💳 B Debit</a>
+                    <a href="#master-ledger-b-credit-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">💰 B Credit</a>
                 </div>
             </div>
             
@@ -210,22 +206,72 @@
                      <div id="sheet-worksheet-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #fd7e14; border-radius: 8px; background-color: #fff8f0;">
                          <h4 style="color: #fd7e14; margin-bottom: 15px;">📊 Sheet & Worksheet Selection</h4>
      
-                     <div class="form-group">
-                         <label>Select Sheet:</label>
-                                                 <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
-                            <option value="">Choose a sheet...</option>
-                            {% for sheet in sheets %}
-                            <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
-                            {% endfor %}
-                        </select>
-                     </div>
-     
-                                         <div class="form-group">
-                        <label>Select Worksheet:</label>
-                        <select name="worksheet_name" id="worksheet_select" required disabled>
-                            <option value="">First select a sheet...</option>
-                        </select>
-                        <div class="form-text">This shows the name of each worksheet</div>
+                         <!-- REGULAR TRANSACTION SHEET & WORKSHEET SELECTION -->
+                         <div id="regular-sheet-worksheet" class="sheet-worksheet-content">
+                             <div class="form-group">
+                                 <label>Select Sheet:</label>
+                                 <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
+                                     <option value="">Choose a sheet...</option>
+                                     {% for sheet in sheets %}
+                                     <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
+                                     {% endfor %}
+                                 </select>
+                             </div>
+                             
+                             <div class="form-group">
+                                 <label>Select Worksheet:</label>
+                                 <select name="worksheet_name" id="worksheet_select" required disabled>
+                                     <option value="">First select a sheet...</option>
+                                 </select>
+                                 <div class="form-text">This shows the name of each worksheet</div>
+                             </div>
+                         </div>
+                         
+                         <!-- MASTER LEDGER A & B SHEET & WORKSHEET SELECTION -->
+                         <div id="master-ledger-sheet-worksheet" class="sheet-worksheet-content" style="display: none;">
+                             <!-- MASTER LEDGER A SHEET & WORKSHEET -->
+                             <div style="margin-bottom: 20px; padding: 12px; border: 1px solid #fd7e14; border-radius: 6px; background-color: #fff8f0;">
+                                 <h5 style="color: #fd7e14; margin-bottom: 15px;">🏦 Master Ledger A Sheet & Worksheet</h5>
+                                 <div class="form-group">
+                                     <label>Master Ledger A Sheet:</label>
+                                     <select name="master_ledger_a_sheet_id" id="masterLedgerASheetSelect">
+                                         <option value="">Choose sheet for Master Ledger A...</option>
+                                         {% for sheet in sheets %}
+                                         <option value="{{ sheet.id }}" {% if 'TMWC Belgium Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
+                                         {% endfor %}
+                                     </select>
+                                     <div class="form-text">Select the sheet for Master Ledger A</div>
+                                 </div>
+                                 <div class="form-group">
+                                     <label>Master Ledger A Worksheet:</label>
+                                     <select name="master_ledger_a_worksheet_id" id="masterLedgerAWorksheetSelect">
+                                         <option value="">Choose worksheet for Master Ledger A...</option>
+                                     </select>
+                                     <div class="form-text">Select the worksheet for Master Ledger A</div>
+                                 </div>
+                             </div>
+                             
+                             <!-- MASTER LEDGER B SHEET & WORKSHEET -->
+                             <div style="margin-bottom: 20px; padding: 12px; border: 1px solid #fd7e14; border-radius: 6px; background-color: #fff8f0;">
+                                 <h5 style="color: #fd7e14; margin-bottom: 15px;">🎯 Master Ledger B Sheet & Worksheet</h5>
+                                 <div class="form-group">
+                                     <label>Master Ledger B Sheet:</label>
+                                     <select name="master_ledger_b_sheet_id" id="masterLedgerBSheetSelect">
+                                         <option value="">Choose sheet for Master Ledger B...</option>
+                                         {% for sheet in sheets %}
+                                         <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
+                                         {% endfor %}
+                                     </select>
+                                     <div class="form-text">Select the sheet for Master Ledger B</div>
+                                 </div>
+                                 <div class="form-group">
+                                     <label>Master Ledger B Worksheet:</label>
+                                     <select name="master_ledger_b_worksheet_id" id="masterLedgerBWorksheetSelect">
+                                         <option value="">Choose worksheet for Master Ledger B...</option>
+                                     </select>
+                                     <div class="form-text">Select the worksheet for Master Ledger B</div>
+                                 </div>
+                             </div>
                          </div>
                     </div>
 
@@ -283,65 +329,72 @@
                     
                     <!-- INTERBANKING TRANSFER SECTIONS (ONLY VISIBLE FOR INTERBANKING TRANSFERS) -->
                     <div id="interbankingSections" style="display: none;">
-                        <!-- ORIGIN ACCOUNT SECTION -->
-                        <div id="origin-account-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
-                            <h4 style="color: #6f42c1; margin-bottom: 15px;">📍 Origin Account</h4>
-                            
+                        
+                        <!-- MASTER LEDGER A DEBIT ACCOUNT SECTION -->
+                        <div id="master-ledger-a-debit-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 8px; background-color: #f0f8ff;">
+                            <h4 style="color: #007bff; margin-bottom: 15px;">💳 Master Ledger A Debit Account</h4>
                             <div class="form-group">
-                                <label>Origin Debit:</label>
-                                <select name="origin_debit_account_id">
-                                    <option value="">Choose origin debit account...</option>
+                                <label>Master Ledger A Debit:</label>
+                                <select name="master_ledger_a_debit_account_id">
+                                    <option value="">Choose debit account for Master Ledger A...</option>
                                     {% for account in accounts %}
                                     <option value="{{ account.code }}">
                                         {{ account.name }} ({{ account.type }})
                                     </option>
                                     {% endfor %}
                                 </select>
-                                <div class="form-text">Account to debit at origin</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Origin Credit:</label>
-                                <select name="origin_credit_account_id">
-                                    <option value="">Choose origin credit account...</option>
-                                    {% for account in accounts %}
-                                    <option value="{{ account.code }}">
-                                        {{ account.name }} ({{ account.type }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">Account to credit at origin</div>
+                                <div class="form-text">Select the account to be debited in Master Ledger A</div>
                             </div>
                         </div>
                         
-                        <!-- DESTINATION ACCOUNT SECTION -->
-                        <div id="destination-account-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
-                            <h4 style="color: #6f42c1; margin-bottom: 15px;">🎯 Destination Account</h4>
-                            
+                        <!-- MASTER LEDGER A CREDIT ACCOUNT SECTION -->
+                        <div id="master-ledger-a-credit-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
+                            <h4 style="color: #6f42c1; margin-bottom: 15px;">💰 Master Ledger A Credit Account</h4>
                             <div class="form-group">
-                                <label>Destination Debit:</label>
-                                <select name="debit_account_id">
-                                    <option value="">Choose destination debit account...</option>
+                                <label>Master Ledger A Credit:</label>
+                                <select name="master_ledger_a_credit_account_id">
+                                    <option value="">Choose credit account for Master Ledger A...</option>
                                     {% for account in accounts %}
                                     <option value="{{ account.code }}">
                                         {{ account.name }} ({{ account.type }})
                                     </option>
                                     {% endfor %}
                                 </select>
-                                <div class="form-text">Account to debit at destination</div>
+                                <div class="form-text">Select the account to be credited in Master Ledger A</div>
                             </div>
-                            
+                        </div>
+                        
+                        <!-- MASTER LEDGER B DEBIT ACCOUNT SECTION -->
+                        <div id="master-ledger-b-debit-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 8px; background-color: #f0f8ff;">
+                            <h4 style="color: #007bff; margin-bottom: 15px;">💳 Master Ledger B Debit Account</h4>
                             <div class="form-group">
-                                <label>Destination Credit:</label>
-                                <select name="credit_account_id">
-                                    <option value="">Choose destination credit account...</option>
+                                <label>Master Ledger B Debit:</label>
+                                <select name="master_ledger_b_debit_account_id">
+                                    <option value="">Choose debit account for Master Ledger B...</option>
                                     {% for account in accounts %}
                                     <option value="{{ account.code }}">
                                         {{ account.name }} ({{ account.type }})
                                     </option>
                                     {% endfor %}
                                 </select>
-                                <div class="form-text">Account to credit at destination</div>
+                                <div class="form-text">Select the account to be debited in Master Ledger B</div>
+                            </div>
+                        </div>
+                        
+                        <!-- MASTER LEDGER B CREDIT ACCOUNT SECTION -->
+                        <div id="master-ledger-b-credit-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
+                            <h4 style="color: #6f42c1; margin-bottom: 15px;">💰 Master Ledger B Credit Account</h4>
+                            <div class="form-group">
+                                <label>Master Ledger B Credit:</label>
+                                <select name="master_ledger_b_credit_account_id">
+                                    <option value="">Choose credit account for Master Ledger B...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.code }}">
+                                        {{ account.name }} ({{ account.type }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Select the account to be credited in Master Ledger B</div>
                             </div>
                         </div>
                     </div>
@@ -497,41 +550,100 @@
                 // Get all required fields in both sections
                 const regularDebitField = document.querySelector('select[name="regular_debit_account_id"]');
                 const regularCreditField = document.querySelector('select[name="regular_credit_account_id"]');
-                const destinationDebitField = document.querySelector('select[name="debit_account_id"]');
-                const destinationCreditField = document.querySelector('select[name="credit_account_id"]');
-                const originDebitField = document.querySelector('select[name="origin_debit_account_id"]');
-                const originCreditField = document.querySelector('select[name="origin_credit_account_id"]');
+                
+                // Master Ledger A fields
+                const masterLedgerADebitField = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
+                const masterLedgerACreditField = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
+                const masterLedgerASheetField = document.querySelector('select[name="master_ledger_a_sheet_id"]');
+                const masterLedgerAWorksheetField = document.querySelector('select[name="master_ledger_a_worksheet_id"]');
+                
+                // Master Ledger B fields
+                const masterLedgerBDebitField = document.querySelector('select[name="master_ledger_b_debit_account_id"]');
+                const masterLedgerBCreditField = document.querySelector('select[name="master_ledger_b_credit_account_id"]');
+                const masterLedgerBSheetField = document.querySelector('select[name="master_ledger_b_sheet_id"]');
+                const masterLedgerBWorksheetField = document.querySelector('select[name="master_ledger_b_worksheet_id"]');
+                
+                // Get sheet & worksheet content elements
+                const regularSheetWorksheet = document.getElementById('regular-sheet-worksheet');
+                const masterLedgerSheetWorksheet = document.getElementById('master-ledger-sheet-worksheet');
+                const regularSheetField = document.querySelector('select[name="sheet_id"]');
+                const regularWorksheetField = document.querySelector('select[name="worksheet_name"]');
                 
                 if (selectedType === 'interbanking_transfer') {
                     // Show interbanking sections, hide regular sections
                     if (interbankingSections) interbankingSections.style.display = 'block';
                     if (regularAccountSections) regularAccountSections.style.display = 'none';
                     
-                    // Remove required from hidden regular fields, add required to visible interbanking fields
+                    // Show Master Ledger sheet/worksheet content, hide regular sheet/worksheet content
+                    if (regularSheetWorksheet) regularSheetWorksheet.style.display = 'none';
+                    if (masterLedgerSheetWorksheet) masterLedgerSheetWorksheet.style.display = 'block';
+                    
+                    // Remove required from hidden regular fields, add required to visible Master Ledger fields
                     if (regularDebitField) regularDebitField.removeAttribute('required');
                     if (regularCreditField) regularCreditField.removeAttribute('required');
-                    if (destinationDebitField) destinationDebitField.setAttribute('required', 'required');
-                    if (destinationCreditField) destinationCreditField.setAttribute('required', 'required');
-                    if (originDebitField) originDebitField.setAttribute('required', 'required');
-                    if (originCreditField) originCreditField.setAttribute('required', 'required');
+                    if (regularSheetField) regularSheetField.removeAttribute('required');
+                    if (regularWorksheetField) regularWorksheetField.removeAttribute('required');
+                    
+                    // Set required for Master Ledger A fields
+                    if (masterLedgerADebitField) masterLedgerADebitField.setAttribute('required', 'required');
+                    if (masterLedgerACreditField) masterLedgerACreditField.setAttribute('required', 'required');
+                    if (masterLedgerASheetField) masterLedgerASheetField.setAttribute('required', 'required');
+                    if (masterLedgerAWorksheetField) masterLedgerAWorksheetField.setAttribute('required', 'required');
+                    
+                    // Set required for Master Ledger B fields
+                    if (masterLedgerBDebitField) masterLedgerBDebitField.setAttribute('required', 'required');
+                    if (masterLedgerBCreditField) masterLedgerBCreditField.setAttribute('required', 'required');
+                    if (masterLedgerBSheetField) masterLedgerBSheetField.setAttribute('required', 'required');
+                    if (masterLedgerBWorksheetField) masterLedgerBWorksheetField.setAttribute('required', 'required');
                     
                     // Update navigation panel for interbanking transfer
                     updateNavigationForInterbanking(true);
                     
-                    console.log('✅ Showing interbanking transfer sections (Origin + Destination)');
+                    console.log('✅ Showing interbanking transfer sections (Master Ledger A & B)');
                     console.log('✅ Required attributes updated for interbanking transfer');
+                    
+                    // Set up sheet selection handlers for Master Ledgers
+                    setupMasterLedgerSheetHandlers();
+                    
+                    // Auto-load worksheets for default selected sheets
+                    setTimeout(() => {
+                        const masterLedgerASheetSelect = document.getElementById('masterLedgerASheetSelect');
+                        const masterLedgerBSheetSelect = document.getElementById('masterLedgerBSheetSelect');
+                        
+                        if (masterLedgerASheetSelect && masterLedgerASheetSelect.value) {
+                            loadWorksheetsForMasterLedger('A', masterLedgerASheetSelect.value);
+                        }
+                        
+                        if (masterLedgerBSheetSelect && masterLedgerBSheetSelect.value) {
+                            loadWorksheetsForMasterLedger('B', masterLedgerBSheetSelect.value);
+                        }
+                    }, 100);
                 } else {
                     // Show regular sections, hide interbanking sections
                     if (interbankingSections) interbankingSections.style.display = 'none';
                     if (regularAccountSections) regularAccountSections.style.display = 'block';
                     
-                    // Add required to visible regular fields, remove required from hidden interbanking fields
+                    // Show regular sheet/worksheet content, hide Master Ledger sheet/worksheet content
+                    if (regularSheetWorksheet) regularSheetWorksheet.style.display = 'block';
+                    if (masterLedgerSheetWorksheet) masterLedgerSheetWorksheet.style.display = 'none';
+                    
+                    // Add required to visible regular fields, remove required from hidden Master Ledger fields
                     if (regularDebitField) regularDebitField.setAttribute('required', 'required');
                     if (regularCreditField) regularCreditField.setAttribute('required', 'required');
-                    if (destinationDebitField) destinationDebitField.removeAttribute('required');
-                    if (destinationCreditField) destinationCreditField.removeAttribute('required');
-                    if (originDebitField) originDebitField.removeAttribute('required');
-                    if (originCreditField) originCreditField.removeAttribute('required');
+                    if (regularSheetField) regularSheetField.setAttribute('required', 'required');
+                    if (regularWorksheetField) regularWorksheetField.setAttribute('required', 'required');
+                    
+                    // Remove required from Master Ledger A fields
+                    if (masterLedgerADebitField) masterLedgerADebitField.removeAttribute('required');
+                    if (masterLedgerACreditField) masterLedgerACreditField.removeAttribute('required');
+                    if (masterLedgerASheetField) masterLedgerASheetField.removeAttribute('required');
+                    if (masterLedgerAWorksheetField) masterLedgerAWorksheetField.removeAttribute('required');
+                    
+                    // Remove required from Master Ledger B fields
+                    if (masterLedgerBDebitField) masterLedgerBDebitField.removeAttribute('required');
+                    if (masterLedgerBCreditField) masterLedgerBCreditField.removeAttribute('required');
+                    if (masterLedgerBSheetField) masterLedgerBSheetField.removeAttribute('required');
+                    if (masterLedgerBWorksheetField) masterLedgerBWorksheetField.removeAttribute('required');
                     
                     // Update navigation panel for regular transactions
                     updateNavigationForInterbanking(false);
@@ -585,16 +697,94 @@
                 });
             }
             
-            // updateDropdowns function removed - no longer needed since data is loaded from JSON!
+            // Setup sheet selection handlers for Master Ledger A and B
+            function setupMasterLedgerSheetHandlers() {
+                // Master Ledger A sheet handler
+                const masterLedgerASheetSelect = document.getElementById('masterLedgerASheetSelect');
+                if (masterLedgerASheetSelect) {
+                    masterLedgerASheetSelect.addEventListener('change', function() {
+                        loadWorksheetsForMasterLedger('A', this.value);
+                    });
+                }
+                
+                // Master Ledger B sheet handler
+                const masterLedgerBSheetSelect = document.getElementById('masterLedgerBSheetSelect');
+                if (masterLedgerBSheetSelect) {
+                    masterLedgerBSheetSelect.addEventListener('change', function() {
+                        loadWorksheetsForMasterLedger('B', this.value);
+                    });
+                }
+            }
+            
+            // Load worksheets for specific Master Ledger
+            function loadWorksheetsForMasterLedger(ledgerType, sheetId) {
+                const worksheetSelectId = `masterLedger${ledgerType}WorksheetSelect`;
+                const worksheetSelect = document.getElementById(worksheetSelectId);
+                
+                if (!worksheetSelect || !sheetId) {
+                    return;
+                }
+                
+                console.log(`Loading worksheets for Master Ledger ${ledgerType}, Sheet ID: ${sheetId}`);
+                
+                // Clear existing options
+                worksheetSelect.innerHTML = '<option value="">Loading worksheets...</option>';
+                
+                // Fetch worksheets
+                fetch(`/get_worksheets/${sheetId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(`Worksheets data received for Master Ledger ${ledgerType}:`, data);
+                        worksheetSelect.innerHTML = '<option value="">Choose worksheet...</option>';
+                        
+                        if (data && data.length > 0) {
+                            data.forEach(worksheet => {
+                                const option = document.createElement('option');
+                                option.value = worksheet.title;
+                                option.textContent = worksheet.title;
+                                worksheetSelect.appendChild(option);
+                            });
+                            
+                            // Auto-select default worksheet based on ledger type
+                            let defaultWorksheet = '';
+                            if (ledgerType === 'A') {
+                                // Master Ledger A default: look for "Expense" or "Belfius" or "Master Ledger"
+                                defaultWorksheet = Array.from(worksheetSelect.options).find(option => 
+                                    option.textContent.toLowerCase().includes('expense') || 
+                                    option.textContent.toLowerCase().includes('belfius') ||
+                                    option.textContent.toLowerCase().includes('master ledger')
+                                );
+                            } else if (ledgerType === 'B') {
+                                // Master Ledger B default: look for "Revenue" or "Indovina" or "Master Ledger"
+                                defaultWorksheet = Array.from(worksheetSelect.options).find(option => 
+                                    option.textContent.toLowerCase().includes('revenue') || 
+                                    option.textContent.toLowerCase().includes('indovina') ||
+                                    option.textContent.toLowerCase().includes('master ledger')
+                                );
+                            }
+                            
+                            if (defaultWorksheet) {
+                                worksheetSelect.value = defaultWorksheet.value;
+                                console.log(`Auto-selected default worksheet for Master Ledger ${ledgerType}: ${defaultWorksheet.textContent}`);
+                            }
+                        } else {
+                            worksheetSelect.innerHTML = '<option value="">No worksheets found</option>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error loading worksheets for Master Ledger ${ledgerType}:`, error);
+                        worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
+                    });
+            }
             
             function applyTransactionDefaults(selectedType) {
                 // Get the correct selectors based on transaction type
                 let debitAccountSelect, creditAccountSelect;
                 
                 if (selectedType === 'interbanking_transfer') {
-                    // For interbanking transfers, use the destination account fields
-                    debitAccountSelect = document.querySelector('select[name="debit_account_id"]');
-                    creditAccountSelect = document.querySelector('select[name="credit_account_id"]');
+                    // For interbanking transfers, use the Master Ledger A fields
+                    debitAccountSelect = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
+                    creditAccountSelect = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
                 } else {
                     // For regular transactions, use the regular account fields
                     debitAccountSelect = document.querySelector('select[name="regular_debit_account_id"]');
@@ -801,52 +991,55 @@
                         }
                     }
                 } else if (selectedType === 'interbanking_transfer') {
-                    console.log('🔄 Applying interbanking transfer defaults...');
+                    console.log('🔄 Applying interbanking transfer defaults for Master Ledger A and B...');
                     
-                    // Set defaults for Origin Account (typically Belgium)
-                    const originDebitSelect = document.querySelector('select[name="origin_debit_account_id"]');
-                    const originCreditSelect = document.querySelector('select[name="origin_credit_account_id"]');
+                    // Set defaults for Master Ledger A (typically Belgium)
+                    const masterLedgerADebitSelect = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
+                    const masterLedgerACreditSelect = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
                     
-                    if (originDebitSelect) {
-                        const belfiusOption = Array.from(originDebitSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('belfius')
-                        );
-                        if (belfiusOption) {
-                            originDebitSelect.value = belfiusOption.value;
-                            console.log('✅ Auto-selected BE-Belfius for origin debit:', belfiusOption.textContent);
-                        }
-                    }
-                    
-                    if (originCreditSelect) {
-                        const expensesOption = Array.from(originCreditSelect.options).find(option => 
+                    if (masterLedgerADebitSelect) {
+                        const expensesOption = Array.from(masterLedgerADebitSelect.options).find(option => 
                             option.textContent.toLowerCase().includes('be') && 
                             option.textContent.toLowerCase().includes('expenses')
                         );
                         if (expensesOption) {
-                            originCreditSelect.value = expensesOption.value;
-                            console.log('✅ Auto-selected BE-Expenses for origin credit:', expensesOption.textContent);
+                            masterLedgerADebitSelect.value = expensesOption.value;
+                            console.log('✅ Auto-selected BE-Expenses for Master Ledger A debit:', expensesOption.textContent);
                         }
                     }
                     
-                    // Set defaults for Destination Account (typically Vietnam) - using the regular debit/credit selectors
-                    if (debitAccountSelect) {
-                        const indovinaOption = Array.from(debitAccountSelect.options).find(option => 
+                    if (masterLedgerACreditSelect) {
+                        const belfiusOption = Array.from(masterLedgerACreditSelect.options).find(option => 
+                            option.textContent.toLowerCase().includes('belfius')
+                        );
+                        if (belfiusOption) {
+                            masterLedgerACreditSelect.value = belfiusOption.value;
+                            console.log('✅ Auto-selected BE-Belfius for Master Ledger A credit:', belfiusOption.textContent);
+                        }
+                    }
+                    
+                    // Set defaults for Master Ledger B (typically Vietnam)
+                    const masterLedgerBDebitSelect = document.querySelector('select[name="master_ledger_b_debit_account_id"]');
+                    const masterLedgerBCreditSelect = document.querySelector('select[name="master_ledger_b_credit_account_id"]');
+                    
+                    if (masterLedgerBDebitSelect) {
+                        const indovinaOption = Array.from(masterLedgerBDebitSelect.options).find(option => 
                             option.textContent.toLowerCase().includes('indovina')
                         );
                         if (indovinaOption) {
-                            debitAccountSelect.value = indovinaOption.value;
-                            console.log('✅ Auto-selected VN-Indovina Bank for destination debit:', indovinaOption.textContent);
+                            masterLedgerBDebitSelect.value = indovinaOption.value;
+                            console.log('✅ Auto-selected VN-Indovina Bank for Master Ledger B debit:', indovinaOption.textContent);
                         }
                     }
                     
-                    if (creditAccountSelect) {
-                        const revenuesOption = Array.from(creditAccountSelect.options).find(option => 
+                    if (masterLedgerBCreditSelect) {
+                        const revenuesOption = Array.from(masterLedgerBCreditSelect.options).find(option => 
                             option.textContent.toLowerCase().includes('vn') && 
                             option.textContent.toLowerCase().includes('revenues')
                         );
                         if (revenuesOption) {
-                            creditAccountSelect.value = revenuesOption.value;
-                            console.log('✅ Auto-selected VN-Revenues for destination credit:', revenuesOption.textContent);
+                            masterLedgerBCreditSelect.value = revenuesOption.value;
+                            console.log('✅ Auto-selected VN-Revenues for Master Ledger B credit:', revenuesOption.textContent);
                         }
                     }
                     
