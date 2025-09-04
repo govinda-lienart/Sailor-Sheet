@@ -1,4 +1,10 @@
 # =============================================================================
+# Created: 2025-09-04 04:52:11
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-04 04:50:11
+# Status: ✅ WORKING - Ready for GitHub commit
+# Created: 2025-09-04 04:49:54
+# Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-04 04:26:36
 # Status: ✅ WORKING - Ready for GitHub commit
 # Created: 2025-09-03 22:51:02
@@ -25,6 +31,7 @@
 # Import required libraries
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify  # Web framework
 import os
+import json
 
 # Import custom modules
 from config import initialize_sheets
@@ -56,6 +63,78 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-
 
 # Initialize Google Sheets connection
 gc = initialize_sheets()
+
+# =============================================================================
+# JSON DATA LOADING FUNCTIONS - EFFICIENT ALTERNATIVE TO GOOGLE SHEETS
+# =============================================================================
+
+def load_json_data(filename):
+    """
+    Load data from JSON file in the data directory
+    """
+    try:
+        file_path = os.path.join('data', filename)
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            print(f"DEBUG: Successfully loaded {filename}")
+            return data
+    except FileNotFoundError:
+        print(f"ERROR: JSON file {filename} not found")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"ERROR: Invalid JSON in {filename}: {e}")
+        return {}
+    except Exception as e:
+        print(f"ERROR: Unexpected error loading {filename}: {e}")
+        return {}
+
+def get_funds_from_json():
+    """
+    Get funds list from JSON file instead of Google Sheets
+    Returns list of fund dictionaries with id, name, color, active
+    """
+    try:
+        data = load_json_data('funds.json')
+        funds = data.get('funds', [])
+        # Filter only active funds
+        active_funds = [fund for fund in funds if fund.get('active', True)]
+        print(f"DEBUG: Loaded {len(active_funds)} active funds from JSON")
+        return active_funds
+    except Exception as e:
+        print(f"ERROR: Failed to load funds from JSON: {e}")
+        return []
+
+def get_categories_from_json():
+    """
+    Get categories list from JSON file instead of Google Sheets
+    Returns list of category dictionaries with code, name, category, active
+    """
+    try:
+        data = load_json_data('categories.json')
+        categories = data.get('categories', [])
+        # Filter only active categories
+        active_categories = [cat for cat in categories if cat.get('active', True)]
+        print(f"DEBUG: Loaded {len(active_categories)} active categories from JSON")
+        return active_categories
+    except Exception as e:
+        print(f"ERROR: Failed to load categories from JSON: {e}")
+        return []
+
+def get_accounts_from_json():
+    """
+    Get accounts list from JSON file instead of Google Sheets
+    Returns list of account dictionaries with code, name, type, active
+    """
+    try:
+        data = load_json_data('accounts.json')
+        accounts = data.get('accounts', [])
+        # Filter only active accounts
+        active_accounts = [acc for acc in accounts if acc.get('active', True)]
+        print(f"DEBUG: Loaded {len(active_accounts)} active accounts from JSON")
+        return active_accounts
+    except Exception as e:
+        print(f"ERROR: Failed to load accounts from JSON: {e}")
+        return []
 
 # =============================================================================
 # MAIN WEB ROUTE - Sheet Selection Form
@@ -94,9 +173,9 @@ def index():
             print(f"DEBUG: Available form fields: {list(request.form.keys())}")
             flash(f'Missing required field: {e}', 'error')
             available_sheets = get_available_sheets(gc)
-            funds = get_funds_list(gc)
-            categories = get_categories_list(gc)
-            accounts = get_accounts_list(gc)
+            funds = get_funds_from_json()
+            categories = get_categories_from_json()
+            accounts = get_accounts_from_json()
             return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
         
         # Debug: Show what we're working with
@@ -140,18 +219,18 @@ def index():
         if not selected_sheet_id:
             flash('Please select a sheet!', 'error')
             available_sheets = get_available_sheets(gc)
-            funds = get_funds_list(gc)
-            categories = get_categories_list(gc)
-            accounts = get_accounts_list(gc)
+            funds = get_funds_from_json()
+            categories = get_categories_from_json()
+            accounts = get_accounts_from_json()
             return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
                                                                                         # ↑ HTML name ↑ Python data
 
         if not selected_worksheet_title:
             flash('Please select a worksheet!', 'error')
             available_sheets = get_available_sheets(gc)
-            funds = get_funds_list(gc)
-            categories = get_categories_list(gc)
-            accounts = get_accounts_list(gc)
+            funds = get_funds_from_json()
+            categories = get_categories_from_json()
+            accounts = get_accounts_from_json()
             return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
         
         # Use the worksheet title directly as the account name
@@ -204,26 +283,25 @@ def index():
             print("ERROR: Transaction failed!")
             flash('Error adding transaction!', 'error')
             available_sheets = get_available_sheets(gc)
-            funds = get_funds_list(gc)
-            categories = get_categories_list(gc)
-            accounts = get_accounts_list(gc)
+            funds = get_funds_from_json()
+            categories = get_categories_from_json()
+            accounts = get_accounts_from_json()
             return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
     
     # =====================================================================
     # SHOW THE FORM WITH SHEET SELECTION (GET request)
     # =====================================================================
     
-    # Get available sheets for dropdown
+    # Get available sheets for dropdown (still from Google Sheets for worksheet selection)
     available_sheets = get_available_sheets(gc)
     
-    # Get available funds for dropdown
-    funds = get_funds_list(gc)
+    # Get available funds, categories, and accounts from JSON files (MUCH FASTER!)
+    print("DEBUG: Loading dropdown data from JSON files...")
+    funds = get_funds_from_json()
+    categories = get_categories_from_json()
+    accounts = get_accounts_from_json()
     
-    # Get available categories for dropdown
-    categories = get_categories_list(gc)
-    
-    # Get available accounts for dropdown
-    accounts = get_accounts_list(gc)
+    print(f"DEBUG: JSON data loaded - Funds: {len(funds)}, Categories: {len(categories)}, Accounts: {len(accounts)}")
     
     # Show the form with sheet selection, funds, categories, and accounts
     return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
@@ -292,10 +370,10 @@ def refresh_form_data():
         print(f"  - Transaction Type: {transaction_type}")
         print(f"="*50)
         
-        # Get fresh data from Google Sheets
-        accounts = get_accounts_list(gc)
-        categories = get_categories_list(gc)
-        funds = get_funds_list(gc)
+        # Get fresh data from JSON files (MUCH FASTER than Google Sheets!)
+        accounts = get_accounts_from_json()
+        categories = get_categories_from_json()
+        funds = get_funds_from_json()
         
         print(f"DEBUG: Retrieved fresh data:")
         print(f"  - Accounts: {len(accounts)} items")

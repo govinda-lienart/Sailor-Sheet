@@ -28,6 +28,13 @@ HTML_FILES = [
     'templates/thank_you.html'
 ]
 
+# Data files to update (JSON Files)
+JSON_FILES = [
+    'data/accounts.json',
+    'data/categories.json',
+    'data/funds.json'
+]
+
 # =============================================================================
 # TIMESTAMP FUNCTIONS
 # =============================================================================
@@ -145,11 +152,48 @@ def add_timestamp_to_html_file(filepath):
         print(f"❌ Error updating {filepath}: {e}")
         return False
 
+# Add Timestamp To JSON File
+# ---------------------------
+def add_timestamp_to_json_file(filepath):
+    """Add or update timestamp comment in a JSON file"""
+    try:
+        import json
+        
+        # Read the JSON file
+        with open(filepath, 'r', encoding='utf-8') as file:
+            content = file.read()
+        
+        # Parse JSON to add metadata
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError:
+            print(f"⚠️  Invalid JSON in {filepath}, skipping timestamp update")
+            return False
+        
+        # Add or update timestamp metadata
+        current_time = get_current_timestamp()
+        data['_metadata'] = {
+            'updated': current_time,
+            'status': 'Ready for GitHub commit',
+            'version': '1.0.0'
+        }
+        
+        # Write back to file with proper formatting
+        with open(filepath, 'w', encoding='utf-8') as file:
+            json.dump(data, file, indent=2, ensure_ascii=False)
+        
+        print(f"✅ Updated JSON: {filepath}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error updating {filepath}: {e}")
+        return False
+
 # Update All Files
 # ----------------
 def update_all_files():
-    """Update timestamps in all Python and HTML files"""
-    print("🚀 Updating timestamps in all Python and HTML files...")
+    """Update timestamps in all Python, HTML, and JSON files"""
+    print("🚀 Updating timestamps in all Python, HTML, and JSON files...")
     print("=" * 70)
     
     current_time = get_current_timestamp()
@@ -178,13 +222,26 @@ def update_all_files():
         else:
             print(f"⚠️  HTML file not found: {filename}")
     
-    total_success = python_success + html_success
-    total_files = len(PYTHON_FILES) + len(HTML_FILES)
+    print()
+    
+    # Update JSON files
+    json_success = 0
+    print("📄 Updating JSON files:")
+    for filename in JSON_FILES:
+        if os.path.exists(filename):
+            if add_timestamp_to_json_file(filename):
+                json_success += 1
+        else:
+            print(f"⚠️  JSON file not found: {filename}")
+    
+    total_success = python_success + html_success + json_success
+    total_files = len(PYTHON_FILES) + len(HTML_FILES) + len(JSON_FILES)
     
     print("\n" + "=" * 70)
     print("📊 Update Summary:")
     print(f"   🐍 Python files: {python_success}/{len(PYTHON_FILES)} updated")
     print(f"   🌐 HTML files: {html_success}/{len(HTML_FILES)} updated")
+    print(f"   📄 JSON files: {json_success}/{len(JSON_FILES)} updated")
     print(f"   ✅ Total: {total_success}/{total_files} files updated")
     print(f"   📅 Timestamp: {current_time}")
     print()

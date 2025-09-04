@@ -8,7 +8,7 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-04 04:26:36 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-04 04:52:11 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
@@ -255,99 +255,14 @@
              
                                      function handleTransactionTypeChange() {
                 const selectedType = document.getElementById('transaction_category').value;
-                console.log('Transaction type changed to:', selectedType);
+                console.log('🚀 Transaction type changed to:', selectedType, '(using JSON data - no API calls!)');
                 
-                // Show loading state
-                const debitSelect = document.querySelector('select[name="debit_account_id"]');
-                const creditSelect = document.querySelector('select[name="credit_account_id"]');
-                const categorySelect = document.querySelector('select[name="category_id"]');
-                
-                if (debitSelect) {
-                    debitSelect.innerHTML = '<option value="">Loading...</option>';
-                    debitSelect.disabled = true;
-                }
-                if (creditSelect) {
-                    creditSelect.innerHTML = '<option value="">Loading...</option>';
-                    creditSelect.disabled = true;
-                }
-                if (categorySelect) {
-                    categorySelect.innerHTML = '<option value="">Loading...</option>';
-                    categorySelect.disabled = true;
-                }
-                
-                // Make AJAX call to refresh form data and apply defaults
-                fetch('/refresh_form_data', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        transaction_type: selectedType
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Form data refreshed:', data);
-                    
-                    // Update dropdowns with fresh data
-                    updateDropdowns(data);
-                    
-                    // Apply transaction type specific defaults after a small delay
-                    // to ensure dropdowns are fully populated
-                    setTimeout(() => {
-                        applyTransactionDefaults(selectedType);
-                    }, 100);
-                })
-                .catch(error => {
-                    console.error('Error refreshing form data:', error);
-                    // Fallback to original method if AJAX fails
-                    applyTransactionDefaults(selectedType);
-                });
+                // Apply transaction type specific defaults immediately
+                // No need for AJAX calls or caching - data is already loaded from JSON!
+                applyTransactionDefaults(selectedType);
             }
             
-            function updateDropdowns(data) {
-                const debitSelect = document.querySelector('select[name="debit_account_id"]');
-                const creditSelect = document.querySelector('select[name="credit_account_id"]');
-                const categorySelect = document.querySelector('select[name="category_id"]');
-                
-                // Update debit accounts
-                if (debitSelect && data.accounts) {
-                    debitSelect.innerHTML = '<option value="">Choose account to debit...</option>';
-                    data.accounts.forEach(account => {
-                        const option = document.createElement('option');
-                        option.value = account.code || account.name; // Use code if available, fallback to name
-                        option.textContent = `${account.name} (${account.type})`;
-                        console.log('💫 Adding debit option:', option.textContent, 'with value:', option.value);
-                        debitSelect.appendChild(option);
-                    });
-                    debitSelect.disabled = false;
-                }
-                
-                // Update credit accounts
-                if (creditSelect && data.accounts) {
-                    creditSelect.innerHTML = '<option value="">Choose account to credit...</option>';
-                    data.accounts.forEach(account => {
-                        const option = document.createElement('option');
-                        option.value = account.code || account.name; // Use code if available, fallback to name
-                        option.textContent = `${account.name} (${account.type})`;
-                        console.log('💫 Adding credit option:', option.textContent, 'with value:', option.value);
-                        creditSelect.appendChild(option);
-                    });
-                    creditSelect.disabled = false;
-                }
-                
-                // Update categories
-                if (categorySelect && data.categories) {
-                    categorySelect.innerHTML = '<option value="">Choose a category...</option>';
-                    data.categories.forEach(category => {
-                        const option = document.createElement('option');
-                        option.value = category.code;
-                        option.textContent = `${category.name} (${category.category})`;
-                        categorySelect.appendChild(option);
-                    });
-                    categorySelect.disabled = false;
-                }
-            }
+            // updateDropdowns function removed - no longer needed since data is loaded from JSON!
             
             function applyTransactionDefaults(selectedType) {
                 const debitAccountSelect = document.querySelector('select[name="debit_account_id"]');
