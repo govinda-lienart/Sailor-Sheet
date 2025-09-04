@@ -8,11 +8,96 @@
      ============================================================================= -->
 
      <!DOCTYPE html>
-<!-- Updated: 2025-09-04 14:49:11 - Ready for GitHub commit -->
+<!-- Updated: 2025-09-04 15:18:55 - Ready for GitHub commit -->
      <html>
      <head>
          <title>NGO Accounting - Data Entry</title>
          <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        
+        <!-- FORM NAVIGATION STYLES -->
+        <style>
+            .form-navigation {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 200px;
+                background: white;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                padding: 15px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            
+            .form-navigation h5 {
+                margin: 0 0 15px 0;
+                color: #333;
+                font-size: 14px;
+                font-weight: bold;
+                text-align: center;
+                border-bottom: 1px solid #e0e0e0;
+                padding-bottom: 10px;
+            }
+            
+            .nav-links {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .nav-link {
+                display: block;
+                padding: 8px 12px;
+                text-decoration: none;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                text-align: center;
+                transition: all 0.3s ease;
+                border: 1px solid rgba(0,0,0,0.1);
+            }
+            
+            .nav-link:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                text-decoration: none;
+            }
+            
+            .nav-link:active {
+                transform: translateY(0);
+            }
+            
+            /* RESPONSIVE DESIGN */
+            @media (max-width: 768px) {
+                .form-navigation {
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    top: auto;
+                    width: 150px;
+                    max-height: 60vh;
+                }
+                
+                .nav-link {
+                    padding: 6px 10px;
+                    font-size: 11px;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .form-navigation {
+                    width: 120px;
+                    padding: 10px;
+                }
+                
+                .nav-link {
+                    padding: 5px 8px;
+                    font-size: 10px;
+                }
+            }
+        </style>
          <script>
              // Show loading text immediately when script runs (before DOM loads)
              (function() {
@@ -45,8 +130,36 @@
          
          
          <div class="container">
-             <div class="form-container">
-                 <h1>NGO Accounting System</h1>
+            <!-- FIXED NAVIGATION PANEL -->
+            <div id="form-navigation" class="form-navigation">
+                <h5>📋 Quick Navigation</h5>
+                <div class="nav-links">
+                    <a href="#transaction-type-section" class="nav-link" style="background-color: #ffc107; color: #000;">⚡ Type</a>
+                    <a href="#transaction-number-section" class="nav-link" style="background-color: #6c757d; color: #fff;">🔢 Number</a>
+                    <a href="#sheet-worksheet-section" class="nav-link" style="background-color: #fd7e14; color: #fff;">📊 Sheet</a>
+                    <a href="#date-section" class="nav-link" style="background-color: #28a745; color: #fff;">📅 Date</a>
+                    <a href="#amount-section" class="nav-link" style="background-color: #dc3545; color: #fff;">💰 Amount</a>
+                    <a href="#fund-section" class="nav-link" style="background-color: #20c997; color: #fff;">🏦 Fund</a>
+                    <a href="#category-section" class="nav-link" style="background-color: #8b4513; color: #fff;">📂 Category</a>
+                    <a href="#debit-account-section" class="nav-link regular-account" style="background-color: #007bff; color: #fff;">💳 Debit</a>
+                    <a href="#credit-account-section" class="nav-link regular-account" style="background-color: #6f42c1; color: #fff;">💰 Credit</a>
+                    <a href="#description-section" class="nav-link" style="background-color: #ffc107; color: #000;">📝 Description</a>
+                    <a href="#upload-bills-section" class="nav-link" style="background-color: #000000; color: #fff;">📎 Upload</a>
+                    <a href="#origin-account-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">📍 Origin</a>
+                    <a href="#destination-account-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">🎯 Destination</a>
+                </div>
+            </div>
+            
+                         <div class="form-container">
+                <!-- LOGO AND TITLE SECTION -->
+                <div class="logo-title-section" style="display: flex; align-items: center; margin-bottom: 20px; gap: 20px;">
+                    <div class="logo-section">
+                        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="NGO Logo" style="max-height: 80px; max-width: 150px;">
+                    </div>
+                    <div class="title-section">
+                        <h1 style="margin: 0;">NGO Accounting System</h1>
+                    </div>
+                </div>
      
                  {% with messages = get_flashed_messages(with_categories=true) %}
                      {% if messages %}
@@ -61,10 +174,10 @@
                  <!-- MAIN FORM -->
                  <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
                      <!-- TRANSACTION TYPE SECTION -->
-                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #ffc107; border-radius: 8px; background-color: #fffbf0;">
+                     <div id="transaction-type-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #ffc107; border-radius: 8px; background-color: #fffbf0;">
                          <h4 style="color: #ffc107; margin-bottom: 15px;">⚡ Transaction Type</h4>
                          <div class="form-group">
-                             <label>Transaction Type:</label>
+                         <label>Transaction Type:</label>
                              <select name="transaction_category" id="transaction_category" required onchange="handleTransactionTypeChange()">
                                 <option value="payment">Payment</option>
                                 <option value="internal_transfer">Internal Transfer</option>
@@ -77,94 +190,94 @@
                      </div>
                      
                      <!-- TRANSACTION NUMBER SECTION -->
-                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #6c757d; border-radius: 8px; background-color: #f8f9fa;">
+                     <div id="transaction-number-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6c757d; border-radius: 8px; background-color: #f8f9fa;">
                          <h4 style="color: #6c757d; margin-bottom: 15px;">🔢 Transaction Number</h4>
-                         <div class="form-group">
-                             <label>Transaction Number:</label>
-                             <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
-                             <div class="form-text">This number will be used for both the transaction and file naming</div>
-                         </div>
+                     <div class="form-group">
+                         <label>Transaction Number:</label>
+                         <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
+                         <div class="form-text">This number will be used for both the transaction and file naming</div>
+                     </div>
                      </div>
      
                      <!-- SHEET & WORKSHEET SELECTION SECTION -->
-                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #fd7e14; border-radius: 8px; background-color: #fff8f0;">
+                     <div id="sheet-worksheet-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #fd7e14; border-radius: 8px; background-color: #fff8f0;">
                          <h4 style="color: #fd7e14; margin-bottom: 15px;">📊 Sheet & Worksheet Selection</h4>
-                         
-                         <div class="form-group">
-                             <label>Select Sheet:</label>
-                             <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
-                                 <option value="">Choose a sheet...</option>
-                                 {% for sheet in sheets %}
-                                 <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
-                                 {% endfor %}
-                             </select>
-                         </div>
-                         
-                         <div class="form-group">
-                             <label>Select Worksheet:</label>
-                             <select name="worksheet_name" id="worksheet_select" required disabled>
-                                 <option value="">First select a sheet...</option>
-                             </select>
-                             <div class="form-text">This shows the name of each worksheet</div>
-                         </div>
+     
+                     <div class="form-group">
+                         <label>Select Sheet:</label>
+                                                 <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
+                            <option value="">Choose a sheet...</option>
+                            {% for sheet in sheets %}
+                            <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
+                            {% endfor %}
+                        </select>
                      </div>
+     
+                                         <div class="form-group">
+                        <label>Select Worksheet:</label>
+                        <select name="worksheet_name" id="worksheet_select" required disabled>
+                            <option value="">First select a sheet...</option>
+                        </select>
+                        <div class="form-text">This shows the name of each worksheet</div>
+                         </div>
+                    </div>
 
      
                      <!-- DATE SECTION -->
-                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f8fff8;">
+                     <div id="date-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f8fff8;">
                          <h4 style="color: #28a745; margin-bottom: 15px;">📅 Date</h4>
-                         <div class="form-group">
-                             <label>Date:</label>
-                             <input type="date" name="date_input" required>
-                             <div class="form-text">Select the date for this transaction</div>
+                     <div class="form-group">
+                         <label>Date:</label>
+                         <input type="date" name="date_input" required>
+                         <div class="form-text">Select the date for this transaction</div>
                          </div>
                      </div>
      
                      <!-- AMOUNT SECTION -->
-                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff5f5;">
+                     <div id="amount-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff5f5;">
                          <h4 style="color: #dc3545; margin-bottom: 15px;">💰 Amount</h4>
-                         <div class="form-group">
-                             <label>Amount:</label>
-                             <input type="number" name="amount" step="0.01" required placeholder="Enter amount (always positive)">
+                     <div class="form-group">
+                         <label>Amount:</label>
+                         <input type="number" name="amount" step="0.01" required placeholder="Enter amount (always positive)">
                          </div>
                      </div>
      
                      <!-- FUND SECTION -->
-                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #20c997; border-radius: 8px; background-color: #f0fffe;">
+                     <div id="fund-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #20c997; border-radius: 8px; background-color: #f0fffe;">
                          <h4 style="color: #20c997; margin-bottom: 15px;">🏦 Fund</h4>
-                         <div class="form-group">
-                             <label>Fund:</label>
-                             <select name="fund_id" required>
-                                 <option value="">Choose a fund...</option>
-                                 {% for fund in funds %}
-                                 <option value="{{ fund.id }}" style="background-color: {{ fund.color }}">
-                                     {{ fund.name }}
-                                 </option>
-                                 {% endfor %}
-                             </select>
+                     <div class="form-group">
+                         <label>Fund:</label>
+                         <select name="fund_id" required>
+                             <option value="">Choose a fund...</option>
+                             {% for fund in funds %}
+                             <option value="{{ fund.id }}" style="background-color: {{ fund.color }}">
+                                 {{ fund.name }}
+                             </option>
+                             {% endfor %}
+                         </select>
                          </div>
                      </div>
      
                      <!-- CATEGORY SECTION -->
-                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #8b4513; border-radius: 8px; background-color: #fdf5e6;">
+                     <div id="category-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #8b4513; border-radius: 8px; background-color: #fdf5e6;">
                          <h4 style="color: #8b4513; margin-bottom: 15px;">📂 Category</h4>
-                         <div class="form-group">
-                             <label>Category:</label>
-                             <select name="category_id" required>
-                                 <option value="">Choose a category...</option>
-                                 {% for category in categories %}
-                                 <option value="{{ category.code }}">
-                                     {{ category.name }} ({{ category.category }})
-                                 </option>
-                                 {% endfor %}
-                             </select>
+                                         <div class="form-group">
+                        <label>Category:</label>
+                        <select name="category_id" required>
+                            <option value="">Choose a category...</option>
+                            {% for category in categories %}
+                            <option value="{{ category.code }}">
+                                {{ category.name }} ({{ category.category }})
+                            </option>
+                            {% endfor %}
+                        </select>
                          </div>
                      </div>
                     
                     <!-- INTERBANKING TRANSFER SECTIONS (ONLY VISIBLE FOR INTERBANKING TRANSFERS) -->
                     <div id="interbankingSections" style="display: none;">
                         <!-- ORIGIN ACCOUNT SECTION -->
-                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
+                        <div id="origin-account-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
                             <h4 style="color: #6f42c1; margin-bottom: 15px;">📍 Origin Account</h4>
                             
                             <div class="form-group">
@@ -195,7 +308,7 @@
                         </div>
                         
                         <!-- DESTINATION ACCOUNT SECTION -->
-                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
+                        <div id="destination-account-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
                             <h4 style="color: #6f42c1; margin-bottom: 15px;">🎯 Destination Account</h4>
                             
                             <div class="form-group">
@@ -229,36 +342,36 @@
                     <!-- REGULAR ACCOUNT SECTIONS (FOR NON-INTERBANKING TRANSFERS) -->
                     <div id="regularAccountSections">
                         <!-- DEBIT SECTION -->
-                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 8px; background-color: #f0f8ff;">
+                        <div id="debit-account-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 8px; background-color: #f0f8ff;">
                             <h4 style="color: #007bff; margin-bottom: 15px;">💳 Debit Account</h4>
-                            <div class="form-group">
-                                <label>Debit:</label>
+                    <div class="form-group">
+                        <label>Debit:</label>
                                 <select name="regular_debit_account_id" required>
-                                    <option value="">Choose account to debit...</option>
-                                    {% for account in accounts %}
-                                    <option value="{{ account.code }}">
-                                        {{ account.name }} ({{ account.type }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">Select the account to be debited</div>
+                            <option value="">Choose account to debit...</option>
+                            {% for account in accounts %}
+                            <option value="{{ account.code }}">
+                                {{ account.name }} ({{ account.type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Select the account to be debited</div>
                             </div>
-                        </div>
-                        
+                    </div>
+                    
                         <!-- CREDIT SECTION -->
-                        <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
+                        <div id="credit-account-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
                             <h4 style="color: #6f42c1; margin-bottom: 15px;">💰 Credit Account</h4>
-                            <div class="form-group">
-                                <label>Credit:</label>
+                    <div class="form-group">
+                        <label>Credit:</label>
                                 <select name="regular_credit_account_id" required>
-                                    <option value="">Choose account to credit...</option>
-                                    {% for account in accounts %}
-                                    <option value="{{ account.code }}">
-                                        {{ account.name }} ({{ account.type }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">Select the account to be credited</div>
+                            <option value="">Choose account to credit...</option>
+                            {% for account in accounts %}
+                            <option value="{{ account.code }}">
+                                {{ account.name }} ({{ account.type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Select the account to be credited</div>
                             </div>
                         </div>
                     </div>
@@ -268,13 +381,13 @@
 
      
                      <!-- DESCRIPTION SECTION -->
-                     <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #000000; border-radius: 8px; background-color: #ffffff;">
+                     <div id="description-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #000000; border-radius: 8px; background-color: #fffbf0;">
                          <h4 style="color: #000000; margin-bottom: 15px;">📝 Description</h4>
-                         <div class="form-group">
-                             <label>Description:</label>
-                             <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
+                     <div class="form-group">
+                         <label>Description:</label>
+                         <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
                          </div>
-                         
+     
                          <!-- Hidden fields populated after upload -->
                          <input type="hidden" name="file_link" id="fileLinkInput">
                          <input type="hidden" name="file_name" id="fileNameInput">
@@ -284,7 +397,7 @@
                  </form>
      
                  <!-- UPLOAD BILLS SECTION -->
-                 <div class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #000000; border-radius: 8px; background-color: #ffffff;">
+                 <div id="upload-bills-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #000000; border-radius: 8px; background-color: #ffffff;">
                      <h4 style="color: #000000; margin-bottom: 15px;">📎 Upload Bills</h4>
                      <div class="form-group">
                          <label>Upload Bills:</label>
@@ -360,9 +473,12 @@
                         handleTransactionTypeChange();
                     }
                 }, 1000); // Increased delay to ensure all dropdowns are fully loaded
+                
+                // Initialize navigation panel
+                initializeNavigation();
              });
              
-            function handleTransactionTypeChange() {
+                         function handleTransactionTypeChange() {
                 const selectedType = document.getElementById('transaction_category').value;
                 console.log('🚀 Transaction type changed to:', selectedType, '(using JSON data - no API calls!)');
                 
@@ -391,6 +507,9 @@
                     if (originDebitField) originDebitField.setAttribute('required', 'required');
                     if (originCreditField) originCreditField.setAttribute('required', 'required');
                     
+                    // Update navigation panel for interbanking transfer
+                    updateNavigationForInterbanking(true);
+                    
                     console.log('✅ Showing interbanking transfer sections (Origin + Destination)');
                     console.log('✅ Required attributes updated for interbanking transfer');
                 } else {
@@ -406,6 +525,9 @@
                     if (originDebitField) originDebitField.removeAttribute('required');
                     if (originCreditField) originCreditField.removeAttribute('required');
                     
+                    // Update navigation panel for regular transactions
+                    updateNavigationForInterbanking(false);
+                    
                     console.log('✅ Showing regular account sections');
                     console.log('✅ Required attributes updated for regular transactions');
                 }
@@ -413,6 +535,46 @@
                 // Apply transaction type specific defaults immediately
                 // No need for AJAX calls or caching - data is already loaded from JSON!
                 applyTransactionDefaults(selectedType);
+            }
+            
+            // Navigation panel management
+            function updateNavigationForInterbanking(isInterbanking) {
+                const regularAccountLinks = document.querySelectorAll('.regular-account');
+                const interbankingAccountLinks = document.querySelectorAll('.interbanking-account');
+                
+                if (isInterbanking) {
+                    // Hide regular account links, show interbanking account links
+                    regularAccountLinks.forEach(link => link.style.display = 'none');
+                    interbankingAccountLinks.forEach(link => link.style.display = 'block');
+                } else {
+                    // Show regular account links, hide interbanking account links
+                    regularAccountLinks.forEach(link => link.style.display = 'block');
+                    interbankingAccountLinks.forEach(link => link.style.display = 'none');
+                }
+            }
+            
+            // Smooth scroll to section function
+            function scrollToSection(sectionId) {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }
+            
+            // Initialize navigation click handlers
+            function initializeNavigation() {
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const href = this.getAttribute('href');
+                        const sectionId = href.substring(1); // Remove the # symbol
+                        scrollToSection(sectionId);
+                    });
+                });
             }
             
             // updateDropdowns function removed - no longer needed since data is loaded from JSON!
@@ -615,7 +777,7 @@
                         if (internalBankTransferCategory) {
                             categorySelect.value = internalBankTransferCategory.value;
                             console.log('✅ Auto-selected Internal Bank Transfer category:', internalBankTransferCategory.textContent);
-                        } else {
+                } else {
                             console.log('❌ Could not find Internal Bank Transfer category option');
                         }
                     }
@@ -705,22 +867,22 @@
                     }
                 } else if (selectedType === 'grant') {
                     // For grants: Debit Bank account (asset increases), Credit Revenue account
-                    if (debitAccountSelect) {
-                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('bank')
-                        );
-                        if (bankOption) {
-                            debitAccountSelect.value = bankOption.value;
+                        if (debitAccountSelect) {
+                            const bankOption = Array.from(debitAccountSelect.options).find(option => 
+                                option.textContent.toLowerCase().includes('bank')
+                            );
+                            if (bankOption) {
+                                debitAccountSelect.value = bankOption.value;
                             console.log('Auto-selected Bank account for grant debit');
+                            }
                         }
-                    }
-                    
-                    if (creditAccountSelect) {
-                        const revenueOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('revenue')
-                        );
-                        if (revenueOption) {
-                            creditAccountSelect.value = revenueOption.value;
+                        
+                        if (creditAccountSelect) {
+                            const revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                                option.textContent.toLowerCase().includes('revenue')
+                            );
+                            if (revenueOption) {
+                                creditAccountSelect.value = revenueOption.value;
                             console.log('Auto-selected Revenue account for grant credit');
                         }
                     }
