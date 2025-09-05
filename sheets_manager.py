@@ -226,6 +226,36 @@ def get_worksheets_from_sheet(gc, sheet_id):
 # TRANSACTION MANAGEMENT
 # =============================================================================
 
+# Generate Offset Text
+# --------------------
+def generate_offset_text(account_name, counter_account_name):
+    """
+    Generate offset text for Expenses and Revenues accounts
+    Args:
+        account_name: The current account name
+        counter_account_name: The counter account name (the other side of the transaction)
+    Returns: Offset text or empty string
+    """
+    # Define the target accounts that should get offset text
+    target_accounts = {
+        'VN - Expenses': 'expense',
+        'BE - Expenses': 'expense', 
+        'VN - Revenues': 'revenue',
+        'BE - Revenues': 'revenue'
+    }
+    
+    # Check if this account should get offset text
+    account_type = target_accounts.get(account_name)
+    
+    if account_type:
+        if account_type == 'expense':
+            return f"Paid From {counter_account_name}"
+        elif account_type == 'revenue':
+            return f"Received Into {counter_account_name}"
+    
+    # Return empty string for non-target accounts
+    return ""
+
 # Add Transaction To Selected Sheet
 # --------------------------------
 def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links="", origin_account="", destination_account="", transfer_type="external"):
@@ -376,6 +406,14 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         # DOUBLE-ENTRY BOOKKEEPING: Create TWO entries
         print(f"DEBUG: Creating double-entry bookkeeping entries")
         
+        # Generate Offset text for Expenses and Revenues accounts
+        debit_offset = generate_offset_text(debit_account_name, credit_account_name)
+        credit_offset = generate_offset_text(credit_account_name, debit_account_name)
+        
+        print(f"DEBUG: Offset text generation:")
+        print(f"  - Debit account: {debit_account_name} → Offset: '{debit_offset}'")
+        print(f"  - Credit account: {credit_account_name} → Offset: '{credit_offset}'")
+        
         # Entry 1: DEBIT entry (amount goes in Debit column)
         debit_row = [
             transaction_number,    # A: Transaction Number
@@ -385,11 +423,12 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             category_name,        # E: Category
             numeric_amount,       # F: Debit (VND) - amount goes here
             "",                   # G: Credit (VND) - empty for debit entry
-            description,          # H: Description
-            file_link_values.get('bills', ''),           # I: Bill
-            file_link_values.get('red_bills', ''),       # J: Red Bill
-            file_link_values.get('bank_statement', ''),  # K: Bank Record
-            file_link_values.get('documentation', '')    # L: Doc
+            debit_offset,         # H: Offset
+            description,          # I: Description
+            file_link_values.get('bills', ''),           # J: Bill
+            file_link_values.get('red_bills', ''),       # K: Red Bill
+            file_link_values.get('bank_statement', ''),  # L: Bank Record
+            file_link_values.get('documentation', '')    # M: Doc
         ]
         
         # Entry 2: CREDIT entry (amount goes in Credit column)
@@ -401,11 +440,12 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             category_name,        # E: Category
             "",                   # F: Debit (VND) - empty for credit entry
             numeric_amount,       # G: Credit (VND) - amount goes here
-            description,          # H: Description
-            file_link_values.get('bills', ''),           # I: Bill
-            file_link_values.get('red_bills', ''),       # J: Red Bill
-            file_link_values.get('bank_statement', ''),  # K: Bank Record
-            file_link_values.get('documentation', '')    # L: Doc
+            credit_offset,        # H: Offset
+            description,          # I: Description
+            file_link_values.get('bills', ''),           # J: Bill
+            file_link_values.get('red_bills', ''),       # K: Red Bill
+            file_link_values.get('bank_statement', ''),  # L: Bank Record
+            file_link_values.get('documentation', '')    # M: Doc
         ]
         
         print(f"DEBUG: Prepared DEBIT entry:")
@@ -436,12 +476,12 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             last_row = len(all_values)
             
             # Update HYPERLINK formulas for all file types in both entries
-            # Column mapping: I=Bill, J=Red Bill, K=Bank Record, L=Doc
+            # Column mapping: J=Bill, K=Red Bill, L=Bank Record, M=Doc (shifted due to new Offset column)
             column_mapping = {
-                'bills': 'I',
-                'red_bills': 'J', 
-                'bank_statement': 'K',
-                'documentation': 'L'
+                'bills': 'J',
+                'red_bills': 'K', 
+                'bank_statement': 'L',
+                'documentation': 'M'
             }
             
             for file_type, column_letter in column_mapping.items():
