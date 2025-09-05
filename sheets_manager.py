@@ -258,7 +258,7 @@ def generate_offset_text(account_name, counter_account_name):
 
 # Add Transaction To Selected Sheet
 # --------------------------------
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links="", origin_account="", destination_account="", transfer_type="external"):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links="", origin_account="", destination_account="", transfer_type="external", payment_method="bank"):
     """
     Add double-entry transaction to a specific selected sheet and worksheet
     Creates TWO entries: one debit entry and one credit entry
@@ -279,6 +279,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         origin_account: Legacy parameter (kept for compatibility)
         destination_account: Legacy parameter (kept for compatibility)
         transfer_type: Legacy parameter (kept for compatibility)
+        payment_method: Payment method ("bank" or "cash")
     Returns: True if successful, False otherwise
     """
     try:
@@ -424,11 +425,12 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             numeric_amount,       # F: Debit (VND) - amount goes here
             "",                   # G: Credit (VND) - empty for debit entry
             debit_offset,         # H: Offset
-            description,          # I: Description
-            file_link_values.get('bills', ''),           # J: Bill
-            file_link_values.get('red_bills', ''),       # K: Red Bill
-            file_link_values.get('bank_statement', ''),  # L: Bank Record
-            file_link_values.get('documentation', '')    # M: Doc
+            payment_method,       # I: Payment Method
+            description,          # J: Description
+            file_link_values.get('bills', ''),           # K: Bill
+            file_link_values.get('red_bills', ''),       # L: Red Bill
+            file_link_values.get('bank_statement', ''),  # M: Bank Record
+            file_link_values.get('documentation', '')    # N: Doc
         ]
         
         # Entry 2: CREDIT entry (amount goes in Credit column)
@@ -441,11 +443,12 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             "",                   # F: Debit (VND) - empty for credit entry
             numeric_amount,       # G: Credit (VND) - amount goes here
             credit_offset,        # H: Offset
-            description,          # I: Description
-            file_link_values.get('bills', ''),           # J: Bill
-            file_link_values.get('red_bills', ''),       # K: Red Bill
-            file_link_values.get('bank_statement', ''),  # L: Bank Record
-            file_link_values.get('documentation', '')    # M: Doc
+            payment_method,       # I: Payment Method
+            description,          # J: Description
+            file_link_values.get('bills', ''),           # K: Bill
+            file_link_values.get('red_bills', ''),       # L: Red Bill
+            file_link_values.get('bank_statement', ''),  # M: Bank Record
+            file_link_values.get('documentation', '')    # N: Doc
         ]
         
         print(f"DEBUG: Prepared DEBIT entry:")
@@ -476,12 +479,12 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             last_row = len(all_values)
             
             # Update HYPERLINK formulas for all file types in both entries
-            # Column mapping: J=Bill, K=Red Bill, L=Bank Record, M=Doc (shifted due to new Offset column)
+            # Column mapping: K=Bill, L=Red Bill, M=Bank Record, N=Doc (shifted due to new Payment Method column)
             column_mapping = {
-                'bills': 'J',
-                'red_bills': 'K', 
-                'bank_statement': 'L',
-                'documentation': 'M'
+                'bills': 'K',
+                'red_bills': 'L', 
+                'bank_statement': 'M',
+                'documentation': 'N'
             }
             
             for file_type, column_letter in column_mapping.items():

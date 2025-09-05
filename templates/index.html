@@ -193,8 +193,8 @@
             <div id="form-navigation" class="form-navigation">
                 <h5>📋 Quick Navigation</h5>
                 <div class="nav-links">
-                    <a href="#transaction-type-section" class="nav-link" style="background-color: #ffc107; color: #000;">⚡ Type</a>
                     <a href="#transaction-number-section" class="nav-link" style="background-color: #6c757d; color: #fff;">🔢 Number</a>
+                    <a href="#transaction-type-section" class="nav-link" style="background-color: #ffc107; color: #000;">⚡ Type</a>
                     <a href="#sheet-worksheet-section" class="nav-link" style="background-color: #fd7e14; color: #fff;">📊 Sheet</a>
                     <a href="#date-section" class="nav-link" style="background-color: #28a745; color: #fff;">📅 Date</a>
                     <a href="#amount-section" class="nav-link" style="background-color: #dc3545; color: #fff;">💰 Amount</a>
@@ -202,14 +202,17 @@
                     <a href="#category-section" class="nav-link" style="background-color: #8b4513; color: #fff;">📂 Category</a>
                     <a href="#debit-account-section" class="nav-link regular-account" style="background-color: #007bff; color: #fff;">💳 Debit</a>
                     <a href="#credit-account-section" class="nav-link regular-account" style="background-color: #6f42c1; color: #fff;">💰 Credit</a>
+                    <a href="#payment-method-section" class="nav-link" style="background-color: #17a2b8; color: #fff;">💳 Payment Method</a>
                     <a href="#description-section" class="nav-link" style="background-color: #ffc107; color: #000;">📝 Description</a>
                     <a href="#upload-bills-section" class="nav-link" style="background-color: #000000; color: #fff;">📎 Upload</a>
+                    <a href="#" class="nav-link" id="submitNavBtn" style="background-color: #007bff; color: #fff; font-weight: bold;">🚀 Submit to Google Sheets</a>
                     
                     <a href="#sheet-worksheet-section" class="nav-link interbanking-account" style="background-color: #fd7e14; color: #fff; display: none;">📊 Ledger Sheets</a>
                     <a href="#master-ledger-a-debit-section" class="nav-link interbanking-account" style="background-color: #007bff; color: #fff; display: none;">💳 A Debit</a>
                     <a href="#master-ledger-a-credit-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">💰 A Credit</a>
                     <a href="#master-ledger-b-debit-section" class="nav-link interbanking-account" style="background-color: #007bff; color: #fff; display: none;">💳 B Debit</a>
                     <a href="#master-ledger-b-credit-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">💰 B Credit</a>
+                    <a href="#interbanking-payment-method-section" class="nav-link interbanking-account" style="background-color: #17a2b8; color: #fff; display: none;">💳 Payment Method</a>
                 </div>
             </div>
             
@@ -261,6 +264,16 @@
      
                  <!-- MAIN FORM -->
                  <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
+                     <!-- TRANSACTION NUMBER SECTION -->
+                     <div id="transaction-number-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6c757d; border-radius: 8px; background-color: #f8f9fa;">
+                         <h4 style="color: #6c757d; margin-bottom: 15px;">🔢 Transaction Number</h4>
+                     <div class="form-group">
+                         <label>Transaction Number:</label>
+                         <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
+                         <div class="form-text">This number will be used for both the transaction and file naming</div>
+                     </div>
+                     </div>
+                     
                      <!-- TRANSACTION TYPE SECTION -->
                      <div id="transaction-type-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #ffc107; border-radius: 8px; background-color: #fffbf0;">
                          <h4 style="color: #ffc107; margin-bottom: 15px;">⚡ Transaction Type</h4>
@@ -275,16 +288,6 @@
                              </select>
                              <div class="form-text">Select the type of transaction you are recording</div>
                          </div>
-                     </div>
-                     
-                     <!-- TRANSACTION NUMBER SECTION -->
-                     <div id="transaction-number-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6c757d; border-radius: 8px; background-color: #f8f9fa;">
-                         <h4 style="color: #6c757d; margin-bottom: 15px;">🔢 Transaction Number</h4>
-                     <div class="form-group">
-                         <label>Transaction Number:</label>
-                         <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
-                         <div class="form-text">This number will be used for both the transaction and file naming</div>
-                     </div>
                      </div>
      
                      <!-- SHEET & WORKSHEET SELECTION SECTION -->
@@ -482,6 +485,19 @@
                                 <div class="form-text">Select the account to be credited in Master Ledger B</div>
                             </div>
                         </div>
+                        
+                        <!-- PAYMENT METHOD SECTION FOR INTERBANKING -->
+                        <div id="interbanking-payment-method-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #17a2b8; border-radius: 8px; background-color: #f0fffe;">
+                            <h4 style="color: #17a2b8; margin-bottom: 15px;">💳 Payment Method</h4>
+                            <div class="form-group">
+                                <label>Payment Method:</label>
+                                <select name="interbanking_payment_method" id="interbanking_payment_method" required>
+                                    <option value="bank" selected>Bank</option>
+                                    <option value="cash">Cash</option>
+                                </select>
+                                <div class="form-text">Select how the payment was made</div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- REGULAR ACCOUNT SECTIONS (FOR NON-INTERBANKING TRANSFERS) -->
@@ -499,7 +515,7 @@
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Select the account to be debited</div>
+                        <div class="form-text">Select the account to be debited [Payment: Increase] [Internal Transfer: To] [Donation/Grant: Receiver] </div>
                             </div>
                     </div>
                     
@@ -516,8 +532,21 @@
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Select the account to be credited</div>
+                        <div class="form-text">Select the account to be credited [Payment: Decrease] [Internal Transfer: From] [Donation/Grant: Source] </div>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <!-- PAYMENT METHOD SECTION -->
+                    <div id="payment-method-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #17a2b8; border-radius: 8px; background-color: #f0fffe;">
+                        <h4 style="color: #17a2b8; margin-bottom: 15px;">💳 Payment Method</h4>
+                        <div class="form-group">
+                            <label>Payment Method:</label>
+                            <select name="payment_method" id="payment_method" required>
+                                <option value="bank" selected>Bank</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                            <div class="form-text">Select how the payment was made</div>
                         </div>
                     </div>
                      
@@ -706,6 +735,8 @@
                 // Get all required fields in both sections
                 const regularDebitField = document.querySelector('select[name="regular_debit_account_id"]');
                 const regularCreditField = document.querySelector('select[name="regular_credit_account_id"]');
+                const regularPaymentMethodField = document.querySelector('select[name="payment_method"]');
+                const interbankingPaymentMethodField = document.querySelector('select[name="interbanking_payment_method"]');
                 
                 // Master Ledger A fields
                 const masterLedgerADebitField = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
@@ -737,6 +768,7 @@
                     // Remove required from hidden regular fields, add required to visible Master Ledger fields
                     if (regularDebitField) regularDebitField.removeAttribute('required');
                     if (regularCreditField) regularCreditField.removeAttribute('required');
+                    if (regularPaymentMethodField) regularPaymentMethodField.removeAttribute('required');
                     if (regularSheetField) regularSheetField.removeAttribute('required');
                     if (regularWorksheetField) regularWorksheetField.removeAttribute('required');
                     
@@ -751,6 +783,9 @@
                     if (masterLedgerBCreditField) masterLedgerBCreditField.setAttribute('required', 'required');
                     if (masterLedgerBSheetField) masterLedgerBSheetField.setAttribute('required', 'required');
                     if (masterLedgerBWorksheetField) masterLedgerBWorksheetField.setAttribute('required', 'required');
+                    
+                    // Set required for interbanking payment method
+                    if (interbankingPaymentMethodField) interbankingPaymentMethodField.setAttribute('required', 'required');
                     
                     // Update navigation panel for interbanking transfer
                     updateNavigationForInterbanking(true);
@@ -786,6 +821,7 @@
                     // Add required to visible regular fields, remove required from hidden Master Ledger fields
                     if (regularDebitField) regularDebitField.setAttribute('required', 'required');
                     if (regularCreditField) regularCreditField.setAttribute('required', 'required');
+                    if (regularPaymentMethodField) regularPaymentMethodField.setAttribute('required', 'required');
                     if (regularSheetField) regularSheetField.setAttribute('required', 'required');
                     if (regularWorksheetField) regularWorksheetField.setAttribute('required', 'required');
                     
@@ -800,6 +836,9 @@
                     if (masterLedgerBCreditField) masterLedgerBCreditField.removeAttribute('required');
                     if (masterLedgerBSheetField) masterLedgerBSheetField.removeAttribute('required');
                     if (masterLedgerBWorksheetField) masterLedgerBWorksheetField.removeAttribute('required');
+                    
+                    // Remove required from interbanking payment method
+                    if (interbankingPaymentMethodField) interbankingPaymentMethodField.removeAttribute('required');
                     
                     // Update navigation panel for regular transactions
                     updateNavigationForInterbanking(false);
@@ -1501,6 +1540,16 @@
                  document.getElementById('redBillsUploadBtn').addEventListener('click', uploadRedBills);
                  document.getElementById('bankStatementUploadBtn').addEventListener('click', uploadBankStatement);
                  document.getElementById('documentationUploadBtn').addEventListener('click', uploadDocumentation);
+                 
+                 // Add event listener for submit button in navigation
+                 document.getElementById('submitNavBtn').addEventListener('click', function(e) {
+                     e.preventDefault();
+                     // Trigger the form submission
+                     const form = document.getElementById('mainForm');
+                     if (form) {
+                         form.submit();
+                     }
+                 });
              });
          </script>
      </body>
