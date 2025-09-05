@@ -178,24 +178,54 @@ def index():
         print(f"  - Transaction Number: {transaction_number}")
         print(f"="*50)
         
-        # Handle file link (file was already uploaded separately)
-        file_link = request.form.get('file_link', '')
-        file_name = request.form.get('file_name', '')
+        # Handle multiple file links (files were already uploaded separately)
+        file_links = {}
         
-        if file_link and file_name:
-            print(f"DEBUG: File link from form: {file_link}")
-            print(f"DEBUG: File name from form: {file_name}")
-            
-            # Create the file link dict for the sheets manager
-            file_link_dict = {
-                'url': file_link,
-                'filename': file_name
+        # Bills file
+        bills_file_link = request.form.get('bills_file_link', '')
+        bills_file_name = request.form.get('bills_file_name', '')
+        if bills_file_link and bills_file_name:
+            file_links['bills'] = {
+                'url': bills_file_link,
+                'filename': bills_file_name
             }
-            
-            flash(f'Transaction submitted with file link!', 'success')
+            print(f"DEBUG: Bills file link: {bills_file_link}")
+        
+        # Red Bills file
+        red_bills_file_link = request.form.get('red_bills_file_link', '')
+        red_bills_file_name = request.form.get('red_bills_file_name', '')
+        if red_bills_file_link and red_bills_file_name:
+            file_links['red_bills'] = {
+                'url': red_bills_file_link,
+                'filename': red_bills_file_name
+            }
+            print(f"DEBUG: Red Bills file link: {red_bills_file_link}")
+        
+        # Bank Statement file
+        bank_statement_file_link = request.form.get('bank_statement_file_link', '')
+        bank_statement_file_name = request.form.get('bank_statement_file_name', '')
+        if bank_statement_file_link and bank_statement_file_name:
+            file_links['bank_statement'] = {
+                'url': bank_statement_file_link,
+                'filename': bank_statement_file_name
+            }
+            print(f"DEBUG: Bank Statement file link: {bank_statement_file_link}")
+        
+        # Documentation file
+        documentation_file_link = request.form.get('documentation_file_link', '')
+        documentation_file_name = request.form.get('documentation_file_name', '')
+        if documentation_file_link and documentation_file_name:
+            file_links['documentation'] = {
+                'url': documentation_file_link,
+                'filename': documentation_file_name
+            }
+            print(f"DEBUG: Documentation file link: {documentation_file_link}")
+        
+        if file_links:
+            print(f"DEBUG: File links found: {list(file_links.keys())}")
+            flash(f'Transaction submitted with {len(file_links)} file(s)!', 'success')
         else:
-            print("DEBUG: No file link in form")
-            file_link_dict = ""
+            print("DEBUG: No file links in form")
         
         # Validate that a sheet and worksheet were selected
         if not selected_sheet_id:
@@ -303,7 +333,7 @@ def index():
                 gc, master_ledger_a_sheet_id, master_ledger_a_worksheet_id, amount, 
                 f"Interbanking Transfer - {description}", 
                 fund_id, category_id, master_ledger_a_debit, master_ledger_a_credit, 
-                transaction_type, date_input, transaction_number, file_link_dict, 
+                transaction_type, date_input, transaction_number, file_links, 
                 master_ledger_a_debit, master_ledger_a_credit, transfer_type
             )
             
@@ -313,7 +343,7 @@ def index():
                 gc, master_ledger_b_sheet_id, master_ledger_b_worksheet_id, amount, 
                 f"Interbanking Transfer - {description}", 
                 fund_id, category_id, master_ledger_b_debit, master_ledger_b_credit, 
-                transaction_type, date_input, transaction_number, file_link_dict, 
+                transaction_type, date_input, transaction_number, file_links, 
                 master_ledger_b_debit, master_ledger_b_credit, transfer_type
             )
             
@@ -334,7 +364,7 @@ def index():
                 return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
         else:
             # Regular single-entry transaction
-            transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_link_dict, origin_account, destination_account, transfer_type)
+            transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links, origin_account, destination_account, transfer_type)
             print(f"DEBUG: Transaction result: {transaction_result}")
             
             if transaction_result:
@@ -406,9 +436,10 @@ def upload_file():
     try:
         file = request.files.get('file')
         transaction_number = request.form.get('transaction_number', '')
+        file_type = request.form.get('file_type', 'bills')
         
         # Use the file upload manager to handle the upload
-        result = file_upload_manager.handle_web_upload(file, transaction_number)
+        result = file_upload_manager.handle_web_upload(file, transaction_number, file_type)
         
         return jsonify(result)
             

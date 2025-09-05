@@ -534,29 +534,100 @@
                          </div>
      
                          <!-- Hidden fields populated after upload -->
-                         <input type="hidden" name="file_link" id="fileLinkInput">
-                         <input type="hidden" name="file_name" id="fileNameInput">
+                         <input type="hidden" name="bills_file_link" id="billsFileLinkInput">
+                         <input type="hidden" name="bills_file_name" id="billsFileNameInput">
+                         <input type="hidden" name="red_bills_file_link" id="redBillsFileLinkInput">
+                         <input type="hidden" name="red_bills_file_name" id="redBillsFileNameInput">
+                         <input type="hidden" name="bank_statement_file_link" id="bankStatementFileLinkInput">
+                         <input type="hidden" name="bank_statement_file_name" id="bankStatementFileNameInput">
+                         <input type="hidden" name="documentation_file_link" id="documentationFileLinkInput">
+                         <input type="hidden" name="documentation_file_name" id="documentationFileNameInput">
                          <input type="hidden" name="transaction_number" id="transactionNumberInput">
                      </div>
      
                  </form>
      
-                 <!-- UPLOAD BILLS SECTION -->
-                 <div id="upload-bills-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #000000; border-radius: 8px; background-color: #ffffff;">
-                     <h4 style="color: #000000; margin-bottom: 15px;">📎 Upload Bills</h4>
+                 <!-- MULTIPLE FILE UPLOAD SECTIONS -->
+                 
+                 <!-- BILLS UPLOAD SECTION -->
+                 <div id="upload-bills-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f8fff8;">
+                     <h4 style="color: #28a745; margin-bottom: 15px;">📄 Upload Bills</h4>
                      <div class="form-group">
                          <label>Upload Bills:</label>
-                         <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                         <input type="file" id="billsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
                          <div class="form-text">Upload receipts, invoices, or other supporting documents</div>
-                         <button type="button" id="uploadBtn" class="btn btn-secondary">Upload File</button>
+                         <button type="button" id="billsUploadBtn" class="btn btn-secondary">Upload Bills</button>
                      </div>
      
-                     <div id="uploadStatus" style="display: none;">
-                         <div id="uploadProgress" class="alert alert-info">Uploading file...</div>
-                         <div id="uploadResult" style="display: none;">
+                     <div id="billsUploadStatus" style="display: none;">
+                         <div id="billsUploadProgress" class="alert alert-info">Uploading file...</div>
+                         <div id="billsUploadResult" style="display: none;">
                              <div class="alert alert-success">
-                                 <strong>File uploaded successfully!</strong>
-                                 <div id="fileLink"></div>
+                                 <strong>Bills file uploaded successfully!</strong>
+                                 <div id="billsFileLink"></div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- RED BILLS UPLOAD SECTION -->
+                 <div id="upload-red-bills-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff5f5;">
+                     <h4 style="color: #dc3545; margin-bottom: 15px;">🔴 Upload Red Bills</h4>
+                     <div class="form-group">
+                         <label>Upload Red Bills:</label>
+                         <input type="file" id="redBillsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                         <div class="form-text">Upload red bills or urgent payment documents</div>
+                         <button type="button" id="redBillsUploadBtn" class="btn btn-secondary">Upload Red Bills</button>
+                     </div>
+     
+                     <div id="redBillsUploadStatus" style="display: none;">
+                         <div id="redBillsUploadProgress" class="alert alert-info">Uploading file...</div>
+                         <div id="redBillsUploadResult" style="display: none;">
+                             <div class="alert alert-success">
+                                 <strong>Red Bills file uploaded successfully!</strong>
+                                 <div id="redBillsFileLink"></div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- BANK STATEMENT UPLOAD SECTION -->
+                 <div id="upload-bank-statement-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
+                     <h4 style="color: #6f42c1; margin-bottom: 15px;">🏦 Upload Bank Statement</h4>
+                     <div class="form-group">
+                         <label>Upload Bank Statement:</label>
+                         <input type="file" id="bankStatementFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                         <div class="form-text">Upload bank statements or banking documents</div>
+                         <button type="button" id="bankStatementUploadBtn" class="btn btn-secondary">Upload Bank Statement</button>
+                     </div>
+     
+                     <div id="bankStatementUploadStatus" style="display: none;">
+                         <div id="bankStatementUploadProgress" class="alert alert-info">Uploading file...</div>
+                         <div id="bankStatementUploadResult" style="display: none;">
+                             <div class="alert alert-success">
+                                 <strong>Bank Statement file uploaded successfully!</strong>
+                                 <div id="bankStatementFileLink"></div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- DOCUMENTATION UPLOAD SECTION -->
+                 <div id="upload-documentation-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6c757d; border-radius: 8px; background-color: #f8f9fa;">
+                     <h4 style="color: #6c757d; margin-bottom: 15px;">📚 Upload Documentation</h4>
+                     <div class="form-group">
+                         <label>Upload Documentation:</label>
+                         <input type="file" id="documentationFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                         <div class="form-text">Upload supporting documentation or reference materials</div>
+                         <button type="button" id="documentationUploadBtn" class="btn btn-secondary">Upload Documentation</button>
+                     </div>
+     
+                     <div id="documentationUploadStatus" style="display: none;">
+                         <div id="documentationUploadProgress" class="alert alert-info">Uploading file...</div>
+                         <div id="documentationUploadResult" style="display: none;">
+                             <div class="alert alert-success">
+                                 <strong>Documentation file uploaded successfully!</strong>
+                                 <div id="documentationFileLink"></div>
                              </div>
                          </div>
                      </div>
@@ -1346,21 +1417,22 @@
                  return `${day}${month}${year}-${hours}${minutes}${seconds}`;
              }
      
-             function uploadFile() {
-                 const fileInput = document.getElementById('fileInput');
-                 const uploadBtn = document.getElementById('uploadBtn');
-                 const uploadStatus = document.getElementById('uploadStatus');
-                 const uploadProgress = document.getElementById('uploadProgress');
-                 const uploadResult = document.getElementById('uploadResult');
-                 const fileLink = document.getElementById('fileLink');
-                 const fileLinkInput = document.getElementById('fileLinkInput');
-                 const fileNameInput = document.getElementById('fileNameInput');
+             // Generic upload function for different file types
+             function uploadFile(fileType) {
+                 const fileInput = document.getElementById(`${fileType}FileInput`);
+                 const uploadBtn = document.getElementById(`${fileType}UploadBtn`);
+                 const uploadStatus = document.getElementById(`${fileType}UploadStatus`);
+                 const uploadProgress = document.getElementById(`${fileType}UploadProgress`);
+                 const uploadResult = document.getElementById(`${fileType}UploadResult`);
+                 const fileLink = document.getElementById(`${fileType}FileLink`);
+                 const fileLinkInput = document.getElementById(`${fileType}FileLinkInput`);
+                 const fileNameInput = document.getElementById(`${fileType}FileNameInput`);
                  const transactionNumberDisplay = document.getElementById('transactionNumberDisplay');
                  const transactionNumberInput = document.getElementById('transactionNumberInput');
      
                  const file = fileInput.files[0];
                  if (!file) {
-                     alert('Please select a file first!');
+                     alert(`Please select a ${fileType} file first!`);
                      return;
                  }
      
@@ -1371,7 +1443,7 @@
                      return;
                  }
      
-                 console.log('Using transaction number for file:', transactionNumber);
+                 console.log(`Using transaction number for ${fileType} file:`, transactionNumber);
      
                  uploadStatus.style.display = 'block';
                  uploadProgress.style.display = 'block';
@@ -1381,6 +1453,7 @@
                  const formData = new FormData();
                  formData.append('file', file);
                  formData.append('transaction_number', transactionNumber);
+                 formData.append('file_type', fileType);
      
                  fetch('/upload_file', { method: 'POST', body: formData })
                      .then(r => r.json())
@@ -1394,7 +1467,7 @@
                              fileNameInput.value = data.file_name;  // Label for HYPERLINK
                              transactionNumberInput.value = transactionNumber; // Pass to backend
                              
-                             console.log('File uploaded successfully with transaction number:', transactionNumber);
+                             console.log(`${fileType} file uploaded successfully with transaction number:`, transactionNumber);
                              console.log('File name:', data.file_name);
                          } else {
                              fileLink.innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
@@ -1409,6 +1482,12 @@
                          uploadBtn.disabled = false;
                      });
              }
+             
+             // Specific upload functions for each file type
+             function uploadBills() { uploadFile('bills'); }
+             function uploadRedBills() { uploadFile('redBills'); }
+             function uploadBankStatement() { uploadFile('bankStatement'); }
+             function uploadDocumentation() { uploadFile('documentation'); }
      
              document.addEventListener('DOMContentLoaded', function() {
                  // Generate transaction number when page loads
@@ -1417,7 +1496,11 @@
                  document.getElementById('transactionNumberInput').value = transactionNumber;
                  console.log('Generated transaction number:', transactionNumber);
                  
-                 document.getElementById('uploadBtn').addEventListener('click', uploadFile);
+                 // Add event listeners for all upload buttons
+                 document.getElementById('billsUploadBtn').addEventListener('click', uploadBills);
+                 document.getElementById('redBillsUploadBtn').addEventListener('click', uploadRedBills);
+                 document.getElementById('bankStatementUploadBtn').addEventListener('click', uploadBankStatement);
+                 document.getElementById('documentationUploadBtn').addEventListener('click', uploadDocumentation);
              });
          </script>
      </body>

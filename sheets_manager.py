@@ -228,7 +228,7 @@ def get_worksheets_from_sheet(gc, sheet_id):
 
 # Add Transaction To Selected Sheet
 # --------------------------------
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_link="", origin_account="", destination_account="", transfer_type="external"):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links="", origin_account="", destination_account="", transfer_type="external"):
     """
     Add double-entry transaction to a specific selected sheet and worksheet
     Creates TWO entries: one debit entry and one credit entry
@@ -245,7 +245,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         transaction_type: Legacy parameter (kept for compatibility)
         date_input: Date from form in DD/MM/YY format
         transaction_number: Pre-generated transaction number from form
-        file_link: Optional file link dict with filename and url
+        file_links: Optional dict of file links with keys: bills, red_bills, bank_statement, documentation
         origin_account: Legacy parameter (kept for compatibility)
         destination_account: Legacy parameter (kept for compatibility)
         transfer_type: Legacy parameter (kept for compatibility)
@@ -264,7 +264,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         print(f"  - category_id: {category_id}")
         print(f"  - date_input: {date_input}")
         print(f"  - transaction_number: {transaction_number}")
-        print(f"  - file_link: {file_link}")
+        print(f"  - file_links: {file_links}")
         print(f"  - description: {description}")
         # Use the centralized sheet opening function
         print(f"DEBUG: Opening sheet with ID: {sheet_id}")
@@ -345,12 +345,29 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         credit_account_name = get_account_name_by_code(gc, credit_account_id)
         print(f"DEBUG: Found credit account name: {credit_account_name}")
         
-        # Handle file link - create HYPERLINK formula if we have both URL and filename
-        if isinstance(file_link, dict) and 'filename' in file_link and 'url' in file_link:
-            # Create the HYPERLINK formula as recommended by your colleague
-            link_value = f'=HYPERLINK("{file_link["url"]}", "{file_link["filename"]}")'
-        else:
-            link_value = file_link if file_link else ""
+        # Handle multiple file links - create HYPERLINK formulas for each file type
+        # Map file types to column names in the sheet
+        file_type_mapping = {
+            'bills': 'Bill',
+            'red_bills': 'Red Bill', 
+            'bank_statement': 'Bank Record',
+            'documentation': 'Doc'
+        }
+        
+        # Initialize all file link values
+        file_link_values = {}
+        for file_type, column_name in file_type_mapping.items():
+            file_link_values[file_type] = ""
+        
+        # Process each file type if provided
+        if isinstance(file_links, dict):
+            for file_type, file_data in file_links.items():
+                if isinstance(file_data, dict) and 'filename' in file_data and 'url' in file_data:
+                    # Create the HYPERLINK formula with ✔ as display text
+                    file_link_values[file_type] = f'=HYPERLINK("{file_data["url"]}", "✔")'
+                    print(f"DEBUG: Created link for {file_type}: {file_link_values[file_type]}")
+        
+        print(f"DEBUG: File link values: {file_link_values}")
         
         # Get worksheet title for reference
         worksheet_title = worksheet.title
@@ -369,7 +386,10 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             numeric_amount,       # F: Debit (VND) - amount goes here
             "",                   # G: Credit (VND) - empty for debit entry
             description,          # H: Description
-            link_value            # I: Link Bill
+            file_link_values.get('bills', ''),           # I: Bill
+            file_link_values.get('red_bills', ''),       # J: Red Bill
+            file_link_values.get('bank_statement', ''),  # K: Bank Record
+            file_link_values.get('documentation', '')    # L: Doc
         ]
         
         # Entry 2: CREDIT entry (amount goes in Credit column)
@@ -382,7 +402,10 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             "",                   # F: Debit (VND) - empty for credit entry
             numeric_amount,       # G: Credit (VND) - amount goes here
             description,          # H: Description
-            link_value            # I: Link Bill
+            file_link_values.get('bills', ''),           # I: Bill
+            file_link_values.get('red_bills', ''),       # J: Red Bill
+            file_link_values.get('bank_statement', ''),  # K: Bank Record
+            file_link_values.get('documentation', '')    # L: Doc
         ]
         
         print(f"DEBUG: Prepared DEBIT entry:")
@@ -404,22 +427,35 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         worksheet.append_row(credit_row)
         print(f"DEBUG: CREDIT entry successfully added")
         
-        # If we added a HYPERLINK formula, we need to format it properly with USER_ENTERED for both entries
-        if link_value.startswith('=HYPERLINK('):
-            print(f"DEBUG: Processing HYPERLINK formula: {link_value}")
+        # If we added any HYPERLINK formulas, we need to format them properly with USER_ENTERED for both entries
+        has_hyperlinks = any(value.startswith('=HYPERLINK(') for value in file_link_values.values())
+        if has_hyperlinks:
+            print(f"DEBUG: Processing HYPERLINK formulas: {file_link_values}")
             # Get the current row count to find the last two rows we just added
             all_values = worksheet.get_all_values()
             last_row = len(all_values)
             
-            # Update HYPERLINK for debit entry (second to last row)
-            debit_cell_address = f'I{last_row - 1}'
-            print(f"DEBUG: Updating debit entry cell {debit_cell_address} with HYPERLINK formula")
-            worksheet.update(debit_cell_address, link_value, value_input_option='USER_ENTERED')
+            # Update HYPERLINK formulas for all file types in both entries
+            # Column mapping: I=Bill, J=Red Bill, K=Bank Record, L=Doc
+            column_mapping = {
+                'bills': 'I',
+                'red_bills': 'J', 
+                'bank_statement': 'K',
+                'documentation': 'L'
+            }
             
-            # Update HYPERLINK for credit entry (last row)
-            credit_cell_address = f'I{last_row}'
-            print(f"DEBUG: Updating credit entry cell {credit_cell_address} with HYPERLINK formula")
-            worksheet.update(credit_cell_address, link_value, value_input_option='USER_ENTERED')
+            for file_type, column_letter in column_mapping.items():
+                link_value = file_link_values.get(file_type, '')
+                if link_value.startswith('=HYPERLINK('):
+                    # Update HYPERLINK for debit entry (second to last row)
+                    debit_cell_address = f'{column_letter}{last_row - 1}'
+                    print(f"DEBUG: Updating debit entry cell {debit_cell_address} with {file_type} HYPERLINK formula")
+                    worksheet.update(debit_cell_address, link_value, value_input_option='USER_ENTERED')
+                    
+                    # Update HYPERLINK for credit entry (last row)
+                    credit_cell_address = f'{column_letter}{last_row}'
+                    print(f"DEBUG: Updating credit entry cell {credit_cell_address} with {file_type} HYPERLINK formula")
+                    worksheet.update(credit_cell_address, link_value, value_input_option='USER_ENTERED')
             
             print(f"DEBUG: HYPERLINK formulas updated successfully for both entries")
         

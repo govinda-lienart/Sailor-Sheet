@@ -18,8 +18,16 @@ from googleapiclient.http import MediaIoBaseUpload        # Google API file uplo
 # CONFIGURATION
 # =============================================================================
 
-# Shared Drive folder ID (Bills WebApp) - from your working test
-FOLDER_ID = "1UH-mqbvJ6k6Y0wDD4x7DcDRzsEjf0Rz0"
+# Google Drive folder IDs for different file types
+FOLDER_IDS = {
+    'bills': "1UH-mqbvJ6k6Y0wDD4x7DcDRzsEjf0Rz0",           # Bills
+    'redBills': "10gGkRi9P9417FjZ9vFeQTnpLA-ExbBVO",        # Red Bills
+    'bankStatement': "1QDiSNjqzT2x99AGelRdQceg9l4q9iIrW",   # Bank Statement
+    'documentation': "1ylG5_VDP020HaBXxy-o_A4QYuYiK9y8y"    # Documentation
+}
+
+# Default folder ID for backward compatibility
+FOLDER_ID = FOLDER_IDS['bills']
 
 # Scopes needed for Google Drive
 SCOPES = ["https://www.googleapis.com/auth/drive"]
@@ -43,19 +51,29 @@ def allowed_file(filename):
 
 # Generate Unique Name
 # --------------------
-def unique_name(base: str, ext: str, transaction_number: str = None) -> str:
-    """Generate a unique filename with transaction number (like 'Bill_transactionnumber')"""
-    print(f"DEBUG: unique_name called with base={base}, ext={ext}, transaction_number={transaction_number}")
+def unique_name(base: str, ext: str, transaction_number: str = None, file_type: str = 'bills') -> str:
+    """Generate a unique filename with transaction number and file type"""
+    print(f"DEBUG: unique_name called with base={base}, ext={ext}, transaction_number={transaction_number}, file_type={file_type}")
+    
+    # Map file types to display names
+    type_names = {
+        'bills': 'bill',
+        'redBills': 'red_bill', 
+        'bankStatement': 'bank_statement',
+        'documentation': 'doc'
+    }
+    
+    type_name = type_names.get(file_type, 'bill')
     
     if transaction_number and transaction_number.strip():
         # Use transaction number if provided
-        result = f"Bill_{transaction_number}.{ext}"
+        result = f"{transaction_number}_{type_name}.{ext}"
         print(f"DEBUG: Using transaction number, result: {result}")
         return result
     else:
         # Fallback to timestamp if no transaction number
         ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        result = f"Bill_{ts}.{ext}"
+        result = f"{ts}_{type_name}.{ext}"
         print(f"DEBUG: No transaction number, using timestamp, result: {result}")
         return result
 
@@ -111,12 +129,13 @@ def build_drive_service(creds):
 
 # Upload File To Drive
 # ---------------------
-def upload_file_to_drive(file, transaction_number=None):
+def upload_file_to_drive(file, transaction_number=None, file_type='bills'):
     """
     Upload a file to Google Drive shared folder
     Args:
         file: File object to upload
         transaction_number: Optional transaction number to use in filename
+        file_type: Type of file (bills, redBills, bankStatement, documentation)
     Returns: dict with success status, file_url, and file_name
     """
     try:
@@ -130,13 +149,18 @@ def upload_file_to_drive(file, transaction_number=None):
         # Secure the filename
         filename = secure_filename(file.filename)
         
-        # Generate unique name with transaction number
+        # Generate unique name with transaction number and file type
         base = filename.rsplit('.', 1)[0]
         ext = filename.rsplit('.', 1)[1].lower()
-        unique_filename = unique_name(base, ext, transaction_number)
+        unique_filename = unique_name(base, ext, transaction_number, file_type)
+        
+        # Get the correct folder ID for this file type
+        folder_id = FOLDER_IDS.get(file_type, FOLDER_ID)
         
         print(f"DEBUG: File upload - Original filename: {filename}")
         print(f"DEBUG: File upload - Transaction number: {transaction_number}")
+        print(f"DEBUG: File upload - File type: {file_type}")
+        print(f"DEBUG: File upload - Folder ID: {folder_id}")
         print(f"DEBUG: File upload - Generated filename: {unique_filename}")
         
         # Get credentials and build service
@@ -146,7 +170,7 @@ def upload_file_to_drive(file, transaction_number=None):
         # Check folder access first
         try:
             folder = drive.files().get(
-                fileId=FOLDER_ID,
+                fileId=folder_id,
                 supportsAllDrives=True,
                 fields="id,name"
             ).execute()
@@ -165,7 +189,7 @@ def upload_file_to_drive(file, transaction_number=None):
         
         file_metadata = {
             'name': unique_filename,
-            'parents': [FOLDER_ID]
+            'parents': [folder_id]
         }
         
         uploaded_file = drive.files().create(
@@ -194,7 +218,7 @@ def upload_file_to_drive(file, transaction_number=None):
 
 # Handle Web Upload Request
 # -------------------------
-def handle_web_upload(file, transaction_number=None):
+def handle_web_upload(file, transaction_number=None, file_type='bills'):
     """
     Handle web upload request from Flask route
     Args:
@@ -215,7 +239,7 @@ def handle_web_upload(file, transaction_number=None):
         print(f"DEBUG: Transaction number: {transaction_number}")
         
         # Upload file to Drive
-        result = upload_file_to_drive(file, transaction_number)
+        result = upload_file_to_drive(file, transaction_number, file_type)
         
         if result['success']:
             print(f"DEBUG: File uploaded successfully: {result}")

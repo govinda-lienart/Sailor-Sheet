@@ -7,8 +7,14 @@
       "active": true
     },
     {
-      "code": "ACC02",
+      "code": "WALLET_GL",
       "name": "VN - Wallet Govinda Lienart",
+      "type": "Real Accounts",
+      "active": true
+    },
+    {
+      "code": "WALLET_TM",
+      "name": "VN - Wallet Tra My Nguyen",
       "type": "Real Accounts",
       "active": true
     },
