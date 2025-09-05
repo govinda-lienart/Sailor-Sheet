@@ -343,6 +343,28 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             formatted_date = now.strftime('%d/%m/%y')
             print(f"Warning: Could not parse date '{date_input}', using today's date: {formatted_date}")
         
+        # Extract month and year for analysis columns
+        try:
+            # Parse the formatted date to extract month and year
+            if '-' in date_input and len(date_input.split('-')[0]) == 4:
+                # Date is in YYYY-MM-DD format
+                parsed_date = datetime.strptime(date_input, '%Y-%m-%d')
+            else:
+                # Date is in DD/MM/YY format
+                parsed_date = datetime.strptime(formatted_date, '%d/%m/%y')
+            
+            # Generate month, year, and month-year values
+            month_name = parsed_date.strftime('%B')  # e.g., "September", "October"
+            year_value = str(parsed_date.year)       # e.g., "2025", "2024"
+            month_year = f"{month_name}-{year_value}"  # e.g., "September-2025", "October-2025"
+            
+        except Exception as e:
+            # Fallback to current month/year if parsing fails
+            month_name = now.strftime('%B')  # Full month name
+            year_value = str(now.year)
+            month_year = f"{month_name}-{year_value}"
+            print(f"Warning: Could not parse date for month/year extraction, using current: {month_year}")
+        
         # Convert amount to number (not string)
         try:
             numeric_amount = float(amount)
@@ -419,36 +441,40 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         debit_row = [
             transaction_number,    # A: Transaction Number
             formatted_date,        # B: Date
-            fund_name,            # C: Funds
-            debit_account_name,   # D: Account (the account being debited)
-            category_name,        # E: Category
-            numeric_amount,       # F: Debit (VND) - amount goes here
-            "",                   # G: Credit (VND) - empty for debit entry
-            debit_offset,         # H: Offset
-            payment_method,       # I: Payment Method
-            description,          # J: Description
-            file_link_values.get('bills', ''),           # K: Bill
-            file_link_values.get('red_bills', ''),       # L: Red Bill
-            file_link_values.get('bank_statement', ''),  # M: Bank Record
-            file_link_values.get('documentation', '')    # N: Doc
+            month_name,           # C: Month (e.g., "September")
+            year_value,           # D: Year (e.g., "2025")
+            fund_name,            # E: Funds
+            debit_account_name,   # F: Account (the account being debited)
+            category_name,        # G: Category
+            numeric_amount,       # H: Debit (VND) - amount goes here
+            "",                   # I: Credit (VND) - empty for debit entry
+            debit_offset,         # J: Offset
+            payment_method,       # K: Payment Method
+            description,          # L: Description
+            file_link_values.get('bills', ''),           # M: Bill
+            file_link_values.get('red_bills', ''),       # N: Red Bill
+            file_link_values.get('bank_statement', ''),  # O: Bank Record
+            file_link_values.get('documentation', '')    # P: Doc
         ]
         
         # Entry 2: CREDIT entry (amount goes in Credit column)
         credit_row = [
             transaction_number,    # A: Transaction Number
             formatted_date,        # B: Date
-            fund_name,            # C: Funds
-            credit_account_name,  # D: Account (the account being credited)
-            category_name,        # E: Category
-            "",                   # F: Debit (VND) - empty for credit entry
-            numeric_amount,       # G: Credit (VND) - amount goes here
-            credit_offset,        # H: Offset
-            payment_method,       # I: Payment Method
-            description,          # J: Description
-            file_link_values.get('bills', ''),           # K: Bill
-            file_link_values.get('red_bills', ''),       # L: Red Bill
-            file_link_values.get('bank_statement', ''),  # M: Bank Record
-            file_link_values.get('documentation', '')    # N: Doc
+            month_name,           # C: Month (e.g., "September")
+            year_value,           # D: Year (e.g., "2025")
+            fund_name,            # E: Funds
+            credit_account_name,  # F: Account (the account being credited)
+            category_name,        # G: Category
+            "",                   # H: Debit (VND) - empty for credit entry
+            numeric_amount,       # I: Credit (VND) - amount goes here
+            credit_offset,        # J: Offset
+            payment_method,       # K: Payment Method
+            description,          # L: Description
+            file_link_values.get('bills', ''),           # M: Bill
+            file_link_values.get('red_bills', ''),       # N: Red Bill
+            file_link_values.get('bank_statement', ''),  # O: Bank Record
+            file_link_values.get('documentation', '')    # P: Doc
         ]
         
         print(f"DEBUG: Prepared DEBIT entry:")
@@ -479,12 +505,12 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             last_row = len(all_values)
             
             # Update HYPERLINK formulas for all file types in both entries
-            # Column mapping: K=Bill, L=Red Bill, M=Bank Record, N=Doc (shifted due to new Payment Method column)
+            # Column mapping: M=Bill, N=Red Bill, O=Bank Record, P=Doc (shifted due to Month/Year columns)
             column_mapping = {
-                'bills': 'K',
-                'red_bills': 'L', 
-                'bank_statement': 'M',
-                'documentation': 'N'
+                'bills': 'M',
+                'red_bills': 'N', 
+                'bank_statement': 'O',
+                'documentation': 'P'
             }
             
             for file_type, column_letter in column_mapping.items():
