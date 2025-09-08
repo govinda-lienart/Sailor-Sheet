@@ -1,13 +1,13 @@
 {
     "funds": [
         {
-            "id": "unrestricted funds",
-            "name": "unrestricted funds",
+            "id": "unrestricted",
+            "name": "Unrestricted",
             "color": "#28a745",
             "active": true
         },
         {
-            "id": "restricted funds",
+            "id": "restricted",
             "name": "Restricted", 
             "color": "#dc3545",
             "active": true
