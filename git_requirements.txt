@@ -1,6 +1,0 @@
-# Git Operations Library
-GitPython==3.1.40
-
-# Alternative options (uncomment if you prefer):
-# pygit2==1.12.2
-# dulwich==0.21.3
