@@ -129,7 +129,7 @@
     {
       "code": "8002",
       "name": "Bank Interest",
-      "category": "Bank Fee",
+      "category": "Bank Interest",
       "active": true
     }
   ]
