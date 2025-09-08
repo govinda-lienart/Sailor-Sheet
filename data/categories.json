@@ -119,11 +119,18 @@
       "name": "Other Tax Related Costs",
       "category": "Any other tax obligations not listed above",
       "active": true
+    },
+    {
+      "code": "8001",
+      "name": "Bank Fee",
+      "category": "Bank Fee",
+      "active": true
+    },
+    {
+      "code": "8002",
+      "name": "Bank Interest",
+      "category": "Bank Fee",
+      "active": true
     }
-  ],
-  "_metadata": {
-    "updated": "2025-09-04 16:37:37",
-    "status": "Ready for GitHub commit",
-    "version": "1.0.0"
-  }
+  ]
 }

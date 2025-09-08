@@ -150,6 +150,7 @@ def index():
                 credit_account_id = request.form['regular_credit_account_id']
             date_input = request.form.get('date_input', '')  # Date in DD/MM/YYYY format
             transaction_number = request.form.get('transaction_number', '')  # Pre-generated transaction number
+            reference_number = request.form.get('reference_number', '')  # Bank transaction reference number
             
             # Get payment method (default to 'bank' if not provided)
             payment_method = request.form.get('payment_method', 'bank')
@@ -181,6 +182,7 @@ def index():
         print(f"  - Transaction Type: {transaction_type}")
         print(f"  - Date: {date_input}")
         print(f"  - Transaction Number: {transaction_number}")
+        print(f"  - Reference Number: {reference_number}")
         print(f"="*50)
         
         # Handle multiple file links (files were already uploaded separately)
@@ -205,16 +207,6 @@ def index():
                 'filename': red_bills_file_name
             }
             print(f"DEBUG: Red Bills file link: {red_bills_file_link}")
-        
-        # Bank Statement file
-        bank_statement_file_link = request.form.get('bank_statement_file_link', '')
-        bank_statement_file_name = request.form.get('bank_statement_file_name', '')
-        if bank_statement_file_link and bank_statement_file_name:
-            file_links['bank_statement'] = {
-                'url': bank_statement_file_link,
-                'filename': bank_statement_file_name
-            }
-            print(f"DEBUG: Bank Statement file link: {bank_statement_file_link}")
         
         # Documentation file
         documentation_file_link = request.form.get('documentation_file_link', '')
@@ -344,7 +336,7 @@ def index():
                 f"Interbanking Transfer - {description}", 
                 fund_id, category_id, master_ledger_a_debit, master_ledger_a_credit, 
                 transaction_type, date_input, transaction_number, file_links, 
-                master_ledger_a_debit, master_ledger_a_credit, transfer_type, interbanking_payment_method
+                master_ledger_a_debit, master_ledger_a_credit, transfer_type, interbanking_payment_method, reference_number
             )
             
             # Create Master Ledger B entry
@@ -354,7 +346,7 @@ def index():
                 f"Interbanking Transfer - {description}", 
                 fund_id, category_id, master_ledger_b_debit, master_ledger_b_credit, 
                 transaction_type, date_input, transaction_number, file_links, 
-                master_ledger_b_debit, master_ledger_b_credit, transfer_type, interbanking_payment_method
+                master_ledger_b_debit, master_ledger_b_credit, transfer_type, interbanking_payment_method, reference_number
             )
             
             print(f"🏦 Master Ledger A transaction result: {master_ledger_a_result}")
@@ -374,7 +366,7 @@ def index():
                 return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
         else:
             # Regular single-entry transaction
-            transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links, origin_account, destination_account, transfer_type, payment_method)
+            transaction_result = add_transaction_to_selected_sheet(gc, selected_sheet_id, selected_worksheet_title, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links, origin_account, destination_account, transfer_type, payment_method, reference_number)
             print(f"DEBUG: Transaction result: {transaction_result}")
             
             if transaction_result:

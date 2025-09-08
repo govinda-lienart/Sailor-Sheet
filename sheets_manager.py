@@ -258,7 +258,7 @@ def generate_offset_text(account_name, counter_account_name):
 
 # Add Transaction To Selected Sheet
 # --------------------------------
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links="", origin_account="", destination_account="", transfer_type="external", payment_method="bank"):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links="", origin_account="", destination_account="", transfer_type="external", payment_method="bank", reference_number=""):
     """
     Add double-entry transaction to a specific selected sheet and worksheet
     Creates TWO entries: one debit entry and one credit entry
@@ -280,6 +280,7 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         destination_account: Legacy parameter (kept for compatibility)
         transfer_type: Legacy parameter (kept for compatibility)
         payment_method: Payment method ("bank" or "cash")
+        reference_number: Bank transaction reference number
     Returns: True if successful, False otherwise
     """
     try:
@@ -403,7 +404,6 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         file_type_mapping = {
             'bills': 'Bill',
             'red_bills': 'Red Bill', 
-            'bank_statement': 'Bank Record',
             'documentation': 'Doc'
         }
         
@@ -425,6 +425,9 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         # Get worksheet title for reference
         worksheet_title = worksheet.title
         print(f"DEBUG: Worksheet title: {worksheet_title}")
+        
+        # Reference number will be stored in its own column (M)
+        print(f"DEBUG: Reference number: {reference_number}")
         
         # DOUBLE-ENTRY BOOKKEEPING: Create TWO entries
         print(f"DEBUG: Creating double-entry bookkeeping entries")
@@ -451,9 +454,9 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             debit_offset,         # J: Offset
             payment_method,       # K: Payment Method
             description,          # L: Description
-            file_link_values.get('bills', ''),           # M: Bill
-            file_link_values.get('red_bills', ''),       # N: Red Bill
-            file_link_values.get('bank_statement', ''),  # O: Bank Record
+            reference_number,     # M: Bank Transaction Number
+            file_link_values.get('bills', ''),           # N: Bill
+            file_link_values.get('red_bills', ''),       # O: Red Bill
             file_link_values.get('documentation', '')    # P: Doc
         ]
         
@@ -471,9 +474,9 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             credit_offset,        # J: Offset
             payment_method,       # K: Payment Method
             description,          # L: Description
-            file_link_values.get('bills', ''),           # M: Bill
-            file_link_values.get('red_bills', ''),       # N: Red Bill
-            file_link_values.get('bank_statement', ''),  # O: Bank Record
+            reference_number,     # M: Bank Transaction Number
+            file_link_values.get('bills', ''),           # N: Bill
+            file_link_values.get('red_bills', ''),       # O: Red Bill
             file_link_values.get('documentation', '')    # P: Doc
         ]
         
@@ -505,11 +508,10 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             last_row = len(all_values)
             
             # Update HYPERLINK formulas for all file types in both entries
-            # Column mapping: M=Bill, N=Red Bill, O=Bank Record, P=Doc (shifted due to Month/Year columns)
+            # Column mapping: N=Bill, O=Red Bill, P=Doc (updated column order with Bank Transaction Number in M)
             column_mapping = {
-                'bills': 'M',
-                'red_bills': 'N', 
-                'bank_statement': 'O',
+                'bills': 'N',
+                'red_bills': 'O', 
                 'documentation': 'P'
             }
             

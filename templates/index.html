@@ -561,14 +561,18 @@
                          <label>Description:</label>
                          <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
                          </div>
+                         
+                     <div class="form-group">
+                         <label>Bank Transaction Reference Number:</label>
+                         <input type="text" name="reference_number" id="referenceNumberField" placeholder="Enter bank transaction reference number (e.g., 120TFIN221680056)">
+                         <div class="form-text">Enter the reference number from your bank statement</div>
+                         </div>
      
                          <!-- Hidden fields populated after upload -->
                          <input type="hidden" name="bills_file_link" id="billsFileLinkInput">
                          <input type="hidden" name="bills_file_name" id="billsFileNameInput">
                          <input type="hidden" name="red_bills_file_link" id="redBillsFileLinkInput">
                          <input type="hidden" name="red_bills_file_name" id="redBillsFileNameInput">
-                         <input type="hidden" name="bank_statement_file_link" id="bankStatementFileLinkInput">
-                         <input type="hidden" name="bank_statement_file_name" id="bankStatementFileNameInput">
                          <input type="hidden" name="documentation_file_link" id="documentationFileLinkInput">
                          <input type="hidden" name="documentation_file_name" id="documentationFileNameInput">
                          <input type="hidden" name="transaction_number" id="transactionNumberInput">
@@ -615,27 +619,6 @@
                              <div class="alert alert-success">
                                  <strong>Red Bills file uploaded successfully!</strong>
                                  <div id="redBillsFileLink"></div>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-                 
-                 <!-- BANK STATEMENT UPLOAD SECTION -->
-                 <div id="upload-bank-statement-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
-                     <h4 style="color: #6f42c1; margin-bottom: 15px;">🏦 Upload Bank Statement</h4>
-                     <div class="form-group">
-                         <label>Upload Bank Statement:</label>
-                         <input type="file" id="bankStatementFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
-                         <div class="form-text">Upload bank statements or banking documents</div>
-                         <button type="button" id="bankStatementUploadBtn" class="btn btn-secondary">Upload Bank Statement</button>
-                     </div>
-     
-                     <div id="bankStatementUploadStatus" style="display: none;">
-                         <div id="bankStatementUploadProgress" class="alert alert-info">Uploading file...</div>
-                         <div id="bankStatementUploadResult" style="display: none;">
-                             <div class="alert alert-success">
-                                 <strong>Bank Statement file uploaded successfully!</strong>
-                                 <div id="bankStatementFileLink"></div>
                              </div>
                          </div>
                      </div>
@@ -1525,7 +1508,6 @@
              // Specific upload functions for each file type
              function uploadBills() { uploadFile('bills'); }
              function uploadRedBills() { uploadFile('redBills'); }
-             function uploadBankStatement() { uploadFile('bankStatement'); }
              function uploadDocumentation() { uploadFile('documentation'); }
      
              document.addEventListener('DOMContentLoaded', function() {
@@ -1538,7 +1520,6 @@
                  // Add event listeners for all upload buttons
                  document.getElementById('billsUploadBtn').addEventListener('click', uploadBills);
                  document.getElementById('redBillsUploadBtn').addEventListener('click', uploadRedBills);
-                 document.getElementById('bankStatementUploadBtn').addEventListener('click', uploadBankStatement);
                  document.getElementById('documentationUploadBtn').addEventListener('click', uploadDocumentation);
                  
                  // Add event listener for submit button in navigation
