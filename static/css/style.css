@@ -626,3 +626,242 @@ h1 {
         font-size: 10px;
     }
 }
+
+/* =============================================================================
+   FORM SECTION STYLES (moved from inline styles)
+   ============================================================================= */
+
+/* Base form section styling */
+.form-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid;
+}
+
+/* Individual section color themes */
+.section-transaction-number {
+    border-color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+.section-transaction-type {
+    border-color: #ffc107;
+    background-color: #fffbf0;
+}
+
+.section-sheet-worksheet {
+    border-color: #fd7e14;
+    background-color: #fff8f0;
+}
+
+.section-date {
+    border-color: #28a745;
+    background-color: #f8fff8;
+}
+
+.section-amount {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.section-fund {
+    border-color: #20c997;
+    background-color: #f0fffe;
+}
+
+.section-category {
+    border-color: #8b4513;
+    background-color: #fdf5e6;
+}
+
+.section-debit-account {
+    border-color: #007bff;
+    background-color: #f0f8ff;
+}
+
+.section-credit-account {
+    border-color: #6f42c1;
+    background-color: #f8f5ff;
+}
+
+.section-payment-method {
+    border-color: #17a2b8;
+    background-color: #f0fffe;
+}
+
+.section-description {
+    border-color: #000000;
+    background-color: #fffbf0;
+}
+
+/* Section headings */
+.section-heading {
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.heading-transaction-number {
+    color: #6c757d;
+}
+
+.heading-transaction-type {
+    color: #ffc107;
+}
+
+.heading-sheet-worksheet {
+    color: #fd7e14;
+}
+
+.heading-date {
+    color: #28a745;
+}
+
+.heading-amount {
+    color: #dc3545;
+}
+
+.heading-fund {
+    color: #20c997;
+}
+
+.heading-category {
+    color: #8b4513;
+}
+
+.heading-debit-account {
+    color: #007bff;
+}
+
+.heading-credit-account {
+    color: #6f42c1;
+}
+
+.heading-payment-method {
+    color: #17a2b8;
+}
+
+.heading-description {
+    color: #000000;
+}
+
+/* Master Ledger subsections */
+.master-ledger-subsection {
+    margin-bottom: 20px;
+    padding: 12px;
+    border: 1px solid #fd7e14;
+    border-radius: 6px;
+    background-color: #fff8f0;
+}
+
+.master-ledger-subsection h5 {
+    color: #fd7e14;
+    margin-bottom: 15px;
+}
+
+/* Access panel link colors */
+.access-link-be {
+    background-color: #6b8cae;
+    color: #fff;
+}
+
+.access-link-vn {
+    background-color: #c7965e;
+    color: #fff;
+}
+
+.access-link-bills {
+    background-color: #7ba05b;
+    color: #fff;
+}
+
+.access-link-red-bills {
+    background-color: #c85a5a;
+    color: #fff;
+}
+
+.access-link-bank-statement {
+    background-color: #8967a3;
+    color: #fff;
+}
+
+.access-link-documentation {
+    background-color: #7a8288;
+    color: #fff;
+}
+
+/* Navigation link base styles */
+.nav-link-base {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+/* Navigation link color variations */
+.nav-border-gray { border-left: 4px solid #6c757d; }
+.nav-border-yellow { border-left: 4px solid #ffc107; }
+.nav-border-orange { border-left: 4px solid #fd7e14; }
+.nav-border-green { border-left: 4px solid #28a745; }
+.nav-border-red { border-left: 4px solid #dc3545; }
+.nav-border-teal { border-left: 4px solid #20c997; }
+.nav-border-brown { border-left: 4px solid #8b4513; }
+.nav-border-blue { border-left: 4px solid #007bff; }
+.nav-border-purple { border-left: 4px solid #6f42c1; }
+.nav-border-cyan { border-left: 4px solid #17a2b8; }
+.nav-border-black { border-left: 4px solid #000000; }
+
+/* Submit button special styling */
+.nav-submit-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: #fff;
+    font-weight: bold;
+    border-left: 4px solid #0056b3;
+}
+
+/* Enhanced upload sections with specific colors */
+.upload-section-red-bills {
+    border: 2px solid #dc3545;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+}
+
+.upload-section-documentation {
+    border: 2px solid #6c757d;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Red bills specific styling */
+.red-bills-heading {
+    color: #dc3545;
+}
+
+.red-bills-upload-btn {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.documentation-heading {
+    color: #6c757d;
+}
+
+/* File info with colored border */
+.file-info-red-bills {
+    border-left-color: #dc3545;
+}
+
+.file-info-documentation {
+    border-left-color: #6c757d;
+}
+
+/* Access section heading styles */
+.access-heading-main {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Enhanced submit button styling */
+.enhanced-submit-btn {
+    font-size: 18px;
+    padding: 15px;
+    margin-top: 20px;
+}

@@ -1,42 +1,63 @@
-
-
      <!DOCTYPE html>
-<!-- Updated: 2025-09-04 16:37:37 - Ready for GitHub commit -->
-     <html>
+<!-- 
+=============================================================================
+NGO ACCOUNTING SYSTEM - MAIN TEMPLATE
+=============================================================================
+Description: Professional accounting data entry form for NGO financial management
+Features: 
+- Multi-type transaction support (Payment, Transfer, Donation, Grant)
+- Google Sheets integration
+- File upload with drag-and-drop
+- Real-time form validation
+- Responsive design
+
+Last Updated: 2025-01-05
+=============================================================================
+-->
+<html lang="en">
     <head>
+    <!-- =================================================================
+         META INFORMATION & TITLE
+         ================================================================= -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>NGO Accounting - Data Entry</title>
+    <meta name="description" content="Professional accounting system for NGO financial management">
+    
+    <!-- =================================================================
+         STYLESHEETS
+         ================================================================= -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         
-        <!-- FAVICON - Force browser to load new icon -->
+    <!-- =================================================================
+         FAVICON & THEME
+         ================================================================= -->
         <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231e40af;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23grad1)' stroke='%23ffffff' stroke-width='1'/%3E%3Cg fill='white'%3E%3Cpath d='M10 12 L10 16 L14 14 Z'/%3E%3Cpath d='M22 16 L22 20 L18 18 Z'/%3E%3Cpath d='M12 16 A 4 4 0 0 1 20 16' stroke='white' stroke-width='2' fill='none'/%3E%3Cpath d='M20 16 A 4 4 0 0 1 12 16' stroke='white' stroke-width='2' fill='none'/%3E%3C/g%3E%3C/svg%3E">
-        <link rel="shortcut icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231e40af;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23grad1)' stroke='%23ffffff' stroke-width='1'/%3E%3Cg fill='white'%3E%3Cpath d='M10 12 L10 16 L14 14 Z'/%3E%3Cpath d='M22 16 L22 20 L18 18 Z'/%3E%3Cpath d='M12 16 A 4 4 0 0 1 20 16' stroke='white' stroke-width='2' fill='none'/%3E%3Cpath d='M20 16 A 4 4 0 0 1 12 16' stroke='white' stroke-width='2' fill='none'/%3E%3C/g%3E%3C/svg%3E">
-        <link rel="icon" sizes="32x32" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231e40af;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23grad1)' stroke='%23ffffff' stroke-width='1'/%3E%3Cg fill='white'%3E%3Cpath d='M10 12 L10 16 L14 14 Z'/%3E%3Cpath d='M22 16 L22 20 L18 18 Z'/%3E%3Cpath d='M12 16 A 4 4 0 0 1 20 16' stroke='white' stroke-width='2' fill='none'/%3E%3Cpath d='M20 16 A 4 4 0 0 1 12 16' stroke='white' stroke-width='2' fill='none'/%3E%3C/g%3E%3C/svg%3E">
-        
-        <!-- Meta tags for better browser support -->
         <meta name="theme-color" content="#007bff">
         <meta name="msapplication-TileColor" content="#007bff">
         
+    <!-- =================================================================
+         LOADING ANIMATION SCRIPT
+         ================================================================= -->
          <script>
-             // Show loading text immediately when script runs (before DOM loads)
+        // Show loading animation immediately when page starts loading
              (function() {
-                 // This runs immediately when the script tag is encountered
                  var loadingDiv = document.createElement('div');
                  loadingDiv.id = 'loadingAnimation';
                  loadingDiv.className = 'loading-container';
                  loadingDiv.style.display = 'block';
                  loadingDiv.innerHTML = '<div class="simple-loading"><div class="loading-text">Loading: Google Accounting System...</div></div>';
                  
-                 // Insert at the very beginning of body (with safety check)
+            // Insert loading animation
                  if (document.body) {
                      document.body.insertBefore(loadingDiv, document.body.firstChild);
                  } else {
-                     // If body doesn't exist yet, wait for it
                      document.addEventListener('DOMContentLoaded', function() {
                          document.body.insertBefore(loadingDiv, document.body.firstChild);
                      });
                  }
                  
-                 // Hide it after DOM is ready
+            // Hide loading animation after DOM is ready
                  document.addEventListener('DOMContentLoaded', function() {
                      setTimeout(function() {
                          if (loadingDiv) {
@@ -52,33 +73,45 @@
      </head>
      
      <body>
+    <!-- =====================================================================
+         MAIN CONTAINER
+         ===================================================================== -->
+    <div class="container">
          
+        <!-- =============================================================
+             NAVIGATION PANELS
+             ============================================================= -->
          
-         <div class="container">
-            <!-- FIXED NAVIGATION PANEL -->
+        <!-- RIGHT NAVIGATION PANEL -->
             <div id="form-navigation" class="form-navigation">
                 <h5>📋 Quick Navigation</h5>
                 <div class="nav-links">
-                    <a href="#transaction-number-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #6c757d;">🔢 Number</a>
-                    <a href="#transaction-type-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #ffc107;">⚡ Type</a>
-                    <a href="#sheet-worksheet-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #fd7e14;">📊 Sheet</a>
-                    <a href="#date-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #28a745;">📅 Date</a>
-                    <a href="#amount-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #dc3545;">💰 Amount</a>
-                    <a href="#fund-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #20c997;">🏦 Fund</a>
-                    <a href="#category-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #8b4513;">📂 Category</a>
-                    <a href="#debit-account-section" class="nav-link regular-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #007bff;">💳 Debit</a>
-                    <a href="#credit-account-section" class="nav-link regular-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #6f42c1;">💰 Credit</a>
-                    <a href="#payment-method-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #17a2b8;">💳 Payment Method</a>
-                    <a href="#description-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #ffc107;">📝 Description</a>
-                    <a href="#upload-bills-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #000000;">📎 Upload</a>
-                    <a href="#" class="nav-link" id="submitNavBtn" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: #fff; font-weight: bold; border-left: 4px solid #0056b3;">🚀 Submit to Google Sheets</a>
-                    
-                    <a href="#sheet-worksheet-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #fd7e14; display: none;">📊 Ledger Sheets</a>
-                    <a href="#master-ledger-a-debit-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #007bff; display: none;">💳 A Debit</a>
-                    <a href="#master-ledger-a-credit-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #6f42c1; display: none;">💰 A Credit</a>
-                    <a href="#master-ledger-b-debit-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #007bff; display: none;">💳 B Debit</a>
-                    <a href="#master-ledger-b-credit-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #6f42c1; display: none;">💰 B Credit</a>
-                    <a href="#interbanking-payment-method-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #17a2b8; display: none;">💳 Payment Method</a>
+                <!-- Core Transaction Fields -->
+                <a href="#transaction-number-section" class="nav-link nav-link-base nav-border-gray">🔢 Number</a>
+                <a href="#transaction-type-section" class="nav-link nav-link-base nav-border-yellow">⚡ Type</a>
+                <a href="#sheet-worksheet-section" class="nav-link nav-link-base nav-border-orange">📊 Sheet</a>
+                <a href="#date-section" class="nav-link nav-link-base nav-border-green">📅 Date</a>
+                <a href="#amount-section" class="nav-link nav-link-base nav-border-red">💰 Amount</a>
+                <a href="#fund-section" class="nav-link nav-link-base nav-border-teal">🏦 Fund</a>
+                <a href="#category-section" class="nav-link nav-link-base nav-border-brown">📂 Category</a>
+                
+                <!-- Regular Account Links (shown for most transaction types) -->
+                <a href="#debit-account-section" class="nav-link regular-account nav-link-base nav-border-blue">💳 Debit</a>
+                <a href="#credit-account-section" class="nav-link regular-account nav-link-base nav-border-purple">💰 Credit</a>
+                <a href="#payment-method-section" class="nav-link nav-link-base nav-border-cyan">💳 Payment Method</a>
+                <a href="#description-section" class="nav-link nav-link-base nav-border-black">📝 Description</a>
+                <a href="#upload-bills-section" class="nav-link nav-link-base nav-border-black">📎 Upload</a>
+                
+                <!-- Submit Button -->
+                <a href="#" class="nav-link nav-submit-btn" id="submitNavBtn">🚀 Submit to Google Sheets</a>
+                
+                <!-- Interbanking Account Links (shown only for interbanking transfers) -->
+                <a href="#sheet-worksheet-section" class="nav-link interbanking-account nav-link-base nav-border-orange" style="display: none;">📊 Ledger Sheets</a>
+                <a href="#master-ledger-a-debit-section" class="nav-link interbanking-account nav-link-base nav-border-blue" style="display: none;">💳 A Debit</a>
+                <a href="#master-ledger-a-credit-section" class="nav-link interbanking-account nav-link-base nav-border-purple" style="display: none;">💰 A Credit</a>
+                <a href="#master-ledger-b-debit-section" class="nav-link interbanking-account nav-link-base nav-border-blue" style="display: none;">💳 B Debit</a>
+                <a href="#master-ledger-b-credit-section" class="nav-link interbanking-account nav-link-base nav-border-purple" style="display: none;">💰 B Credit</a>
+                <a href="#interbanking-payment-method-section" class="nav-link interbanking-account nav-link-base nav-border-cyan" style="display: none;">💳 Payment Method</a>
                 </div>
             </div>
             
@@ -86,29 +119,39 @@
             <div id="form-access-panel" class="form-access-panel">
                 <h5>📊 Quick Access</h5>
                 
-                <!-- Sheet Access Section -->
+            <!-- Google Sheets Access -->
                 <div class="access-section">
-                    <h6 style="margin: 0 0 10px 0; color: #333; font-size: 12px; font-weight: bold; text-align: center;">📊 Sheet Access</h6>
+                <h6 class="access-heading-main">📊 Sheet Access</h6>
                     <div class="access-links">
-                        <a href="https://docs.google.com/spreadsheets/d/1o5RnuAmm00YAqZzLkyrhZx7CocEETBhi-snPGUzbqSk/edit?gid=949985454#gid=949985454" target="_blank" class="access-link" style="background-color: #6b8cae; color: #fff;">🇧🇪 BE - Master Ledger</a>
-                        <a href="https://docs.google.com/spreadsheets/d/1Fvrld1X0OioH7AbKCiSIMNac5U9OvlKJh0OSk02bTTI/edit?gid=1240648507#gid=1240648507" target="_blank" class="access-link" style="background-color: #c7965e; color: #fff;">🇻🇳 VN - Master Ledger</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1o5RnuAmm00YAqZzLkyrhZx7CocEETBhi-snPGUzbqSk/edit?gid=949985454#gid=949985454" 
+                       target="_blank" class="access-link access-link-be">🇧🇪 BE - Master Ledger</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1Fvrld1X0OioH7AbKCiSIMNac5U9OvlKJh0OSk02bTTI/edit?gid=1240648507#gid=1240648507" 
+                       target="_blank" class="access-link access-link-vn">🇻🇳 VN - Master Ledger</a>
                     </div>
                 </div>
                 
-                <!-- Files Access Section -->
+            <!-- Google Drive Access -->
                 <div class="access-section">
-                    <h6 style="margin: 0 0 10px 0; color: #333; font-size: 12px; font-weight: bold; text-align: center;">📁 Files Access</h6>
+                <h6 class="access-heading-main">📁 Files Access</h6>
                     <div class="access-links">
-                        <a href="https://drive.google.com/drive/u/1/folders/1UH-mqbvJ6k6Y0wDD4x7DcDRzsEjf0Rz0" target="_blank" class="access-link" style="background-color: #7ba05b; color: #fff;">📄 Bills</a>
-                        <a href="https://drive.google.com/drive/u/1/folders/10gGkRi9P9417FjZ9vFeQTnpLA-ExbBVO" target="_blank" class="access-link" style="background-color: #c85a5a; color: #fff;">🔴 Red Bills</a>
-                        <a href="https://drive.google.com/drive/u/1/folders/1QDiSNjqzT2x99AGelRdQceg9l4q9iIrW" target="_blank" class="access-link" style="background-color: #8967a3; color: #fff;">🏦 Bank Statement</a>
-                        <a href="https://drive.google.com/drive/u/1/folders/1ylG5_VDP020HaBXxy-o_A4QYuYiK9y8y" target="_blank" class="access-link" style="background-color: #7a8288; color: #fff;">📚 Documentation</a>
+                    <a href="https://drive.google.com/drive/u/1/folders/1UH-mqbvJ6k6Y0wDD4x7DcDRzsEjf0Rz0" 
+                       target="_blank" class="access-link access-link-bills">📄 Bills</a>
+                    <a href="https://drive.google.com/drive/u/1/folders/10gGkRi9P9417FjZ9vFeQTnpLA-ExbBVO" 
+                       target="_blank" class="access-link access-link-red-bills">🔴 Red Bills</a>
+                    <a href="https://drive.google.com/drive/u/1/folders/1QDiSNjqzT2x99AGelRdQceg9l4q9iIrW" 
+                       target="_blank" class="access-link access-link-bank-statement">🏦 Bank Statement</a>
+                    <a href="https://drive.google.com/drive/u/1/folders/1ylG5_VDP020HaBXxy-o_A4QYuYiK9y8y" 
+                       target="_blank" class="access-link access-link-documentation">📚 Documentation</a>
                     </div>
                 </div>
             </div>
             
+        <!-- =============================================================
+             MAIN FORM CONTAINER
+             ============================================================= -->
                          <div class="form-container">
-                <!-- ENHANCED LOGO AND TITLE SECTION -->
+            
+            <!-- HEADER SECTION -->
                 <div class="enhanced-logo-title-section">
                     <div class="logo-section">
                         <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="NGO Logo">
@@ -119,6 +162,7 @@
                     </div>
                 </div>
      
+            <!-- FLASH MESSAGES -->
                  {% with messages = get_flashed_messages(with_categories=true) %}
                      {% if messages %}
                          {% for category, message in messages %}
@@ -129,11 +173,14 @@
                      {% endif %}
                  {% endwith %}
      
-                 <!-- MAIN FORM -->
+            <!-- ==========================================================
+                 MAIN TRANSACTION FORM
+                 ========================================================== -->
                  <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
+                
                      <!-- TRANSACTION NUMBER SECTION -->
-                     <div id="transaction-number-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6c757d; border-radius: 8px; background-color: #f8f9fa;">
-                         <h4 style="color: #6c757d; margin-bottom: 15px;">🔢 Transaction Number</h4>
+                <div id="transaction-number-section" class="form-section section-transaction-number">
+                    <h4 class="section-heading heading-transaction-number">🔢 Transaction Number</h4>
                      <div class="form-group">
                          <label>Transaction Number:</label>
                          <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
@@ -142,8 +189,8 @@
                      </div>
                      
                      <!-- TRANSACTION TYPE SECTION -->
-                     <div id="transaction-type-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #ffc107; border-radius: 8px; background-color: #fffbf0;">
-                         <h4 style="color: #ffc107; margin-bottom: 15px;">⚡ Transaction Type</h4>
+                <div id="transaction-type-section" class="form-section section-transaction-type">
+                    <h4 class="section-heading heading-transaction-type">⚡ Transaction Type</h4>
                          <div class="form-group">
                          <label>Transaction Type:</label>
                              <select name="transaction_category" id="transaction_category" required onchange="handleTransactionTypeChange()">
@@ -158,10 +205,10 @@
                      </div>
      
                      <!-- SHEET & WORKSHEET SELECTION SECTION -->
-                     <div id="sheet-worksheet-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #fd7e14; border-radius: 8px; background-color: #fff8f0;">
-                         <h4 style="color: #fd7e14; margin-bottom: 15px;">📊 Sheet & Worksheet Selection</h4>
+                <div id="sheet-worksheet-section" class="form-section section-sheet-worksheet">
+                    <h4 class="section-heading heading-sheet-worksheet">📊 Sheet & Worksheet Selection</h4>
      
-                         <!-- REGULAR TRANSACTION SHEET & WORKSHEET SELECTION -->
+                    <!-- Regular Transaction Sheets (for most transactions) -->
                          <div id="regular-sheet-worksheet" class="sheet-worksheet-content">
                              <div class="form-group">
                                  <label>Select Sheet:</label>
@@ -182,11 +229,12 @@
                              </div>
                          </div>
                          
-                         <!-- MASTER LEDGER A & B SHEET & WORKSHEET SELECTION -->
+                    <!-- Master Ledger Sheets (for interbanking transfers only) -->
                          <div id="master-ledger-sheet-worksheet" class="sheet-worksheet-content" style="display: none;">
-                             <!-- MASTER LEDGER A SHEET & WORKSHEET -->
-                             <div style="margin-bottom: 20px; padding: 12px; border: 1px solid #fd7e14; border-radius: 6px; background-color: #fff8f0;">
-                                 <h5 style="color: #fd7e14; margin-bottom: 15px;">🏦 Master Ledger A Sheet & Worksheet</h5>
+                        
+                        <!-- Master Ledger A (typically Belgium) -->
+                        <div class="master-ledger-subsection">
+                            <h5>🏦 Master Ledger A Sheet & Worksheet</h5>
                                  <div class="form-group">
                                      <label>Master Ledger A Sheet:</label>
                                      <select name="master_ledger_a_sheet_id" id="masterLedgerASheetSelect">
@@ -206,9 +254,9 @@
                                  </div>
                              </div>
                              
-                             <!-- MASTER LEDGER B SHEET & WORKSHEET -->
-                             <div style="margin-bottom: 20px; padding: 12px; border: 1px solid #fd7e14; border-radius: 6px; background-color: #fff8f0;">
-                                 <h5 style="color: #fd7e14; margin-bottom: 15px;">🎯 Master Ledger B Sheet & Worksheet</h5>
+                        <!-- Master Ledger B (typically Vietnam) -->
+                        <div class="master-ledger-subsection">
+                            <h5>🎯 Master Ledger B Sheet & Worksheet</h5>
                                  <div class="form-group">
                                      <label>Master Ledger B Sheet:</label>
                                      <select name="master_ledger_b_sheet_id" id="masterLedgerBSheetSelect">
@@ -229,11 +277,10 @@
                              </div>
                          </div>
                     </div>
-
      
                      <!-- DATE SECTION -->
-                     <div id="date-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f8fff8;">
-                         <h4 style="color: #28a745; margin-bottom: 15px;">📅 Date</h4>
+                <div id="date-section" class="form-section section-date">
+                    <h4 class="section-heading heading-date">📅 Date</h4>
                     <div class="form-group">
                         <label>Date:</label>
                         <input type="date" name="date_input" required>
@@ -242,8 +289,8 @@
                      </div>
      
                      <!-- AMOUNT SECTION -->
-                     <div id="amount-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff5f5;">
-                         <h4 style="color: #dc3545; margin-bottom: 15px;">💰 Amount</h4>
+                <div id="amount-section" class="form-section section-amount">
+                    <h4 class="section-heading heading-amount">💰 Amount</h4>
                      <div class="form-group">
                          <label>Amount:</label>
                          <input type="number" name="amount" step="0.01" required placeholder="Enter amount (always positive)">
@@ -251,8 +298,8 @@
                      </div>
      
                      <!-- FUND SECTION -->
-                     <div id="fund-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #20c997; border-radius: 8px; background-color: #f0fffe;">
-                         <h4 style="color: #20c997; margin-bottom: 15px;">🏦 Fund</h4>
+                <div id="fund-section" class="form-section section-fund">
+                    <h4 class="section-heading heading-fund">🏦 Fund</h4>
                      <div class="form-group">
                          <label>Fund:</label>
                          <select name="fund_id" required>
@@ -267,8 +314,8 @@
                      </div>
      
                      <!-- CATEGORY SECTION -->
-                     <div id="category-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #8b4513; border-radius: 8px; background-color: #fdf5e6;">
-                         <h4 style="color: #8b4513; margin-bottom: 15px;">📂 Category</h4>
+                <div id="category-section" class="form-section section-category">
+                    <h4 class="section-heading heading-category">📂 Category</h4>
                                          <div class="form-group">
                         <label>Category:</label>
                         <select name="category_id" required>
@@ -282,12 +329,16 @@
                          </div>
                      </div>
                     
-                    <!-- INTERBANKING TRANSFER SECTIONS (ONLY VISIBLE FOR INTERBANKING TRANSFERS) -->
+                <!-- =======================================================
+                     ACCOUNT SECTIONS (varies by transaction type)
+                     ======================================================= -->
+                
+                <!-- INTERBANKING TRANSFER SECTIONS (only visible for interbanking transfers) -->
                     <div id="interbankingSections" style="display: none;">
                         
-                        <!-- MASTER LEDGER A DEBIT ACCOUNT SECTION -->
-                        <div id="master-ledger-a-debit-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 8px; background-color: #f0f8ff;">
-                            <h4 style="color: #007bff; margin-bottom: 15px;">💳 Master Ledger A Debit Account</h4>
+                    <!-- Master Ledger A Debit Account -->
+                    <div id="master-ledger-a-debit-section" class="form-section section-debit-account">
+                        <h4 class="section-heading heading-debit-account">💳 Master Ledger A Debit Account</h4>
                             <div class="form-group">
                                 <label>Master Ledger A Debit:</label>
                                 <select name="master_ledger_a_debit_account_id">
@@ -302,9 +353,9 @@
                             </div>
                         </div>
                         
-                        <!-- MASTER LEDGER A CREDIT ACCOUNT SECTION -->
-                        <div id="master-ledger-a-credit-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
-                            <h4 style="color: #6f42c1; margin-bottom: 15px;">💰 Master Ledger A Credit Account</h4>
+                    <!-- Master Ledger A Credit Account -->
+                    <div id="master-ledger-a-credit-section" class="form-section section-credit-account">
+                        <h4 class="section-heading heading-credit-account">💰 Master Ledger A Credit Account</h4>
                             <div class="form-group">
                                 <label>Master Ledger A Credit:</label>
                                 <select name="master_ledger_a_credit_account_id">
@@ -319,9 +370,9 @@
                             </div>
                         </div>
                         
-                        <!-- MASTER LEDGER B DEBIT ACCOUNT SECTION -->
-                        <div id="master-ledger-b-debit-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 8px; background-color: #f0f8ff;">
-                            <h4 style="color: #007bff; margin-bottom: 15px;">💳 Master Ledger B Debit Account</h4>
+                    <!-- Master Ledger B Debit Account -->
+                    <div id="master-ledger-b-debit-section" class="form-section section-debit-account">
+                        <h4 class="section-heading heading-debit-account">💳 Master Ledger B Debit Account</h4>
                             <div class="form-group">
                                 <label>Master Ledger B Debit:</label>
                                 <select name="master_ledger_b_debit_account_id">
@@ -336,9 +387,9 @@
                             </div>
                         </div>
                         
-                        <!-- MASTER LEDGER B CREDIT ACCOUNT SECTION -->
-                        <div id="master-ledger-b-credit-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
-                            <h4 style="color: #6f42c1; margin-bottom: 15px;">💰 Master Ledger B Credit Account</h4>
+                    <!-- Master Ledger B Credit Account -->
+                    <div id="master-ledger-b-credit-section" class="form-section section-credit-account">
+                        <h4 class="section-heading heading-credit-account">💰 Master Ledger B Credit Account</h4>
                             <div class="form-group">
                                 <label>Master Ledger B Credit:</label>
                                 <select name="master_ledger_b_credit_account_id">
@@ -353,9 +404,9 @@
                             </div>
                         </div>
                         
-                        <!-- PAYMENT METHOD SECTION FOR INTERBANKING -->
-                        <div id="interbanking-payment-method-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #17a2b8; border-radius: 8px; background-color: #f0fffe;">
-                            <h4 style="color: #17a2b8; margin-bottom: 15px;">💳 Payment Method</h4>
+                    <!-- Interbanking Payment Method -->
+                    <div id="interbanking-payment-method-section" class="form-section section-payment-method">
+                        <h4 class="section-heading heading-payment-method">💳 Payment Method</h4>
                             <div class="form-group">
                                 <label>Payment Method:</label>
                                 <select name="interbanking_payment_method" id="interbanking_payment_method" required>
@@ -367,11 +418,12 @@
                         </div>
                     </div>
                     
-                    <!-- REGULAR ACCOUNT SECTIONS (FOR NON-INTERBANKING TRANSFERS) -->
+                <!-- REGULAR ACCOUNT SECTIONS (for non-interbanking transfers) -->
                     <div id="regularAccountSections">
-                        <!-- DEBIT SECTION -->
-                        <div id="debit-account-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 8px; background-color: #f0f8ff;">
-                            <h4 style="color: #007bff; margin-bottom: 15px;">💳 Debit Account</h4>
+                    
+                    <!-- Debit Account -->
+                    <div id="debit-account-section" class="form-section section-debit-account">
+                        <h4 class="section-heading heading-debit-account">💳 Debit Account</h4>
                     <div class="form-group">
                         <label>Debit:</label>
                                 <select name="regular_debit_account_id" required>
@@ -382,13 +434,13 @@
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Select the account to be debited [Payment: Increase] [Internal Transfer: To] [Donation/Grant: Receiver] </div>
+                            <div class="form-text">Select the account to be debited [Payment: Increase] [Internal Transfer: To] [Donation/Grant: Receiver]</div>
                             </div>
                     </div>
                     
-                        <!-- CREDIT SECTION -->
-                        <div id="credit-account-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6f42c1; border-radius: 8px; background-color: #f8f5ff;">
-                            <h4 style="color: #6f42c1; margin-bottom: 15px;">💰 Credit Account</h4>
+                    <!-- Credit Account -->
+                    <div id="credit-account-section" class="form-section section-credit-account">
+                        <h4 class="section-heading heading-credit-account">💰 Credit Account</h4>
                     <div class="form-group">
                         <label>Credit:</label>
                                 <select name="regular_credit_account_id" required>
@@ -399,14 +451,14 @@
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Select the account to be credited [Payment: Decrease] [Internal Transfer: From] [Donation/Grant: Source] </div>
+                            <div class="form-text">Select the account to be credited [Payment: Decrease] [Internal Transfer: From] [Donation/Grant: Source]</div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- PAYMENT METHOD SECTION -->
-                    <div id="payment-method-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #17a2b8; border-radius: 8px; background-color: #f0fffe;">
-                        <h4 style="color: #17a2b8; margin-bottom: 15px;">💳 Payment Method</h4>
+                <div id="payment-method-section" class="form-section section-payment-method">
+                    <h4 class="section-heading heading-payment-method">💳 Payment Method</h4>
                         <div class="form-group">
                             <label>Payment Method:</label>
                             <select name="payment_method" id="payment_method" required>
@@ -416,14 +468,10 @@
                             <div class="form-text">Select how the payment was made</div>
                         </div>
                     </div>
-                     
-
-                     
-
      
                      <!-- DESCRIPTION SECTION -->
-                     <div id="description-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #000000; border-radius: 8px; background-color: #fffbf0;">
-                         <h4 style="color: #000000; margin-bottom: 15px;">📝 Description</h4>
+                <div id="description-section" class="form-section section-description">
+                    <h4 class="section-heading heading-description">📝 Description</h4>
                      <div class="form-group">
                          <label>Description:</label>
                          <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
@@ -435,7 +483,7 @@
                          <div class="form-text">Enter the reference number from your bank statement</div>
                          </div>
      
-                         <!-- Hidden fields populated after upload -->
+                    <!-- Hidden fields for file uploads -->
                          <input type="hidden" name="bills_file_link" id="billsFileLinkInput">
                          <input type="hidden" name="bills_file_name" id="billsFileNameInput">
                          <input type="hidden" name="red_bills_file_link" id="redBillsFileLinkInput">
@@ -447,9 +495,11 @@
      
                  </form>
      
-                 <!-- MULTIPLE FILE UPLOAD SECTIONS -->
+            <!-- ==========================================================
+                 FILE UPLOAD SECTIONS
+                 ========================================================== -->
                  
-                <!-- ENHANCED BILLS UPLOAD SECTION -->
+            <!-- Bills Upload -->
                 <div id="upload-bills-section" class="enhanced-upload-section">
                     <h4>
                         📄 Upload Bills
@@ -461,7 +511,7 @@
                             <input type="file" id="billsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
                             <label for="billsFileInput" class="enhanced-file-input-label">
                                 📁 Click to select file or drag & drop
-                                <small style="margin-top: 8px; opacity: 0.8;">Receipts, invoices, or supporting documents</small>
+                            <small>Receipts, invoices, or supporting documents</small>
                             </label>
                         </div>
                         <div class="file-info-enhanced">
@@ -482,9 +532,9 @@
                     </div>
                 </div>
                  
-                <!-- ENHANCED RED BILLS UPLOAD SECTION -->
-                <div id="upload-red-bills-section" class="enhanced-upload-section" style="border: 2px solid #dc3545; background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);">
-                    <h4 style="color: #dc3545;">
+            <!-- Red Bills Upload -->
+            <div id="upload-red-bills-section" class="enhanced-upload-section upload-section-red-bills">
+                <h4 class="red-bills-heading">
                         🔴 Upload Red Bills
                         <span>Drag & Drop Enabled</span>
                     </h4>
@@ -494,14 +544,14 @@
                             <input type="file" id="redBillsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
                             <label for="redBillsFileInput" class="enhanced-file-input-label">
                                 📁 Click to select file or drag & drop
-                                <small style="margin-top: 8px; opacity: 0.8;">Red bills or urgent payment documents</small>
+                            <small>Red bills or urgent payment documents</small>
                             </label>
                         </div>
-                        <div class="file-info-enhanced" style="border-left-color: #dc3545;">
+                    <div class="file-info-enhanced file-info-red-bills">
                             <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
                             <strong>Maximum size:</strong> 16MB
                         </div>
-                        <button type="button" id="redBillsUploadBtn" class="btn-enhanced btn-upload" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Upload Red Bills</button>
+                    <button type="button" id="redBillsUploadBtn" class="btn-enhanced btn-upload red-bills-upload-btn">Upload Red Bills</button>
                     </div>
     
                     <div id="redBillsUploadStatus" style="display: none;">
@@ -515,9 +565,9 @@
                     </div>
                 </div>
                  
-                <!-- ENHANCED DOCUMENTATION UPLOAD SECTION -->
-                <div id="upload-documentation-section" class="enhanced-upload-section" style="border: 2px solid #6c757d; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
-                    <h4 style="color: #6c757d;">
+            <!-- Documentation Upload -->
+            <div id="upload-documentation-section" class="enhanced-upload-section upload-section-documentation">
+                <h4 class="documentation-heading">
                         📚 Upload Documentation
                         <span>Drag & Drop Enabled</span>
                     </h4>
@@ -527,10 +577,10 @@
                             <input type="file" id="documentationFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
                             <label for="documentationFileInput" class="enhanced-file-input-label">
                                 📁 Click to select file or drag & drop
-                                <small style="margin-top: 8px; opacity: 0.8;">Supporting documentation or reference materials</small>
+                            <small>Supporting documentation or reference materials</small>
                             </label>
                         </div>
-                        <div class="file-info-enhanced" style="border-left-color: #6c757d;">
+                    <div class="file-info-enhanced file-info-documentation">
                             <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
                             <strong>Maximum size:</strong> 16MB
                         </div>
@@ -548,1130 +598,18 @@
                     </div>
                 </div>
      
-                <!-- ENHANCED SUBMIT BUTTON -->
-                <button type="submit" form="mainForm" class="btn-enhanced" style="font-size: 18px; padding: 15px; margin-top: 20px;">
+            <!-- FINAL SUBMIT BUTTON -->
+            <button type="submit" form="mainForm" class="btn-enhanced enhanced-submit-btn">
                     🚀 Submit to Google Sheets
                 </button>
-             </div>
-         </div>
-     
-         <script>
-             // Global variable no longer needed for internal transfers
-             
-             // Generate transaction number
-             function generateTransactionNumber() {
-                 const now = new Date();
-                 const transactionNumber = now.getDate().toString().padStart(2, '0') +
-                                         (now.getMonth() + 1).toString().padStart(2, '0') +
-                                         now.getFullYear().toString().slice(-2) + '-' +
-                                         now.getHours().toString().padStart(2, '0') +
-                                         now.getMinutes().toString().padStart(2, '0') +
-                                         now.getSeconds().toString().padStart(2, '0');
-                 
-                 document.getElementById('transactionNumberDisplay').value = transactionNumber;
-                 document.getElementById('transactionNumberInput').value = transactionNumber;
-                 console.log('Generated transaction number:', transactionNumber);
-                 return transactionNumber;
-             }
-             
-             // Initialize page when DOM is loaded
-             document.addEventListener('DOMContentLoaded', function() {
-                 console.log('DOM loaded, initializing...');
-                 // Generate initial transaction number
-                 generateTransactionNumber();
-                 
-                 // Debug: Check if categories are loaded
-                 const categorySelect = document.getElementById('category_id');
-                 if (categorySelect) {
-                     console.log('Category select found, options:', categorySelect.options.length);
-                     for (let i = 0; i < categorySelect.options.length; i++) {
-                         console.log(`Option ${i}: ${categorySelect.options[i].text} = ${categorySelect.options[i].value}`);
-                     }
-                 } else {
-                     console.log('Category select not found');
-                 }
-                 
-                                 // Auto-select default sheet and load its worksheets
-                const sheetSelect = document.getElementById('sheet_select');
-                const defaultOption = sheetSelect.querySelector('option[selected]');
-                if (defaultOption) {
-                    sheetSelect.value = defaultOption.value;
-                    loadWorksheets();
-                }
-                
-                // Apply default settings for the pre-selected donation transaction type
-                setTimeout(function() {
-                    const transactionSelect = document.getElementById('transaction_category');
-                    if (transactionSelect) {
-                        // Call handleTransactionTypeChange for whatever is currently selected
-                        handleTransactionTypeChange();
-                    }
-                }, 1000); // Increased delay to ensure all dropdowns are fully loaded
-                
-                // Initialize navigation panel
-                initializeNavigation();
-             });
-             
-                         function handleTransactionTypeChange() {
-                const selectedType = document.getElementById('transaction_category').value;
-                console.log('🚀 Transaction type changed to:', selectedType, '(using JSON data - no API calls!)');
-                
-                // Get all account field elements
-                const interbankingSections = document.getElementById('interbankingSections');
-                const regularAccountSections = document.getElementById('regularAccountSections');
-                
-                // Get all required fields in both sections
-                const regularDebitField = document.querySelector('select[name="regular_debit_account_id"]');
-                const regularCreditField = document.querySelector('select[name="regular_credit_account_id"]');
-                const regularPaymentMethodField = document.querySelector('select[name="payment_method"]');
-                const interbankingPaymentMethodField = document.querySelector('select[name="interbanking_payment_method"]');
-                
-                // Master Ledger A fields
-                const masterLedgerADebitField = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
-                const masterLedgerACreditField = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
-                const masterLedgerASheetField = document.querySelector('select[name="master_ledger_a_sheet_id"]');
-                const masterLedgerAWorksheetField = document.querySelector('select[name="master_ledger_a_worksheet_id"]');
-                
-                // Master Ledger B fields
-                const masterLedgerBDebitField = document.querySelector('select[name="master_ledger_b_debit_account_id"]');
-                const masterLedgerBCreditField = document.querySelector('select[name="master_ledger_b_credit_account_id"]');
-                const masterLedgerBSheetField = document.querySelector('select[name="master_ledger_b_sheet_id"]');
-                const masterLedgerBWorksheetField = document.querySelector('select[name="master_ledger_b_worksheet_id"]');
-                
-                // Get sheet & worksheet content elements
-                const regularSheetWorksheet = document.getElementById('regular-sheet-worksheet');
-                const masterLedgerSheetWorksheet = document.getElementById('master-ledger-sheet-worksheet');
-                const regularSheetField = document.querySelector('select[name="sheet_id"]');
-                const regularWorksheetField = document.querySelector('select[name="worksheet_name"]');
-                
-                if (selectedType === 'interbanking_transfer') {
-                    // Show interbanking sections, hide regular sections
-                    if (interbankingSections) interbankingSections.style.display = 'block';
-                    if (regularAccountSections) regularAccountSections.style.display = 'none';
-                    
-                    // Show Master Ledger sheet/worksheet content, hide regular sheet/worksheet content
-                    if (regularSheetWorksheet) regularSheetWorksheet.style.display = 'none';
-                    if (masterLedgerSheetWorksheet) masterLedgerSheetWorksheet.style.display = 'block';
-                    
-                    // Remove required from hidden regular fields, add required to visible Master Ledger fields
-                    if (regularDebitField) regularDebitField.removeAttribute('required');
-                    if (regularCreditField) regularCreditField.removeAttribute('required');
-                    if (regularPaymentMethodField) regularPaymentMethodField.removeAttribute('required');
-                    if (regularSheetField) regularSheetField.removeAttribute('required');
-                    if (regularWorksheetField) regularWorksheetField.removeAttribute('required');
-                    
-                    // Set required for Master Ledger A fields
-                    if (masterLedgerADebitField) masterLedgerADebitField.setAttribute('required', 'required');
-                    if (masterLedgerACreditField) masterLedgerACreditField.setAttribute('required', 'required');
-                    if (masterLedgerASheetField) masterLedgerASheetField.setAttribute('required', 'required');
-                    if (masterLedgerAWorksheetField) masterLedgerAWorksheetField.setAttribute('required', 'required');
-                    
-                    // Set required for Master Ledger B fields
-                    if (masterLedgerBDebitField) masterLedgerBDebitField.setAttribute('required', 'required');
-                    if (masterLedgerBCreditField) masterLedgerBCreditField.setAttribute('required', 'required');
-                    if (masterLedgerBSheetField) masterLedgerBSheetField.setAttribute('required', 'required');
-                    if (masterLedgerBWorksheetField) masterLedgerBWorksheetField.setAttribute('required', 'required');
-                    
-                    // Set required for interbanking payment method
-                    if (interbankingPaymentMethodField) interbankingPaymentMethodField.setAttribute('required', 'required');
-                    
-                    // Update navigation panel for interbanking transfer
-                    updateNavigationForInterbanking(true);
-                    
-                    console.log('✅ Showing interbanking transfer sections (Master Ledger A & B)');
-                    console.log('✅ Required attributes updated for interbanking transfer');
-                    
-                    // Set up sheet selection handlers for Master Ledgers
-                    setupMasterLedgerSheetHandlers();
-                    
-                    // Auto-load worksheets for default selected sheets
-                    setTimeout(() => {
-                        const masterLedgerASheetSelect = document.getElementById('masterLedgerASheetSelect');
-                        const masterLedgerBSheetSelect = document.getElementById('masterLedgerBSheetSelect');
-                        
-                        if (masterLedgerASheetSelect && masterLedgerASheetSelect.value) {
-                            loadWorksheetsForMasterLedger('A', masterLedgerASheetSelect.value);
-                        }
-                        
-                        if (masterLedgerBSheetSelect && masterLedgerBSheetSelect.value) {
-                            loadWorksheetsForMasterLedger('B', masterLedgerBSheetSelect.value);
-                        }
-                    }, 100);
-                } else {
-                    // Show regular sections, hide interbanking sections
-                    if (interbankingSections) interbankingSections.style.display = 'none';
-                    if (regularAccountSections) regularAccountSections.style.display = 'block';
-                    
-                    // Show regular sheet/worksheet content, hide Master Ledger sheet/worksheet content
-                    if (regularSheetWorksheet) regularSheetWorksheet.style.display = 'block';
-                    if (masterLedgerSheetWorksheet) masterLedgerSheetWorksheet.style.display = 'none';
-                    
-                    // Add required to visible regular fields, remove required from hidden Master Ledger fields
-                    if (regularDebitField) regularDebitField.setAttribute('required', 'required');
-                    if (regularCreditField) regularCreditField.setAttribute('required', 'required');
-                    if (regularPaymentMethodField) regularPaymentMethodField.setAttribute('required', 'required');
-                    if (regularSheetField) regularSheetField.setAttribute('required', 'required');
-                    if (regularWorksheetField) regularWorksheetField.setAttribute('required', 'required');
-                    
-                    // Remove required from Master Ledger A fields
-                    if (masterLedgerADebitField) masterLedgerADebitField.removeAttribute('required');
-                    if (masterLedgerACreditField) masterLedgerACreditField.removeAttribute('required');
-                    if (masterLedgerASheetField) masterLedgerASheetField.removeAttribute('required');
-                    if (masterLedgerAWorksheetField) masterLedgerAWorksheetField.removeAttribute('required');
-                    
-                    // Remove required from Master Ledger B fields
-                    if (masterLedgerBDebitField) masterLedgerBDebitField.removeAttribute('required');
-                    if (masterLedgerBCreditField) masterLedgerBCreditField.removeAttribute('required');
-                    if (masterLedgerBSheetField) masterLedgerBSheetField.removeAttribute('required');
-                    if (masterLedgerBWorksheetField) masterLedgerBWorksheetField.removeAttribute('required');
-                    
-                    // Remove required from interbanking payment method
-                    if (interbankingPaymentMethodField) interbankingPaymentMethodField.removeAttribute('required');
-                    
-                    // Update navigation panel for regular transactions
-                    updateNavigationForInterbanking(false);
-                    
-                    console.log('✅ Showing regular account sections');
-                    console.log('✅ Required attributes updated for regular transactions');
-                }
-                
-                // Apply transaction type specific defaults immediately
-                // No need for AJAX calls or caching - data is already loaded from JSON!
-                applyTransactionDefaults(selectedType);
-            }
             
-            // Navigation panel management
-            function updateNavigationForInterbanking(isInterbanking) {
-                const regularAccountLinks = document.querySelectorAll('.regular-account');
-                const interbankingAccountLinks = document.querySelectorAll('.interbanking-account');
-                
-                if (isInterbanking) {
-                    // Hide regular account links, show interbanking account links
-                    regularAccountLinks.forEach(link => link.style.display = 'none');
-                    interbankingAccountLinks.forEach(link => link.style.display = 'block');
-                } else {
-                    // Show regular account links, hide interbanking account links
-                    regularAccountLinks.forEach(link => link.style.display = 'block');
-                    interbankingAccountLinks.forEach(link => link.style.display = 'none');
-                }
-            }
-            
-            // Smooth scroll to section function
-            function scrollToSection(sectionId) {
-                const element = document.getElementById(sectionId);
-                if (element) {
-                    element.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            }
-            
-            // Initialize navigation click handlers
-            function initializeNavigation() {
-                const navLinks = document.querySelectorAll('.nav-link');
-                navLinks.forEach(link => {
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const href = this.getAttribute('href');
-                        const sectionId = href.substring(1); // Remove the # symbol
-                        scrollToSection(sectionId);
-                    });
-                });
-            }
-            
-            // Setup sheet selection handlers for Master Ledger A and B
-            function setupMasterLedgerSheetHandlers() {
-                // Master Ledger A sheet handler
-                const masterLedgerASheetSelect = document.getElementById('masterLedgerASheetSelect');
-                if (masterLedgerASheetSelect) {
-                    masterLedgerASheetSelect.addEventListener('change', function() {
-                        loadWorksheetsForMasterLedger('A', this.value);
-                    });
-                }
-                
-                // Master Ledger B sheet handler
-                const masterLedgerBSheetSelect = document.getElementById('masterLedgerBSheetSelect');
-                if (masterLedgerBSheetSelect) {
-                    masterLedgerBSheetSelect.addEventListener('change', function() {
-                        loadWorksheetsForMasterLedger('B', this.value);
-                    });
-                }
-            }
-            
-            // Load worksheets for specific Master Ledger
-            function loadWorksheetsForMasterLedger(ledgerType, sheetId) {
-                const worksheetSelectId = `masterLedger${ledgerType}WorksheetSelect`;
-                const worksheetSelect = document.getElementById(worksheetSelectId);
-                
-                if (!worksheetSelect || !sheetId) {
-                    return;
-                }
-                
-                console.log(`Loading worksheets for Master Ledger ${ledgerType}, Sheet ID: ${sheetId}`);
-                
-                // Clear existing options
-                worksheetSelect.innerHTML = '<option value="">Loading worksheets...</option>';
-                
-                // Fetch worksheets
-                fetch(`/get_worksheets/${sheetId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(`Worksheets data received for Master Ledger ${ledgerType}:`, data);
-                        worksheetSelect.innerHTML = '<option value="">Choose worksheet...</option>';
-                        
-                        if (data && data.length > 0) {
-                            data.forEach(worksheet => {
-                                const option = document.createElement('option');
-                                option.value = worksheet.title;
-                                option.textContent = worksheet.title;
-                                worksheetSelect.appendChild(option);
-                            });
-                            
-                            // Auto-select default worksheet based on ledger type
-                            let defaultWorksheet = '';
-                            if (ledgerType === 'A') {
-                                // Master Ledger A default: look for "Expense" or "Belfius" or "Master Ledger"
-                                defaultWorksheet = Array.from(worksheetSelect.options).find(option => 
-                                    option.textContent.toLowerCase().includes('expense') || 
-                                    option.textContent.toLowerCase().includes('belfius') ||
-                                    option.textContent.toLowerCase().includes('master ledger')
-                                );
-                            } else if (ledgerType === 'B') {
-                                // Master Ledger B default: look for "Revenue" or "Indovina" or "Master Ledger"
-                                defaultWorksheet = Array.from(worksheetSelect.options).find(option => 
-                                    option.textContent.toLowerCase().includes('revenue') || 
-                                    option.textContent.toLowerCase().includes('indovina') ||
-                                    option.textContent.toLowerCase().includes('master ledger')
-                                );
-                            }
-                            
-                            if (defaultWorksheet) {
-                                worksheetSelect.value = defaultWorksheet.value;
-                                console.log(`Auto-selected default worksheet for Master Ledger ${ledgerType}: ${defaultWorksheet.textContent}`);
-                            }
-                        } else {
-                            worksheetSelect.innerHTML = '<option value="">No worksheets found</option>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error(`Error loading worksheets for Master Ledger ${ledgerType}:`, error);
-                        worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
-                    });
-            }
-            
-            function applyTransactionDefaults(selectedType) {
-                // Get the correct selectors based on transaction type
-                let debitAccountSelect, creditAccountSelect;
-                
-                if (selectedType === 'interbanking_transfer') {
-                    // For interbanking transfers, use the Master Ledger A fields
-                    debitAccountSelect = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
-                    creditAccountSelect = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
-                } else {
-                    // For regular transactions, use the regular account fields
-                    debitAccountSelect = document.querySelector('select[name="regular_debit_account_id"]');
-                    creditAccountSelect = document.querySelector('select[name="regular_credit_account_id"]');
-                }
-                
-                const categorySelect = document.querySelector('select[name="category_id"]');
-                const fundSelect = document.querySelector('select[name="fund_id"]');
-                
-                // Clear previous selections first
-                if (debitAccountSelect) debitAccountSelect.value = '';
-                if (creditAccountSelect) creditAccountSelect.value = '';
-                if (categorySelect) categorySelect.value = '';
-                if (fundSelect) fundSelect.value = '';
-                
-                // Set default accounts and category based on transaction type
-                if (selectedType === 'donation') {
-                    // For donations: Debit Indovina Bank (asset increases), Credit Revenue (income)
-                    if (debitAccountSelect) {
-                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('indovina bank')
-                        );
-                        if (bankOption) {
-                            debitAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected Indovina Bank for debit (donation received)');
-                        }
-                    }
-                    
-                    if (creditAccountSelect) {
-                        const revenueOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('revenue')
-                        );
-                        if (revenueOption) {
-                            creditAccountSelect.value = revenueOption.value;
-                            console.log('Auto-selected Revenue account for credit (donation):', revenueOption.textContent);
-                        }
-                    }
-                    
-                    // Auto-select Donation category for donations
-                    if (categorySelect) {
-                        const donationOption = Array.from(categorySelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('donation')
-                        );
-                        if (donationOption) {
-                            categorySelect.value = donationOption.value;
-                            console.log('Auto-selected Donation category for donation');
-                        }
-                    }
-                    
-                    // Auto-select Unrestricted fund for donations
-                    if (fundSelect) {
-                        const unrestrictedOption = Array.from(fundSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('unrestricted')
-                        );
-                        if (unrestrictedOption) {
-                            fundSelect.value = unrestrictedOption.value;
-                            console.log('Auto-selected Unrestricted fund for donation');
-                        }
-                    }
-                } else if (selectedType === 'payment') {
-                    console.log('🔄 Applying payment defaults...');
-                    console.log('🔄 Payment mode detected - starting account selection process');
-                    
-                    // For payments: Debit VN - Expenses, Credit VN - Indovina Bank
-                    if (debitAccountSelect) {
-                        console.log('🔍 Looking for VN - Expenses in debit options:');
-                        Array.from(debitAccountSelect.options).forEach((opt, index) => {
-                            console.log(`  ${index}: "${opt.textContent}" (value: "${opt.value}")`);
-                        });
-                        
-                        // Try exact match first, then partial matches
-                        let expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.trim() === 'VN - Expenses (Nominal Accounts)'
-                        );
-                        
-                        if (!expenseOption) {
-                            expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('vn - expenses (nominal accounts)')
-                            );
-                        }
-                        
-                        if (!expenseOption) {
-                            expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('expenses (nominal accounts)')
-                            );
-                        }
-                        
-                        if (expenseOption) {
-                            // Find the index of the option
-                            const optionIndex = Array.from(debitAccountSelect.options).indexOf(expenseOption);
-                            console.log('🔧 Setting debit by index:', optionIndex, 'for option:', expenseOption.textContent);
-                            
-                            // Set by both methods
-                            debitAccountSelect.selectedIndex = optionIndex;
-                            debitAccountSelect.value = expenseOption.value;
-                            
-                            // Force browser refresh
-                            debitAccountSelect.style.display = 'none';
-                            debitAccountSelect.offsetHeight; // Trigger reflow
-                            debitAccountSelect.style.display = '';
-                            
-                            console.log('🔧 After setting - selectedIndex:', debitAccountSelect.selectedIndex, 'value:', debitAccountSelect.value);
-                            console.log('✅ Auto-selected VN - Expenses account for payment debit:', expenseOption.textContent);
-                        } else {
-                            console.log('❌ Could not find VN - Expenses account for debit');
-                        }
-                    }
-                    
-                    if (creditAccountSelect) {
-                        console.log('🔍 Looking for VN - Indovina Bank in credit options:');
-                        Array.from(creditAccountSelect.options).forEach((opt, index) => {
-                            console.log(`  ${index}: "${opt.textContent}" (value: "${opt.value}")`);
-                        });
-                        
-                        // Try exact match first, then partial matches
-                        let bankOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.trim() === 'VN - Indovina Bank (Real Accounts)'
-                        );
-                        
-                        if (!bankOption) {
-                            bankOption = Array.from(creditAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('vn - indovina bank (real accounts)')
-                            );
-                        }
-                        
-                        if (!bankOption) {
-                            bankOption = Array.from(creditAccountSelect.options).find(option => 
-                                option.textContent.toLowerCase().includes('indovina bank (real accounts)')
-                            );
-                        }
-                        
-                        if (bankOption) {
-                            // Find the index of the option
-                            const optionIndex = Array.from(creditAccountSelect.options).indexOf(bankOption);
-                            console.log('🔧 Setting credit by index:', optionIndex, 'for option:', bankOption.textContent);
-                            
-                            // Set by both methods
-                            creditAccountSelect.selectedIndex = optionIndex;
-                            creditAccountSelect.value = bankOption.value;
-                            
-                            // Force browser refresh
-                            creditAccountSelect.style.display = 'none';
-                            creditAccountSelect.offsetHeight; // Trigger reflow
-                            creditAccountSelect.style.display = '';
-                            
-                            console.log('🔧 After setting - selectedIndex:', creditAccountSelect.selectedIndex, 'value:', creditAccountSelect.value);
-                            console.log('✅ Auto-selected VN - Indovina Bank for payment credit:', bankOption.textContent);
-                        } else {
-                            console.log('❌ Could not find VN - Indovina Bank account for credit');
-                        }
-                    }
-                    
-                    // Auto-select Food & Meals category for payments
-                    if (categorySelect) {
-                        console.log('🔍 Looking for Food & Meals in category options:');
-                        const foodOption = Array.from(categorySelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('food') || 
-                            option.textContent.toLowerCase().includes('meals')
-                        );
-                        if (foodOption) {
-                            categorySelect.value = foodOption.value;
-                            console.log('✅ Auto-selected Food & Meals category for payment:', foodOption.textContent);
-                        } else {
-                            console.log('❌ Could not find Food & Meals category');
-                        }
-                    }
-                } else if (selectedType === 'internal_transfer') {
-                    console.log('🔄 Applying internal transfer defaults...');
-                    
-                    // Auto-set standard internal transfer accounts
-                    if (debitAccountSelect) {
-                        const walletOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('wallet')
-                        );
-                        if (walletOption) {
-                            debitAccountSelect.value = walletOption.value;
-                            console.log('✅ Auto-selected Wallet for internal transfer debit:', walletOption.textContent);
-                        }
-                    }
-                    
-                    if (creditAccountSelect) {
-                        const bankOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('indovina bank')
-                        );
-                        if (bankOption) {
-                            creditAccountSelect.value = bankOption.value;
-                            console.log('✅ Auto-selected Indovina Bank for internal transfer credit:', bankOption.textContent);
-                        }
-                    }
-                    
-                    // Auto-select Internal Transfer for Fund
-                    const fundSelect = document.querySelector('select[name="fund_id"]');
-                    if (fundSelect) {
-                        console.log('🔍 Looking for Internal Transfer in fund options:');
-                        const internalTransferFund = Array.from(fundSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('internal transfer')
-                        );
-                        if (internalTransferFund) {
-                            fundSelect.value = internalTransferFund.value;
-                            console.log('✅ Auto-selected Internal Transfer fund:', internalTransferFund.textContent);
-                        } else {
-                            console.log('❌ Could not find Internal Transfer fund option');
-                        }
-                    }
-                    
-                    // Auto-select Internal Bank Transfer for Category
-                    if (categorySelect) {
-                        console.log('🔍 Looking for Internal Bank Transfer in category options:');
-                        const internalBankTransferCategory = Array.from(categorySelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('internal bank transfer')
-                        );
-                        if (internalBankTransferCategory) {
-                            categorySelect.value = internalBankTransferCategory.value;
-                            console.log('✅ Auto-selected Internal Bank Transfer category:', internalBankTransferCategory.textContent);
-                } else {
-                            console.log('❌ Could not find Internal Bank Transfer category option');
-                        }
-                    }
-                } else if (selectedType === 'interbanking_transfer') {
-                    console.log('🔄 Applying interbanking transfer defaults for Master Ledger A and B...');
-                    
-                    // Set defaults for Master Ledger A (typically Belgium)
-                    const masterLedgerADebitSelect = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
-                    const masterLedgerACreditSelect = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
-                    
-                    if (masterLedgerADebitSelect) {
-                        const expensesOption = Array.from(masterLedgerADebitSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('be') && 
-                            option.textContent.toLowerCase().includes('expenses')
-                        );
-                        if (expensesOption) {
-                            masterLedgerADebitSelect.value = expensesOption.value;
-                            console.log('✅ Auto-selected BE-Expenses for Master Ledger A debit:', expensesOption.textContent);
-                        }
-                    }
-                    
-                    if (masterLedgerACreditSelect) {
-                        const belfiusOption = Array.from(masterLedgerACreditSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('belfius')
-                        );
-                        if (belfiusOption) {
-                            masterLedgerACreditSelect.value = belfiusOption.value;
-                            console.log('✅ Auto-selected BE-Belfius for Master Ledger A credit:', belfiusOption.textContent);
-                        }
-                    }
-                    
-                    // Set defaults for Master Ledger B (typically Vietnam)
-                    const masterLedgerBDebitSelect = document.querySelector('select[name="master_ledger_b_debit_account_id"]');
-                    const masterLedgerBCreditSelect = document.querySelector('select[name="master_ledger_b_credit_account_id"]');
-                    
-                    if (masterLedgerBDebitSelect) {
-                        const indovinaOption = Array.from(masterLedgerBDebitSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('indovina')
-                        );
-                        if (indovinaOption) {
-                            masterLedgerBDebitSelect.value = indovinaOption.value;
-                            console.log('✅ Auto-selected VN-Indovina Bank for Master Ledger B debit:', indovinaOption.textContent);
-                        }
-                    }
-                    
-                    if (masterLedgerBCreditSelect) {
-                        const revenuesOption = Array.from(masterLedgerBCreditSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('vn') && 
-                            option.textContent.toLowerCase().includes('revenues')
-                        );
-                        if (revenuesOption) {
-                            masterLedgerBCreditSelect.value = revenuesOption.value;
-                            console.log('✅ Auto-selected VN-Revenues for Master Ledger B credit:', revenuesOption.textContent);
-                        }
-                    }
-                    
-                    // Auto-select Internal Bank Transfer for Category
-                    if (categorySelect) {
-                        console.log('🔍 Looking for Internal Bank Transfer in category options:');
-                        const internalBankTransferCategory = Array.from(categorySelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('internal bank transfer')
-                        );
-                        if (internalBankTransferCategory) {
-                            categorySelect.value = internalBankTransferCategory.value;
-                            console.log('✅ Auto-selected Internal Bank Transfer category:', internalBankTransferCategory.textContent);
-                        } else {
-                            console.log('❌ Could not find Internal Bank Transfer category option');
-                        }
-                    }
-                } else if (selectedType === 'expense') {
-                    // For expenses: Debit Expense account, Credit Bank account
-                    if (debitAccountSelect) {
-                        const expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('expense')
-                        );
-                        if (expenseOption) {
-                            debitAccountSelect.value = expenseOption.value;
-                            console.log('Auto-selected Expense account for debit');
-                        }
-                    }
-                    
-                    if (creditAccountSelect) {
-                        const bankOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('bank')
-                        );
-                        if (bankOption) {
-                            creditAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected Bank account for expense credit');
-                        }
-                    }
-                } else if (selectedType === 'grant') {
-                    // For grants: Debit Bank account (asset increases), Credit Revenue account
-                    if (debitAccountSelect) {
-                        const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('bank')
-                        );
-                        if (bankOption) {
-                            debitAccountSelect.value = bankOption.value;
-                            console.log('Auto-selected Bank account for grant debit');
-                        }
-                    }
-                    
-                    if (creditAccountSelect) {
-                        const revenueOption = Array.from(creditAccountSelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('revenue')
-                        );
-                        if (revenueOption) {
-                            creditAccountSelect.value = revenueOption.value;
-                            console.log('Auto-selected Revenue account for grant credit');
-                        }
-                    }
-                    
-                    // Auto-select Grant category for grants
-                    if (categorySelect) {
-                        const grantOption = Array.from(categorySelect.options).find(option => 
-                            option.textContent.toLowerCase().includes('grant')
-                        );
-                        if (grantOption) {
-                            categorySelect.value = grantOption.value;
-                            console.log('Auto-selected Grant category for grant');
-                        }
-                    }
-                    
-                    // Keep fund on "Choose a fund..." (no default selection)
-                    if (fundSelect) {
-                        fundSelect.value = '';
-                        console.log('Fund left on default "Choose a fund..." for grant');
-                    }
-                }
-            }
-             
-             // Internal transfer accounts are now auto-selected, no need for destination dropdown
-             
-             function loadWorksheets() {
-                 console.log('loadWorksheets() called');
-                 const sheetSelect = document.getElementById('sheet_select');
-                 const worksheetSelect = document.getElementById('worksheet_select');
-                 const selectedSheetId = sheetSelect.value;
-                 console.log('Selected sheet ID:', selectedSheetId);
-     
-                 worksheetSelect.innerHTML = '<option value="">Loading worksheets...</option>';
-                 worksheetSelect.disabled = true;
-     
-                 if (!selectedSheetId) {
-                     worksheetSelect.innerHTML = '<option value="">First select a sheet...</option>';
-                     console.log('No sheet selected, returning');
-                     return;
-                 }
-     
-                 console.log('Fetching worksheets for sheet:', selectedSheetId);
-                 fetch(`/get_worksheets/${selectedSheetId}`)
-                     .then(r => {
-                         console.log('Response status:', r.status);
-                         return r.json();
-                     })
-                     .then(data => {
-                         console.log('Worksheets data received:', data);
-                         worksheetSelect.innerHTML = '<option value="">Choose an account...</option>';
-                         
-                         // Accounts loaded successfully
-                         
-                                                 if (data.length > 0) {
-                            data.forEach(ws => {
-                                console.log('Adding worksheet:', ws);
-                                const o = document.createElement('option');
-                                o.value = ws.title;  // Use worksheet title for backend lookup
-                                o.textContent = ws.title;  // Show just the worksheet title
-                                worksheetSelect.appendChild(o);
-                            });
-                            worksheetSelect.disabled = false;
-                            console.log('Worksheets loaded successfully');
-                            
-                                             // Auto-select "Master Ledger" if it exists
-                 const masterLedgerOption = Array.from(worksheetSelect.options).find(option => 
-                     option.textContent.includes('Master Ledger')
-                 );
-                 if (masterLedgerOption) {
-                     worksheetSelect.value = masterLedgerOption.value;
-                     console.log('Auto-selected Master Ledger worksheet');
-                 }
-                 
-                 // Note: Account defaults are now handled by handleTransactionTypeChange() function
-                 // to avoid conflicts with transaction type-specific defaults
-                 
-                 // Apply transaction type defaults after worksheets are loaded
-                 setTimeout(() => {
-                     const transactionSelect = document.getElementById('transaction_category');
-                     if (transactionSelect) {
-                         handleTransactionTypeChange();
-                     }
-                 }, 500);
-                             
-                             // Internal transfer accounts are now auto-selected
-                         } else {
-                             worksheetSelect.innerHTML = '<option value="">No accounts found</option>';
-                             console.log('No worksheets found');
-                         }
-                     })
-                     .catch(error => {
-                         console.error('Error loading worksheets:', error);
-                         worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
-                     });
-             }
-     
-             function handleFormSubmit(event) {
-                 console.log('Form submission started');
-                 
-                 // Note: Internal transfer validation removed as those elements don't exist in current HTML
-                 console.log('Form submission validation passed');
-                 
-                 // Get form data
-                 const formData = new FormData(document.getElementById('mainForm'));
-                 
-                 console.log('Form data:');
-                 for (let [key, value] of formData.entries()) {
-                     console.log(`  ${key}: "${value}"`);
-                 }
-                 
-                 // Check if transaction number is generated
-                 const transactionNumber = document.getElementById('transactionNumberInput').value;
-                 console.log('Transaction number:', transactionNumber);
-                 
-                 if (!transactionNumber) {
-                     console.log('No transaction number found, generating one...');
-                     generateTransactionNumber();
-                 }
-                 
-                 console.log('Validation passed, form should submit');
-                 return true;
-                 
-                 console.log('Sheet selected:', sheetSelect.value);
-                 console.log('Worksheet selected:', worksheetSelect.value);
-                 
-                 if (!sheetSelect.value) {
-                     console.error('No sheet selected');
-                     alert('Please select a sheet!');
-                     return false;
-                 }
-                 
-                 if (!worksheetSelect.value) {
-                     console.error('No worksheet selected');
-                     alert('Please select a worksheet!');
-                     return false;
-                 }
-                 
-                 console.log('Form validation passed, submitting...');
-                 return true; // Allow form to submit normally
-             }
-     
-             function generateTransactionNumber() {
-                 const now = new Date();
-                 const day = String(now.getDate()).padStart(2, '0');
-                 const month = String(now.getMonth() + 1).padStart(2, '0');
-                 const year = String(now.getFullYear()).slice(-2);
-                 const hours = String(now.getHours()).padStart(2, '0');
-                 const minutes = String(now.getMinutes()).padStart(2, '0');
-                 const seconds = String(now.getSeconds()).padStart(2, '0');
-                 
-                 return `${day}${month}${year}-${hours}${minutes}${seconds}`;
-             }
-     
-             // Generic upload function for different file types
-             function uploadFile(fileType) {
-                 const fileInput = document.getElementById(`${fileType}FileInput`);
-                 const uploadBtn = document.getElementById(`${fileType}UploadBtn`);
-                 const uploadStatus = document.getElementById(`${fileType}UploadStatus`);
-                 const uploadProgress = document.getElementById(`${fileType}UploadProgress`);
-                 const uploadResult = document.getElementById(`${fileType}UploadResult`);
-                 const fileLink = document.getElementById(`${fileType}FileLink`);
-                 const fileLinkInput = document.getElementById(`${fileType}FileLinkInput`);
-                 const fileNameInput = document.getElementById(`${fileType}FileNameInput`);
-                 const transactionNumberDisplay = document.getElementById('transactionNumberDisplay');
-                 const transactionNumberInput = document.getElementById('transactionNumberInput');
-     
-                 const file = fileInput.files[0];
-                 if (!file) {
-                     alert(`Please select a ${fileType} file first!`);
-                     return;
-                 }
-     
-                 // Use the existing transaction number from the display field
-                 const transactionNumber = transactionNumberDisplay.value;
-                 if (!transactionNumber || transactionNumber === 'Generating...') {
-                     alert('Please wait for transaction number to be generated');
-                     return;
-                 }
-     
-                 console.log(`Using transaction number for ${fileType} file:`, transactionNumber);
-     
-                 uploadStatus.style.display = 'block';
-                 uploadProgress.style.display = 'block';
-                 uploadResult.style.display = 'none';
-                 uploadBtn.disabled = true;
-     
-                 const formData = new FormData();
-                 formData.append('file', file);
-                 formData.append('transaction_number', transactionNumber);
-                 formData.append('file_type', fileType);
-     
-                 fetch('/upload_file', { method: 'POST', body: formData })
-                     .then(r => r.json())
-                     .then(data => {
-                         uploadProgress.style.display = 'none';
-                         uploadResult.style.display = 'block';
-     
-                         if (data.success) {
-                             fileLink.innerHTML = `<a href="${data.file_url}" target="_blank">${data.file_name}</a>`;
-                             fileLinkInput.value = data.file_url;   // URL for backend
-                             fileNameInput.value = data.file_name;  // Label for HYPERLINK
-                             transactionNumberInput.value = transactionNumber; // Pass to backend
-                             
-                             console.log(`${fileType} file uploaded successfully with transaction number:`, transactionNumber);
-                             console.log('File name:', data.file_name);
-                         } else {
-                             fileLink.innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
-                         }
-                     })
-                     .catch(err => {
-                         uploadProgress.style.display = 'none';
-                         uploadResult.style.display = 'block';
-                         fileLink.innerHTML = `<div class="alert alert-error">Upload failed: ${err.message}</div>`;
-                     })
-                     .finally(() => {
-                         uploadBtn.disabled = false;
-                     });
-             }
-             
-             // Specific upload functions for each file type
-             function uploadBills() { uploadFile('bills'); }
-             function uploadRedBills() { uploadFile('redBills'); }
-             function uploadDocumentation() { uploadFile('documentation'); }
-     
-            // Enhanced Drag & Drop Functionality
-            function setupDragAndDrop() {
-                const fileInputLabels = document.querySelectorAll('.enhanced-file-input-label');
-                
-                fileInputLabels.forEach(label => {
-                    const fileInput = label.parentElement.querySelector('input[type="file"]');
-                    
-                    // Prevent default drag behaviors
-                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                        label.addEventListener(eventName, preventDefaults, false);
-                        document.body.addEventListener(eventName, preventDefaults, false);
-                    });
-                    
-                    // Highlight drop area when item is dragged over it
-                    ['dragenter', 'dragover'].forEach(eventName => {
-                        label.addEventListener(eventName, () => {
-                            label.classList.add('drag-over');
-                            console.log('Drag over detected on:', label);
-                        }, false);
-                    });
-                    
-                    ['dragleave', 'drop'].forEach(eventName => {
-                        label.addEventListener(eventName, () => {
-                            label.classList.remove('drag-over');
-                            console.log('Drag leave/drop detected on:', label);
-                        }, false);
-                    });
-                    
-                    // Handle dropped files
-                    label.addEventListener('drop', (e) => {
-                        const dt = e.dataTransfer;
-                        const files = dt.files;
-                        
-                        if (files.length > 0) {
-                            fileInput.files = files;
-                            console.log('File dropped:', files[0].name);
-                            
-                            // Update label text to show selected file
-                            const fileName = files[0].name;
-                            const fileSize = (files[0].size / 1024 / 1024).toFixed(2);
-                            label.innerHTML = `
-                                ✅ ${fileName}
-                                <small style="margin-top: 8px; opacity: 0.8;">Size: ${fileSize}MB - Click to change or drop new file</small>
-                            `;
-                            
-                            // Trigger change event for validation or other handlers
-                            const event = new Event('change', { bubbles: true });
-                            fileInput.dispatchEvent(event);
-                        }
-                    }, false);
-                    
-                    // Handle regular file selection (click)
-                    fileInput.addEventListener('change', function() {
-                        if (this.files.length > 0) {
-                            const fileName = this.files[0].name;
-                            const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2);
-                            label.innerHTML = `
-                                ✅ ${fileName}
-                                <small style="margin-top: 8px; opacity: 0.8;">Size: ${fileSize}MB - Click to change or drop new file</small>
-                            `;
-                            console.log('File selected via click:', fileName);
-                        } else {
-                            // Reset to original state
-                            const originalTexts = {
-                                'billsFileInput': '📁 Click to select file or drag & drop<small style="margin-top: 8px; opacity: 0.8;">Receipts, invoices, or supporting documents</small>',
-                                'redBillsFileInput': '📁 Click to select file or drag & drop<small style="margin-top: 8px; opacity: 0.8;">Red bills or urgent payment documents</small>',
-                                'documentationFileInput': '📁 Click to select file or drag & drop<small style="margin-top: 8px; opacity: 0.8;">Supporting documentation or reference materials</small>'
-                            };
-                            label.innerHTML = originalTexts[this.id] || '📁 Click to select file or drag & drop';
-                        }
-                    });
-                });
-            }
-
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-
-            // Progressive Navigation Color System
-            function updateNavigationProgress() {
-                const sections = [
-                    {
-                        id: 'transaction-number-section',
-                        navSelector: 'a[href="#transaction-number-section"]',
-                        fields: ['#transactionNumberDisplay'],
-                        validator: () => document.getElementById('transactionNumberDisplay').value !== 'Generating...' && document.getElementById('transactionNumberDisplay').value.length > 0
-                    },
-                    {
-                        id: 'transaction-type-section', 
-                        navSelector: 'a[href="#transaction-type-section"]',
-                        fields: ['select[name="transaction_category"]'],
-                        validator: () => document.querySelector('select[name="transaction_category"]').value !== ''
-                    },
-                    {
-                        id: 'sheet-worksheet-section',
-                        navSelector: 'a[href="#sheet-worksheet-section"]',
-                        fields: ['select[name="sheet_id"]', 'select[name="worksheet_name"]'],
-                        validator: () => {
-                            const sheetId = document.querySelector('select[name="sheet_id"]')?.value;
-                            const worksheetName = document.querySelector('select[name="worksheet_name"]')?.value;
-                            return sheetId && worksheetName;
-                        }
-                    },
-                    {
-                        id: 'date-section',
-                        navSelector: 'a[href="#date-section"]', 
-                        fields: ['input[name="date_input"]'],
-                        validator: () => document.querySelector('input[name="date_input"]').value !== ''
-                    },
-                    {
-                        id: 'amount-section',
-                        navSelector: 'a[href="#amount-section"]',
-                        fields: ['input[name="amount"]'],
-                        validator: () => {
-                            const amount = document.querySelector('input[name="amount"]').value;
-                            return amount !== '' && parseFloat(amount) > 0;
-                        }
-                    },
-                    {
-                        id: 'fund-section',
-                        navSelector: 'a[href="#fund-section"]',
-                        fields: ['select[name="fund_id"]'],
-                        validator: () => document.querySelector('select[name="fund_id"]').value !== ''
-                    },
-                    {
-                        id: 'category-section',
-                        navSelector: 'a[href="#category-section"]',
-                        fields: ['select[name="category_id"]'],
-                        validator: () => document.querySelector('select[name="category_id"]').value !== ''
-                    },
-                    {
-                        id: 'debit-account-section',
-                        navSelector: 'a[href="#debit-account-section"]',
-                        fields: ['select[name="regular_debit_account_id"]'],
-                        validator: () => {
-                            const regularDebit = document.querySelector('select[name="regular_debit_account_id"]');
-                            const masterDebitA = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
-                            if (regularDebit && regularDebit.hasAttribute('required')) return regularDebit.value !== '';
-                            if (masterDebitA && masterDebitA.hasAttribute('required')) return masterDebitA.value !== '';
-                            return true;
-                        }
-                    },
-                    {
-                        id: 'credit-account-section',
-                        navSelector: 'a[href="#credit-account-section"]',
-                        fields: ['select[name="regular_credit_account_id"]'],
-                        validator: () => {
-                            const regularCredit = document.querySelector('select[name="regular_credit_account_id"]');
-                            const masterCreditA = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
-                            if (regularCredit && regularCredit.hasAttribute('required')) return regularCredit.value !== '';
-                            if (masterCreditA && masterCreditA.hasAttribute('required')) return masterCreditA.value !== '';
-                            return true;
-                        }
-                    },
-                    {
-                        id: 'payment-method-section',
-                        navSelector: 'a[href="#payment-method-section"]',
-                        fields: ['select[name="payment_method"]'],
-                        validator: () => {
-                            const paymentMethod = document.querySelector('select[name="payment_method"]');
-                            const interbankingPayment = document.querySelector('select[name="interbanking_payment_method"]');
-                            if (paymentMethod && paymentMethod.hasAttribute('required')) return paymentMethod.value !== '';
-                            if (interbankingPayment && interbankingPayment.hasAttribute('required')) return interbankingPayment.value !== '';
-                            return true;
-                        }
-                    },
-                    {
-                        id: 'description-section',
-                        navSelector: 'a[href="#description-section"]',
-                        fields: ['textarea[name="description"]'],
-                        validator: () => document.querySelector('textarea[name="description"]').value.trim() !== ''
-                    }
-                ];
-
-                sections.forEach(section => {
-                    const navButton = document.querySelector(section.navSelector);
-                    if (!navButton) return;
-
-                    const isCompleted = section.validator();
-                    updateNavButtonState(navButton, isCompleted);
-                });
-
-                // Update overall progress
-                const completedSections = sections.filter(section => section.validator()).length;
-                const totalSections = sections.length;
-                const progressPercentage = Math.round((completedSections / totalSections) * 100);
-                
-                console.log(`Form Progress: ${completedSections}/${totalSections} sections completed (${progressPercentage}%)`);
-            }
-
-            function updateNavButtonState(navButton, isCompleted) {
-                // Get the original color from the style attribute
-                const style = navButton.getAttribute('style');
-                const colorMatch = style.match(/border-left: 4px solid (#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})/);
-                const originalColor = colorMatch ? colorMatch[1] : '#6c757d';
-
-                if (isCompleted) {
-                    // Completed state: Full vibrant blue (no icon changes)
-                    navButton.style.borderLeft = '4px solid #007bff';
-                    navButton.style.backgroundColor = '#f0f8ff';
-                    navButton.style.color = '#0056b3';
-                    navButton.style.fontWeight = '600';
-                } else {
-                    // Incomplete state: Light gray (no icon changes)
-                    navButton.style.borderLeft = '4px solid #e9ecef';
-                    navButton.style.backgroundColor = '#f8f9fa';
-                    navButton.style.color = '#6c757d';
-                    navButton.style.fontWeight = '500';
-                }
-            }
-
-            // Setup form monitoring
-            function setupFormMonitoring() {
-                // Monitor all form inputs for changes
-                const formInputs = document.querySelectorAll('input, select, textarea');
-                formInputs.forEach(input => {
-                    input.addEventListener('change', updateNavigationProgress);
-                    input.addEventListener('input', updateNavigationProgress);
-                });
-
-                // Initial progress check
-                setTimeout(updateNavigationProgress, 1000);
-                
-                console.log('Form monitoring setup complete - navigation will update as you fill sections');
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                // Generate transaction number when page loads
-                const transactionNumber = generateTransactionNumber();
-                document.getElementById('transactionNumberDisplay').value = transactionNumber;
-                document.getElementById('transactionNumberInput').value = transactionNumber;
-                console.log('Generated transaction number:', transactionNumber);
-                
-                // Initialize drag and drop functionality
-                setupDragAndDrop();
-                console.log('Drag and drop functionality initialized');
-                
-                // Initialize form monitoring for navigation progress
-                setupFormMonitoring();
-                console.log('Form progress monitoring initialized');
-                
-                // Add event listeners for all upload buttons
-                document.getElementById('billsUploadBtn').addEventListener('click', uploadBills);
-                document.getElementById('redBillsUploadBtn').addEventListener('click', uploadRedBills);
-                document.getElementById('documentationUploadBtn').addEventListener('click', uploadDocumentation);
-                
-                // Add event listener for submit button in navigation
-                document.getElementById('submitNavBtn').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    // Trigger the form submission
-                    const form = document.getElementById('mainForm');
-                    if (form) {
-                        form.submit();
-                    }
-                });
-            });
-         </script>
+        </div> <!-- End form-container -->
+    </div> <!-- End container -->
+    
+    <!-- =================================================================
+         JAVASCRIPT
+         ================================================================= -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
      </body>
      </html>
