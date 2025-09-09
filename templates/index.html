@@ -16,149 +16,6 @@
         <meta name="theme-color" content="#007bff">
         <meta name="msapplication-TileColor" content="#007bff">
         
-        <!-- FORM NAVIGATION STYLES -->
-        <style>
-            .form-navigation {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                width: 200px;
-                background: white;
-                border: 2px solid #e0e0e0;
-                border-radius: 12px;
-                padding: 15px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 1000;
-                height: auto;
-                max-height: none;
-                overflow: visible;
-            }
-            
-            .form-access-panel {
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                width: 200px;
-                background: white;
-                border: 2px solid #e0e0e0;
-                border-radius: 12px;
-                padding: 15px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 1000;
-                height: auto;
-                max-height: none;
-                overflow: visible;
-            }
-            
-            .form-navigation h5, .form-access-panel h5 {
-                margin: 0 0 15px 0;
-                color: #333;
-                font-size: 14px;
-                font-weight: bold;
-                text-align: center;
-                border-bottom: 1px solid #e0e0e0;
-                padding-bottom: 10px;
-            }
-            
-            .nav-links {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .nav-link {
-                display: block;
-                padding: 8px 12px;
-                text-decoration: none;
-                border-radius: 6px;
-                font-size: 12px;
-                font-weight: 500;
-                text-align: center;
-                transition: all 0.3s ease;
-                border: 1px solid rgba(0,0,0,0.1);
-            }
-            
-            .nav-link:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                text-decoration: none;
-            }
-            
-            .nav-link:active {
-                transform: translateY(0);
-            }
-            
-            .access-links {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .access-link {
-                display: block;
-                padding: 8px 12px;
-                text-decoration: none;
-                border-radius: 6px;
-                font-size: 12px;
-                font-weight: 500;
-                text-align: center;
-                transition: all 0.3s ease;
-                border: 1px solid rgba(0,0,0,0.1);
-            }
-            
-            .access-link:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                text-decoration: none;
-            }
-            
-            .access-link:active {
-                transform: translateY(0);
-            }
-            
-            .access-section {
-                margin-bottom: 20px;
-            }
-            
-            .access-section:last-child {
-                margin-bottom: 0;
-            }
-            
-            /* RESPONSIVE DESIGN */
-            @media (max-width: 768px) {
-                .form-navigation {
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    top: auto;
-                    width: 150px;
-                    height: auto;
-                    max-height: none;
-                    overflow: visible;
-                }
-                
-                .nav-link {
-                    padding: 6px 10px;
-                    font-size: 11px;
-                }
-                
-            }
-            
-            @media (max-width: 480px) {
-                .form-navigation {
-                    width: 120px;
-                    padding: 10px;
-                    height: auto;
-                    max-height: none;
-                    overflow: visible;
-                }
-                
-                .nav-link {
-                    padding: 5px 8px;
-                    font-size: 10px;
-                }
-            }
-        </style>
          <script>
              // Show loading text immediately when script runs (before DOM loads)
              (function() {
@@ -1637,6 +1494,154 @@
                 e.stopPropagation();
             }
 
+            // Progressive Navigation Color System
+            function updateNavigationProgress() {
+                const sections = [
+                    {
+                        id: 'transaction-number-section',
+                        navSelector: 'a[href="#transaction-number-section"]',
+                        fields: ['#transactionNumberDisplay'],
+                        validator: () => document.getElementById('transactionNumberDisplay').value !== 'Generating...' && document.getElementById('transactionNumberDisplay').value.length > 0
+                    },
+                    {
+                        id: 'transaction-type-section', 
+                        navSelector: 'a[href="#transaction-type-section"]',
+                        fields: ['select[name="transaction_category"]'],
+                        validator: () => document.querySelector('select[name="transaction_category"]').value !== ''
+                    },
+                    {
+                        id: 'sheet-worksheet-section',
+                        navSelector: 'a[href="#sheet-worksheet-section"]',
+                        fields: ['select[name="sheet_id"]', 'select[name="worksheet_name"]'],
+                        validator: () => {
+                            const sheetId = document.querySelector('select[name="sheet_id"]')?.value;
+                            const worksheetName = document.querySelector('select[name="worksheet_name"]')?.value;
+                            return sheetId && worksheetName;
+                        }
+                    },
+                    {
+                        id: 'date-section',
+                        navSelector: 'a[href="#date-section"]', 
+                        fields: ['input[name="date_input"]'],
+                        validator: () => document.querySelector('input[name="date_input"]').value !== ''
+                    },
+                    {
+                        id: 'amount-section',
+                        navSelector: 'a[href="#amount-section"]',
+                        fields: ['input[name="amount"]'],
+                        validator: () => {
+                            const amount = document.querySelector('input[name="amount"]').value;
+                            return amount !== '' && parseFloat(amount) > 0;
+                        }
+                    },
+                    {
+                        id: 'fund-section',
+                        navSelector: 'a[href="#fund-section"]',
+                        fields: ['select[name="fund_id"]'],
+                        validator: () => document.querySelector('select[name="fund_id"]').value !== ''
+                    },
+                    {
+                        id: 'category-section',
+                        navSelector: 'a[href="#category-section"]',
+                        fields: ['select[name="category_id"]'],
+                        validator: () => document.querySelector('select[name="category_id"]').value !== ''
+                    },
+                    {
+                        id: 'debit-account-section',
+                        navSelector: 'a[href="#debit-account-section"]',
+                        fields: ['select[name="regular_debit_account_id"]'],
+                        validator: () => {
+                            const regularDebit = document.querySelector('select[name="regular_debit_account_id"]');
+                            const masterDebitA = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
+                            if (regularDebit && regularDebit.hasAttribute('required')) return regularDebit.value !== '';
+                            if (masterDebitA && masterDebitA.hasAttribute('required')) return masterDebitA.value !== '';
+                            return true;
+                        }
+                    },
+                    {
+                        id: 'credit-account-section',
+                        navSelector: 'a[href="#credit-account-section"]',
+                        fields: ['select[name="regular_credit_account_id"]'],
+                        validator: () => {
+                            const regularCredit = document.querySelector('select[name="regular_credit_account_id"]');
+                            const masterCreditA = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
+                            if (regularCredit && regularCredit.hasAttribute('required')) return regularCredit.value !== '';
+                            if (masterCreditA && masterCreditA.hasAttribute('required')) return masterCreditA.value !== '';
+                            return true;
+                        }
+                    },
+                    {
+                        id: 'payment-method-section',
+                        navSelector: 'a[href="#payment-method-section"]',
+                        fields: ['select[name="payment_method"]'],
+                        validator: () => {
+                            const paymentMethod = document.querySelector('select[name="payment_method"]');
+                            const interbankingPayment = document.querySelector('select[name="interbanking_payment_method"]');
+                            if (paymentMethod && paymentMethod.hasAttribute('required')) return paymentMethod.value !== '';
+                            if (interbankingPayment && interbankingPayment.hasAttribute('required')) return interbankingPayment.value !== '';
+                            return true;
+                        }
+                    },
+                    {
+                        id: 'description-section',
+                        navSelector: 'a[href="#description-section"]',
+                        fields: ['textarea[name="description"]'],
+                        validator: () => document.querySelector('textarea[name="description"]').value.trim() !== ''
+                    }
+                ];
+
+                sections.forEach(section => {
+                    const navButton = document.querySelector(section.navSelector);
+                    if (!navButton) return;
+
+                    const isCompleted = section.validator();
+                    updateNavButtonState(navButton, isCompleted);
+                });
+
+                // Update overall progress
+                const completedSections = sections.filter(section => section.validator()).length;
+                const totalSections = sections.length;
+                const progressPercentage = Math.round((completedSections / totalSections) * 100);
+                
+                console.log(`Form Progress: ${completedSections}/${totalSections} sections completed (${progressPercentage}%)`);
+            }
+
+            function updateNavButtonState(navButton, isCompleted) {
+                // Get the original color from the style attribute
+                const style = navButton.getAttribute('style');
+                const colorMatch = style.match(/border-left: 4px solid (#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3})/);
+                const originalColor = colorMatch ? colorMatch[1] : '#6c757d';
+
+                if (isCompleted) {
+                    // Completed state: Full vibrant blue (no icon changes)
+                    navButton.style.borderLeft = '4px solid #007bff';
+                    navButton.style.backgroundColor = '#f0f8ff';
+                    navButton.style.color = '#0056b3';
+                    navButton.style.fontWeight = '600';
+                } else {
+                    // Incomplete state: Light gray (no icon changes)
+                    navButton.style.borderLeft = '4px solid #e9ecef';
+                    navButton.style.backgroundColor = '#f8f9fa';
+                    navButton.style.color = '#6c757d';
+                    navButton.style.fontWeight = '500';
+                }
+            }
+
+            // Setup form monitoring
+            function setupFormMonitoring() {
+                // Monitor all form inputs for changes
+                const formInputs = document.querySelectorAll('input, select, textarea');
+                formInputs.forEach(input => {
+                    input.addEventListener('change', updateNavigationProgress);
+                    input.addEventListener('input', updateNavigationProgress);
+                });
+
+                // Initial progress check
+                setTimeout(updateNavigationProgress, 1000);
+                
+                console.log('Form monitoring setup complete - navigation will update as you fill sections');
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
                 // Generate transaction number when page loads
                 const transactionNumber = generateTransactionNumber();
@@ -1647,6 +1652,10 @@
                 // Initialize drag and drop functionality
                 setupDragAndDrop();
                 console.log('Drag and drop functionality initialized');
+                
+                // Initialize form monitoring for navigation progress
+                setupFormMonitoring();
+                console.log('Form progress monitoring initialized');
                 
                 // Add event listeners for all upload buttons
                 document.getElementById('billsUploadBtn').addEventListener('click', uploadBills);
