@@ -3,9 +3,18 @@
      <!DOCTYPE html>
 <!-- Updated: 2025-09-04 16:37:37 - Ready for GitHub commit -->
      <html>
-     <head>
-         <title>NGO Accounting - Data Entry</title>
-         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <head>
+        <title>NGO Accounting - Data Entry</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        
+        <!-- FAVICON - Force browser to load new icon -->
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231e40af;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23grad1)' stroke='%23ffffff' stroke-width='1'/%3E%3Cg fill='white'%3E%3Cpath d='M10 12 L10 16 L14 14 Z'/%3E%3Cpath d='M22 16 L22 20 L18 18 Z'/%3E%3Cpath d='M12 16 A 4 4 0 0 1 20 16' stroke='white' stroke-width='2' fill='none'/%3E%3Cpath d='M20 16 A 4 4 0 0 1 12 16' stroke='white' stroke-width='2' fill='none'/%3E%3C/g%3E%3C/svg%3E">
+        <link rel="shortcut icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231e40af;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23grad1)' stroke='%23ffffff' stroke-width='1'/%3E%3Cg fill='white'%3E%3Cpath d='M10 12 L10 16 L14 14 Z'/%3E%3Cpath d='M22 16 L22 20 L18 18 Z'/%3E%3Cpath d='M12 16 A 4 4 0 0 1 20 16' stroke='white' stroke-width='2' fill='none'/%3E%3Cpath d='M20 16 A 4 4 0 0 1 12 16' stroke='white' stroke-width='2' fill='none'/%3E%3C/g%3E%3C/svg%3E">
+        <link rel="icon" sizes="32x32" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231e40af;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23grad1)' stroke='%23ffffff' stroke-width='1'/%3E%3Cg fill='white'%3E%3Cpath d='M10 12 L10 16 L14 14 Z'/%3E%3Cpath d='M22 16 L22 20 L18 18 Z'/%3E%3Cpath d='M12 16 A 4 4 0 0 1 20 16' stroke='white' stroke-width='2' fill='none'/%3E%3Cpath d='M20 16 A 4 4 0 0 1 12 16' stroke='white' stroke-width='2' fill='none'/%3E%3C/g%3E%3C/svg%3E">
+        
+        <!-- Meta tags for better browser support -->
+        <meta name="theme-color" content="#007bff">
+        <meta name="msapplication-TileColor" content="#007bff">
         
         <!-- FORM NAVIGATION STYLES -->
         <style>
@@ -193,26 +202,26 @@
             <div id="form-navigation" class="form-navigation">
                 <h5>📋 Quick Navigation</h5>
                 <div class="nav-links">
-                    <a href="#transaction-number-section" class="nav-link" style="background-color: #6c757d; color: #fff;">🔢 Number</a>
-                    <a href="#transaction-type-section" class="nav-link" style="background-color: #ffc107; color: #000;">⚡ Type</a>
-                    <a href="#sheet-worksheet-section" class="nav-link" style="background-color: #fd7e14; color: #fff;">📊 Sheet</a>
-                    <a href="#date-section" class="nav-link" style="background-color: #28a745; color: #fff;">📅 Date</a>
-                    <a href="#amount-section" class="nav-link" style="background-color: #dc3545; color: #fff;">💰 Amount</a>
-                    <a href="#fund-section" class="nav-link" style="background-color: #20c997; color: #fff;">🏦 Fund</a>
-                    <a href="#category-section" class="nav-link" style="background-color: #8b4513; color: #fff;">📂 Category</a>
-                    <a href="#debit-account-section" class="nav-link regular-account" style="background-color: #007bff; color: #fff;">💳 Debit</a>
-                    <a href="#credit-account-section" class="nav-link regular-account" style="background-color: #6f42c1; color: #fff;">💰 Credit</a>
-                    <a href="#payment-method-section" class="nav-link" style="background-color: #17a2b8; color: #fff;">💳 Payment Method</a>
-                    <a href="#description-section" class="nav-link" style="background-color: #ffc107; color: #000;">📝 Description</a>
-                    <a href="#upload-bills-section" class="nav-link" style="background-color: #000000; color: #fff;">📎 Upload</a>
-                    <a href="#" class="nav-link" id="submitNavBtn" style="background-color: #007bff; color: #fff; font-weight: bold;">🚀 Submit to Google Sheets</a>
+                    <a href="#transaction-number-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #6c757d;">🔢 Number</a>
+                    <a href="#transaction-type-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #ffc107;">⚡ Type</a>
+                    <a href="#sheet-worksheet-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #fd7e14;">📊 Sheet</a>
+                    <a href="#date-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #28a745;">📅 Date</a>
+                    <a href="#amount-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #dc3545;">💰 Amount</a>
+                    <a href="#fund-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #20c997;">🏦 Fund</a>
+                    <a href="#category-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #8b4513;">📂 Category</a>
+                    <a href="#debit-account-section" class="nav-link regular-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #007bff;">💳 Debit</a>
+                    <a href="#credit-account-section" class="nav-link regular-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #6f42c1;">💰 Credit</a>
+                    <a href="#payment-method-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #17a2b8;">💳 Payment Method</a>
+                    <a href="#description-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #ffc107;">📝 Description</a>
+                    <a href="#upload-bills-section" class="nav-link" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #000000;">📎 Upload</a>
+                    <a href="#" class="nav-link" id="submitNavBtn" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: #fff; font-weight: bold; border-left: 4px solid #0056b3;">🚀 Submit to Google Sheets</a>
                     
-                    <a href="#sheet-worksheet-section" class="nav-link interbanking-account" style="background-color: #fd7e14; color: #fff; display: none;">📊 Ledger Sheets</a>
-                    <a href="#master-ledger-a-debit-section" class="nav-link interbanking-account" style="background-color: #007bff; color: #fff; display: none;">💳 A Debit</a>
-                    <a href="#master-ledger-a-credit-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">💰 A Credit</a>
-                    <a href="#master-ledger-b-debit-section" class="nav-link interbanking-account" style="background-color: #007bff; color: #fff; display: none;">💳 B Debit</a>
-                    <a href="#master-ledger-b-credit-section" class="nav-link interbanking-account" style="background-color: #6f42c1; color: #fff; display: none;">💰 B Credit</a>
-                    <a href="#interbanking-payment-method-section" class="nav-link interbanking-account" style="background-color: #17a2b8; color: #fff; display: none;">💳 Payment Method</a>
+                    <a href="#sheet-worksheet-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #fd7e14; display: none;">📊 Ledger Sheets</a>
+                    <a href="#master-ledger-a-debit-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #007bff; display: none;">💳 A Debit</a>
+                    <a href="#master-ledger-a-credit-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #6f42c1; display: none;">💰 A Credit</a>
+                    <a href="#master-ledger-b-debit-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #007bff; display: none;">💳 B Debit</a>
+                    <a href="#master-ledger-b-credit-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #6f42c1; display: none;">💰 B Credit</a>
+                    <a href="#interbanking-payment-method-section" class="nav-link interbanking-account" style="background-color: #f8f9fa; color: #495057; border-left: 4px solid #17a2b8; display: none;">💳 Payment Method</a>
                 </div>
             </div>
             
@@ -224,8 +233,8 @@
                 <div class="access-section">
                     <h6 style="margin: 0 0 10px 0; color: #333; font-size: 12px; font-weight: bold; text-align: center;">📊 Sheet Access</h6>
                     <div class="access-links">
-                        <a href="https://docs.google.com/spreadsheets/d/1o5RnuAmm00YAqZzLkyrhZx7CocEETBhi-snPGUzbqSk/edit?gid=949985454#gid=949985454" target="_blank" class="access-link" style="background-color: #17a2b8; color: #fff;">🇧🇪 BE - Master Ledger</a>
-                        <a href="https://docs.google.com/spreadsheets/d/1Fvrld1X0OioH7AbKCiSIMNac5U9OvlKJh0OSk02bTTI/edit?gid=1240648507#gid=1240648507" target="_blank" class="access-link" style="background-color: #fd7e14; color: #fff;">🇻🇳 VN - Master Ledger</a>
+                        <a href="https://docs.google.com/spreadsheets/d/1o5RnuAmm00YAqZzLkyrhZx7CocEETBhi-snPGUzbqSk/edit?gid=949985454#gid=949985454" target="_blank" class="access-link" style="background-color: #6b8cae; color: #fff;">🇧🇪 BE - Master Ledger</a>
+                        <a href="https://docs.google.com/spreadsheets/d/1Fvrld1X0OioH7AbKCiSIMNac5U9OvlKJh0OSk02bTTI/edit?gid=1240648507#gid=1240648507" target="_blank" class="access-link" style="background-color: #c7965e; color: #fff;">🇻🇳 VN - Master Ledger</a>
                     </div>
                 </div>
                 
@@ -233,22 +242,23 @@
                 <div class="access-section">
                     <h6 style="margin: 0 0 10px 0; color: #333; font-size: 12px; font-weight: bold; text-align: center;">📁 Files Access</h6>
                     <div class="access-links">
-                        <a href="https://drive.google.com/drive/u/1/folders/1UH-mqbvJ6k6Y0wDD4x7DcDRzsEjf0Rz0" target="_blank" class="access-link" style="background-color: #28a745; color: #fff;">📄 Bills</a>
-                        <a href="https://drive.google.com/drive/u/1/folders/10gGkRi9P9417FjZ9vFeQTnpLA-ExbBVO" target="_blank" class="access-link" style="background-color: #dc3545; color: #fff;">🔴 Red Bills</a>
-                        <a href="https://drive.google.com/drive/u/1/folders/1QDiSNjqzT2x99AGelRdQceg9l4q9iIrW" target="_blank" class="access-link" style="background-color: #6f42c1; color: #fff;">🏦 Bank Statement</a>
-                        <a href="https://drive.google.com/drive/u/1/folders/1ylG5_VDP020HaBXxy-o_A4QYuYiK9y8y" target="_blank" class="access-link" style="background-color: #6c757d; color: #fff;">📚 Documentation</a>
+                        <a href="https://drive.google.com/drive/u/1/folders/1UH-mqbvJ6k6Y0wDD4x7DcDRzsEjf0Rz0" target="_blank" class="access-link" style="background-color: #7ba05b; color: #fff;">📄 Bills</a>
+                        <a href="https://drive.google.com/drive/u/1/folders/10gGkRi9P9417FjZ9vFeQTnpLA-ExbBVO" target="_blank" class="access-link" style="background-color: #c85a5a; color: #fff;">🔴 Red Bills</a>
+                        <a href="https://drive.google.com/drive/u/1/folders/1QDiSNjqzT2x99AGelRdQceg9l4q9iIrW" target="_blank" class="access-link" style="background-color: #8967a3; color: #fff;">🏦 Bank Statement</a>
+                        <a href="https://drive.google.com/drive/u/1/folders/1ylG5_VDP020HaBXxy-o_A4QYuYiK9y8y" target="_blank" class="access-link" style="background-color: #7a8288; color: #fff;">📚 Documentation</a>
                     </div>
                 </div>
             </div>
             
                          <div class="form-container">
-                <!-- LOGO AND TITLE SECTION -->
-                <div class="logo-title-section" style="display: flex; align-items: center; margin-bottom: 20px; gap: 20px;">
+                <!-- ENHANCED LOGO AND TITLE SECTION -->
+                <div class="enhanced-logo-title-section">
                     <div class="logo-section">
-                        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="NGO Logo" style="max-height: 80px; max-width: 150px;">
+                        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="NGO Logo">
                     </div>
                     <div class="title-section">
-                        <h1 style="margin: 0;">NGO Accounting System</h1>
+                        <h1>NGO Accounting System</h1>
+                        <p>Professional Financial Management</p>
                     </div>
                 </div>
      
@@ -582,71 +592,109 @@
      
                  <!-- MULTIPLE FILE UPLOAD SECTIONS -->
                  
-                 <!-- BILLS UPLOAD SECTION -->
-                 <div id="upload-bills-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f8fff8;">
-                     <h4 style="color: #28a745; margin-bottom: 15px;">📄 Upload Bills</h4>
-                     <div class="form-group">
-                         <label>Upload Bills:</label>
-                         <input type="file" id="billsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
-                         <div class="form-text">Upload receipts, invoices, or other supporting documents</div>
-                         <button type="button" id="billsUploadBtn" class="btn btn-secondary">Upload Bills</button>
-                     </div>
-     
-                     <div id="billsUploadStatus" style="display: none;">
-                         <div id="billsUploadProgress" class="alert alert-info">Uploading file...</div>
-                         <div id="billsUploadResult" style="display: none;">
-                             <div class="alert alert-success">
-                                 <strong>Bills file uploaded successfully!</strong>
-                                 <div id="billsFileLink"></div>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
+                <!-- ENHANCED BILLS UPLOAD SECTION -->
+                <div id="upload-bills-section" class="enhanced-upload-section">
+                    <h4>
+                        📄 Upload Bills
+                        <span>Drag & Drop Enabled</span>
+                    </h4>
+                    <div class="form-group">
+                        <label>Upload Bills:</label>
+                        <div class="enhanced-file-input">
+                            <input type="file" id="billsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                            <label for="billsFileInput" class="enhanced-file-input-label">
+                                📁 Click to select file or drag & drop
+                                <small style="margin-top: 8px; opacity: 0.8;">Receipts, invoices, or supporting documents</small>
+                            </label>
+                        </div>
+                        <div class="file-info-enhanced">
+                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                            <strong>Maximum size:</strong> 16MB
+                        </div>
+                        <button type="button" id="billsUploadBtn" class="btn-enhanced btn-upload">Upload Bills</button>
+                    </div>
+    
+                    <div id="billsUploadStatus" style="display: none;">
+                        <div id="billsUploadProgress" class="alert alert-info">Uploading file...</div>
+                        <div id="billsUploadResult" style="display: none;">
+                            <div class="alert alert-success">
+                                <strong>Bills file uploaded successfully!</strong>
+                                <div id="billsFileLink"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                  
-                 <!-- RED BILLS UPLOAD SECTION -->
-                 <div id="upload-red-bills-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff5f5;">
-                     <h4 style="color: #dc3545; margin-bottom: 15px;">🔴 Upload Red Bills</h4>
-                     <div class="form-group">
-                         <label>Upload Red Bills:</label>
-                         <input type="file" id="redBillsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
-                         <div class="form-text">Upload red bills or urgent payment documents</div>
-                         <button type="button" id="redBillsUploadBtn" class="btn btn-secondary">Upload Red Bills</button>
-                     </div>
-     
-                     <div id="redBillsUploadStatus" style="display: none;">
-                         <div id="redBillsUploadProgress" class="alert alert-info">Uploading file...</div>
-                         <div id="redBillsUploadResult" style="display: none;">
-                             <div class="alert alert-success">
-                                 <strong>Red Bills file uploaded successfully!</strong>
-                                 <div id="redBillsFileLink"></div>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
+                <!-- ENHANCED RED BILLS UPLOAD SECTION -->
+                <div id="upload-red-bills-section" class="enhanced-upload-section" style="border: 2px solid #dc3545; background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);">
+                    <h4 style="color: #dc3545;">
+                        🔴 Upload Red Bills
+                        <span>Drag & Drop Enabled</span>
+                    </h4>
+                    <div class="form-group">
+                        <label>Upload Red Bills:</label>
+                        <div class="enhanced-file-input">
+                            <input type="file" id="redBillsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                            <label for="redBillsFileInput" class="enhanced-file-input-label">
+                                📁 Click to select file or drag & drop
+                                <small style="margin-top: 8px; opacity: 0.8;">Red bills or urgent payment documents</small>
+                            </label>
+                        </div>
+                        <div class="file-info-enhanced" style="border-left-color: #dc3545;">
+                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                            <strong>Maximum size:</strong> 16MB
+                        </div>
+                        <button type="button" id="redBillsUploadBtn" class="btn-enhanced btn-upload" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Upload Red Bills</button>
+                    </div>
+    
+                    <div id="redBillsUploadStatus" style="display: none;">
+                        <div id="redBillsUploadProgress" class="alert alert-info">Uploading file...</div>
+                        <div id="redBillsUploadResult" style="display: none;">
+                            <div class="alert alert-success">
+                                <strong>Red Bills file uploaded successfully!</strong>
+                                <div id="redBillsFileLink"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                  
-                 <!-- DOCUMENTATION UPLOAD SECTION -->
-                 <div id="upload-documentation-section" class="upload-section" style="margin-bottom: 20px; padding: 15px; border: 2px solid #6c757d; border-radius: 8px; background-color: #f8f9fa;">
-                     <h4 style="color: #6c757d; margin-bottom: 15px;">📚 Upload Documentation</h4>
-                     <div class="form-group">
-                         <label>Upload Documentation:</label>
-                         <input type="file" id="documentationFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
-                         <div class="form-text">Upload supporting documentation or reference materials</div>
-                         <button type="button" id="documentationUploadBtn" class="btn btn-secondary">Upload Documentation</button>
-                     </div>
+                <!-- ENHANCED DOCUMENTATION UPLOAD SECTION -->
+                <div id="upload-documentation-section" class="enhanced-upload-section" style="border: 2px solid #6c757d; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                    <h4 style="color: #6c757d;">
+                        📚 Upload Documentation
+                        <span>Drag & Drop Enabled</span>
+                    </h4>
+                    <div class="form-group">
+                        <label>Upload Documentation:</label>
+                        <div class="enhanced-file-input">
+                            <input type="file" id="documentationFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                            <label for="documentationFileInput" class="enhanced-file-input-label">
+                                📁 Click to select file or drag & drop
+                                <small style="margin-top: 8px; opacity: 0.8;">Supporting documentation or reference materials</small>
+                            </label>
+                        </div>
+                        <div class="file-info-enhanced" style="border-left-color: #6c757d;">
+                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                            <strong>Maximum size:</strong> 16MB
+                        </div>
+                        <button type="button" id="documentationUploadBtn" class="btn-enhanced btn-upload">Upload Documentation</button>
+                    </div>
+    
+                    <div id="documentationUploadStatus" style="display: none;">
+                        <div id="documentationUploadProgress" class="alert alert-info">Uploading file...</div>
+                        <div id="documentationUploadResult" style="display: none;">
+                            <div class="alert alert-success">
+                                <strong>Documentation file uploaded successfully!</strong>
+                                <div id="documentationFileLink"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
      
-                     <div id="documentationUploadStatus" style="display: none;">
-                         <div id="documentationUploadProgress" class="alert alert-info">Uploading file...</div>
-                         <div id="documentationUploadResult" style="display: none;">
-                             <div class="alert alert-success">
-                                 <strong>Documentation file uploaded successfully!</strong>
-                                 <div id="documentationFileLink"></div>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-     
-                 <!-- SUBMIT BUTTON -->
-                 <button type="submit" form="mainForm" class="btn">Submit to Google Sheets</button>
+                <!-- ENHANCED SUBMIT BUTTON -->
+                <button type="submit" form="mainForm" class="btn-enhanced" style="font-size: 18px; padding: 15px; margin-top: 20px;">
+                    🚀 Submit to Google Sheets
+                </button>
              </div>
          </div>
      
@@ -1510,28 +1558,111 @@
              function uploadRedBills() { uploadFile('redBills'); }
              function uploadDocumentation() { uploadFile('documentation'); }
      
-             document.addEventListener('DOMContentLoaded', function() {
-                 // Generate transaction number when page loads
-                 const transactionNumber = generateTransactionNumber();
-                 document.getElementById('transactionNumberDisplay').value = transactionNumber;
-                 document.getElementById('transactionNumberInput').value = transactionNumber;
-                 console.log('Generated transaction number:', transactionNumber);
-                 
-                 // Add event listeners for all upload buttons
-                 document.getElementById('billsUploadBtn').addEventListener('click', uploadBills);
-                 document.getElementById('redBillsUploadBtn').addEventListener('click', uploadRedBills);
-                 document.getElementById('documentationUploadBtn').addEventListener('click', uploadDocumentation);
-                 
-                 // Add event listener for submit button in navigation
-                 document.getElementById('submitNavBtn').addEventListener('click', function(e) {
-                     e.preventDefault();
-                     // Trigger the form submission
-                     const form = document.getElementById('mainForm');
-                     if (form) {
-                         form.submit();
-                     }
-                 });
-             });
+            // Enhanced Drag & Drop Functionality
+            function setupDragAndDrop() {
+                const fileInputLabels = document.querySelectorAll('.enhanced-file-input-label');
+                
+                fileInputLabels.forEach(label => {
+                    const fileInput = label.parentElement.querySelector('input[type="file"]');
+                    
+                    // Prevent default drag behaviors
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        label.addEventListener(eventName, preventDefaults, false);
+                        document.body.addEventListener(eventName, preventDefaults, false);
+                    });
+                    
+                    // Highlight drop area when item is dragged over it
+                    ['dragenter', 'dragover'].forEach(eventName => {
+                        label.addEventListener(eventName, () => {
+                            label.classList.add('drag-over');
+                            console.log('Drag over detected on:', label);
+                        }, false);
+                    });
+                    
+                    ['dragleave', 'drop'].forEach(eventName => {
+                        label.addEventListener(eventName, () => {
+                            label.classList.remove('drag-over');
+                            console.log('Drag leave/drop detected on:', label);
+                        }, false);
+                    });
+                    
+                    // Handle dropped files
+                    label.addEventListener('drop', (e) => {
+                        const dt = e.dataTransfer;
+                        const files = dt.files;
+                        
+                        if (files.length > 0) {
+                            fileInput.files = files;
+                            console.log('File dropped:', files[0].name);
+                            
+                            // Update label text to show selected file
+                            const fileName = files[0].name;
+                            const fileSize = (files[0].size / 1024 / 1024).toFixed(2);
+                            label.innerHTML = `
+                                ✅ ${fileName}
+                                <small style="margin-top: 8px; opacity: 0.8;">Size: ${fileSize}MB - Click to change or drop new file</small>
+                            `;
+                            
+                            // Trigger change event for validation or other handlers
+                            const event = new Event('change', { bubbles: true });
+                            fileInput.dispatchEvent(event);
+                        }
+                    }, false);
+                    
+                    // Handle regular file selection (click)
+                    fileInput.addEventListener('change', function() {
+                        if (this.files.length > 0) {
+                            const fileName = this.files[0].name;
+                            const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2);
+                            label.innerHTML = `
+                                ✅ ${fileName}
+                                <small style="margin-top: 8px; opacity: 0.8;">Size: ${fileSize}MB - Click to change or drop new file</small>
+                            `;
+                            console.log('File selected via click:', fileName);
+                        } else {
+                            // Reset to original state
+                            const originalTexts = {
+                                'billsFileInput': '📁 Click to select file or drag & drop<small style="margin-top: 8px; opacity: 0.8;">Receipts, invoices, or supporting documents</small>',
+                                'redBillsFileInput': '📁 Click to select file or drag & drop<small style="margin-top: 8px; opacity: 0.8;">Red bills or urgent payment documents</small>',
+                                'documentationFileInput': '📁 Click to select file or drag & drop<small style="margin-top: 8px; opacity: 0.8;">Supporting documentation or reference materials</small>'
+                            };
+                            label.innerHTML = originalTexts[this.id] || '📁 Click to select file or drag & drop';
+                        }
+                    });
+                });
+            }
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                // Generate transaction number when page loads
+                const transactionNumber = generateTransactionNumber();
+                document.getElementById('transactionNumberDisplay').value = transactionNumber;
+                document.getElementById('transactionNumberInput').value = transactionNumber;
+                console.log('Generated transaction number:', transactionNumber);
+                
+                // Initialize drag and drop functionality
+                setupDragAndDrop();
+                console.log('Drag and drop functionality initialized');
+                
+                // Add event listeners for all upload buttons
+                document.getElementById('billsUploadBtn').addEventListener('click', uploadBills);
+                document.getElementById('redBillsUploadBtn').addEventListener('click', uploadRedBills);
+                document.getElementById('documentationUploadBtn').addEventListener('click', uploadDocumentation);
+                
+                // Add event listener for submit button in navigation
+                document.getElementById('submitNavBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Trigger the form submission
+                    const form = document.getElementById('mainForm');
+                    if (form) {
+                        form.submit();
+                    }
+                });
+            });
          </script>
      </body>
      </html>
