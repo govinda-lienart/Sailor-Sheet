@@ -942,8 +942,21 @@ function setupDragAndDrop() {
 /**
  * Handle form submission
  */
+let isSubmitting = false; // Flag to prevent duplicate submissions
+
 function handleFormSubmit(event) {
-    console.log('Form submission started');
+    console.log('handleFormSubmit called - Form submission started');
+    
+    // Prevent default form submission
+    event.preventDefault();
+    
+    // Check if already submitting
+    if (isSubmitting) {
+        console.log('Already submitting, ignoring duplicate submission');
+        return false;
+    }
+    
+    isSubmitting = true;
     
     // Get form data
     const formData = new FormData(document.getElementById('mainForm'));
@@ -962,8 +975,122 @@ function handleFormSubmit(event) {
         generateTransactionNumber();
     }
     
-    console.log('Validation passed, form should submit');
-    return true;
+    // Disable submit button and show loading
+    const submitBtn = document.querySelector('.enhanced-submit-btn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '⏳ Submitting to Google Sheets...';
+    
+    // Submit via AJAX
+    submitToGoogleSheets(formData);
+    
+    return false; // Prevent default form submission
+}
+
+function submitToGoogleSheets(formData) {
+    console.log('submitToGoogleSheets called');
+    
+    // Convert FormData to JSON
+    const jsonData = {};
+    for (let [key, value] of formData.entries()) {
+        jsonData[key] = value;
+    }
+    
+    // Submit to Flask API
+    fetch('/api/submit_transaction', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jsonData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage('Successfully submitted to Google Sheet!');
+            // Reset form
+            document.getElementById('mainForm').reset();
+            // Generate new transaction number
+            generateTransactionNumber();
+            // Update navigation progress to clear blue highlighting
+            setTimeout(() => updateNavigationProgress(), 100);
+        } else {
+            showErrorMessage('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorMessage('❌ Network error: ' + error.message);
+    })
+    .finally(() => {
+        // Re-enable submit button and reset submission flag
+        const submitBtn = document.querySelector('.enhanced-submit-btn');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '🚀 Submit to Google Sheets';
+        isSubmitting = false; // Reset the flag
+        console.log('Submission complete, flag reset');
+    });
+}
+
+function showSuccessMessage(message) {
+    console.log('showSuccessMessage called with:', message);
+    
+    // Check if there's already a success popup and remove it
+    const existingPopup = document.querySelector('.success-popup');
+    if (existingPopup) {
+        console.log('Removing existing success popup');
+        existingPopup.remove();
+    }
+    
+    // Create success popup
+    const popup = document.createElement('div');
+    popup.className = 'success-popup';
+    popup.innerHTML = `
+        <div class="success-content">
+            <div class="success-icon">✅</div>
+            <div class="success-text">${message}</div>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(popup);
+    
+    // Show popup
+    setTimeout(() => popup.classList.add('show'), 100);
+    
+    // Remove popup after 3 seconds
+    setTimeout(() => {
+        popup.classList.remove('show');
+        setTimeout(() => {
+            if (popup.parentNode) {
+                document.body.removeChild(popup);
+            }
+        }, 300);
+    }, 3000);
+}
+
+function showErrorMessage(message) {
+    // Create error popup
+    const popup = document.createElement('div');
+    popup.className = 'error-popup';
+    popup.innerHTML = `
+        <div class="error-content">
+            <div class="error-icon">❌</div>
+            <div class="error-text">${message}</div>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(popup);
+    
+    // Show popup
+    setTimeout(() => popup.classList.add('show'), 100);
+    
+    // Remove popup after 5 seconds
+    setTimeout(() => {
+        popup.classList.remove('show');
+        setTimeout(() => document.body.removeChild(popup), 300);
+    }, 5000);
 }
 
 // ============================================================================
@@ -1020,10 +1147,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listener for submit button in navigation
     document.getElementById('submitNavBtn').addEventListener('click', function(e) {
         e.preventDefault();
-        // Trigger the form submission
+        // Trigger the form submission using the same handler
         const form = document.getElementById('mainForm');
         if (form) {
-            form.submit();
+            // Create a synthetic submit event
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
         }
     });
     

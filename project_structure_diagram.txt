@@ -1,0 +1,264 @@
+================================================================================
+🏗️ NGO ACCOUNTING SOFTWARE - PROJECT STRUCTURE & FUNCTIONS DIAGRAM
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           📱 USER INTERFACE LAYER                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  templates/                                                                 │
+│  ├── index.html (Main Transaction Form - 615 lines)                        │
+│  │   ├── 🧭 NAVIGATION PANELS:                                             │
+│  │   │   ├── Right Navigation Panel - Quick form section navigation        │
+│  │   │   │   └── Dynamic links for regular vs interbanking transfers       │
+│  │   │   └── Left Access Panel - Direct links to Google Sheets/Drive       │
+│  │   │       ├── 🇧🇪 BE Master Ledger & 🇻🇳 VN Master Ledger access       │
+│  │   │       └── 📁 File folders (Bills, Red Bills, Bank Statements, Docs) │
+│  │   ├── 📝 FORM SECTIONS:                                                  │
+│  │   │   ├── 🔢 Transaction Number - Auto-generated unique IDs             │
+│  │   │   ├── ⚡ Transaction Type - Payment/Transfer/Donation/Grant          │
+│  │   │   ├── 📊 Sheet & Worksheet Selection - Dynamic AJAX loading         │
+│  │   │   ├── 📅 Date Selection - Date picker with validation               │
+│  │   │   ├── 💰 Amount - Numeric input with validation                     │
+│  │   │   ├── 🏦 Fund Selection - Color-coded dropdown from JSON            │
+│  │   │   ├── 📂 Category Selection - Dynamic category dropdown             │
+│  │   │   ├── 💳 Account Selection - Debit/Credit account dropdowns         │
+│  │   │   ├── 💳 Payment Method - Bank/Cash selection                       │
+│  │   │   ├── 📝 Description - Transaction details                         │
+│  │   │   └── 📎 File Upload - Drag & drop for bills/documentation         │
+│  │   ├── 🔄 INTERBANKING SECTIONS (Conditional):                           │
+│  │   │   ├── Master Ledger A (Belgium) - Sheet/Account selection          │
+│  │   │   └── Master Ledger B (Vietnam) - Sheet/Account selection          │
+│  │   ├── 🎨 UI FEATURES:                                                    │
+│  │   │   ├── Loading animations and progress indicators                    │
+│  │   │   ├── Real-time form validation with visual feedback               │
+│  │   │   ├── Responsive design with color-coded sections                  │
+│  │   │   └── Professional NGO branding with logo integration              │
+│  │   └── 🔧 TECHNICAL INTEGRATION:                                          │
+│  │       ├── Flask template variables ({{ url_for }}, {% with %})         │
+│  │       ├── JavaScript integration for dynamic behavior                  │
+│  │       └── CSRF protection and form security                            │
+│  └── thank_you.html (Success Confirmation - 21 lines)                      │
+│      ├── ✅ Success message display                                        │
+│      ├── Professional success styling                                      │
+│      └── "Enter New Submission" button for workflow continuation           │
+│                                                                             │
+│  static/                                                                    │
+│  ├── css/style.css (Styling & responsive design)                           │
+│  ├── js/app.js (Frontend JavaScript - 1032 lines)                         │
+│  │   ├── 🔧 UTILITY FUNCTIONS:                                             │
+│  │   │   ├── generateTransactionNumber() - Create unique transaction IDs   │
+│  │   │   ├── scrollToSection() - Smooth navigation scrolling               │
+│  │   │   └── preventDefaults() - Drag & drop event handling                │
+│  │   ├── 🧭 NAVIGATION FUNCTIONS:                                           │
+│  │   │   ├── initializeNavigation() - Setup smooth scroll navigation       │
+│  │   │   ├── updateNavigationForInterbanking() - Toggle nav for transfers  │
+│  │   │   ├── updateNavButtonState() - Visual completion indicators         │
+│  │   │   ├── updateNavigationProgress() - Progress tracking                │
+│  │   │   └── setupFormMonitoring() - Real-time form validation             │
+│  │   ├── 🔄 TRANSACTION TYPE HANDLING:                                      │
+│  │   │   ├── handleTransactionTypeChange() - Dynamic form sections         │
+│  │   │   └── applyTransactionDefaults() - Auto-populate form fields        │
+│  │   ├── 📊 WORKSHEET & SHEET MANAGEMENT:                                   │
+│  │   │   ├── setupMasterLedgerSheetHandlers() - Interbanking transfers     │
+│  │   │   ├── loadWorksheetsForMasterLedger() - AJAX worksheet loading      │
+│  │   │   └── loadWorksheets() - Regular worksheet loading                  │
+│  │   ├── 📤 FILE UPLOAD FUNCTIONS:                                          │
+│  │   │   ├── uploadFile() - Generic file upload handler                    │
+│  │   │   ├── uploadBills(), uploadRedBills(), uploadDocumentation()        │
+│  │   │   └── setupDragAndDrop() - Drag & drop file interface               │
+│  │   └── 📝 FORM SUBMISSION:                                                │
+│  │       └── handleFormSubmit() - Final form validation & submission       │
+│  └── images/logo.jpg (Branding)                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     ↕
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          🌐 FLASK WEB SERVER LAYER                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  app.py (Main Flask Application - 511 lines)                               │
+│  ├── 🎯 ROUTES & ENDPOINTS:                                                 │
+│  │   ├── @app.route('/') → index()                                         │
+│  │   │   └── Handles GET (show form) & POST (process transaction)          │
+│  │   ├── @app.route('/get_worksheets/<sheet_id>') → get_worksheets()       │
+│  │   │   └── AJAX: Load worksheets for selected sheet                      │
+│  │   ├── @app.route('/upload_file') → upload_file()                        │
+│  │   │   └── AJAX: Handle file uploads before form submission              │
+│  │   ├── @app.route('/refresh_form_data') → refresh_form_data()            │
+│  │   │   └── AJAX: Refresh form data when transaction type changes         │
+│  │   └── @app.route('/thank-you') → thank_you()                            │
+│  │       └── Display success confirmation page                             │
+│  │                                                                         │
+│  ├── 📊 DATA LOADING FUNCTIONS:                                             │
+│  │   ├── load_json_data(filename)                                          │
+│  │   │   └── Generic JSON file loader with error handling                 │
+│  │   ├── get_funds_from_json()                                             │
+│  │   │   └── Load active funds from data/funds.json                       │
+│  │   ├── get_categories_from_json()                                        │
+│  │   │   └── Load active categories from data/categories.json             │
+│  │   └── get_accounts_from_json()                                          │
+│  │       └── Load active accounts from data/accounts.json                 │
+│  │                                                                         │
+│  └── ⚙️ CONFIGURATION:                                                      │
+│      ├── Environment setup (development/production)                        │
+│      ├── File upload limits (16MB max)                                     │
+│      └── Secret key management                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     ↕
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         🔐 AUTHENTICATION LAYER                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  config.py (Google Sheets Authentication - 65 lines)                       │
+│  ├── 🔑 AUTHENTICATION FUNCTIONS:                                           │
+│  │   └── initialize_sheets()                                               │
+│  │       ├── Load credentials from environment (production)                │
+│  │       ├── Load from secret file (/etc/secrets/credentials.json)         │
+│  │       ├── Fallback to local file (development)                          │
+│  │       └── Return authorized gspread client                              │
+│  │                                                                         │
+│  └── 📋 CONFIGURATION:                                                      │
+│      ├── API scopes (spreadsheets, drive)                                  │
+│      └── Credential loading strategies                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     ↕
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        📊 GOOGLE SHEETS LAYER                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  sheets_manager.py (Google Sheets Operations - 691 lines)                  │
+│  ├── 🏦 ACCOUNT REFERENCE MANAGEMENT:                                       │
+│  │   ├── get_account_reference_table(gc, master_sheet_id, worksheet_title) │
+│  │   │   └── Build mapping of worksheet IDs to account names               │
+│  │   ├── get_account_name_from_worksheet_id(gc, worksheet_id)              │
+│  │   │   └── Look up account name by worksheet ID                          │
+│  │   └── get_account_name_from_worksheet_title(gc, worksheet_title)        │
+│  │       └── Look up account name by worksheet title                       │
+│  │                                                                         │
+│  ├── 📋 SHEET SELECTION & MANAGEMENT:                                       │
+│  │   ├── get_available_sheets(gc)                                          │
+│  │   │   └── Get list of all accessible Google Sheets                     │
+│  │   ├── get_sheet_by_id(gc, sheet_id)                                     │
+│  │   │   └── Retrieve specific sheet by ID                                 │
+│  │   └── get_worksheets_from_sheet(gc, sheet_id)                           │
+│  │       └── Get all worksheets within a specific sheet                    │
+│  │                                                                         │
+│  ├── 💰 TRANSACTION MANAGEMENT:                                             │
+│  │   ├── generate_offset_text(account_name, counter_account_name)          │
+│  │   │   └── Create offset descriptions for Expense/Revenue accounts       │
+│  │   └── add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, ... │
+│  │       ├── Main transaction recording function (double-entry)            │
+│  │       ├── Creates TWO entries: one debit, one credit                    │
+│  │       ├── Handles file links and hyperlink formulas                     │
+│  │       ├── Supports regular and interbanking transfers                   │
+│  │       └── Automatic transaction numbering and date formatting           │
+│  │                                                                         │
+│  ├── 🎯 FUNDS REFERENCE FUNCTIONS:                                          │
+│  │   └── get_fund_name_by_id(gc, fund_id)                                  │
+│  │       └── Look up fund name by ID from JSON file                        │
+│  │                                                                         │
+│  ├── 🏪 ACCOUNTS REFERENCE FUNCTIONS:                                       │
+│  │   └── get_account_name_by_code(gc, account_code)                        │
+│  │       └── Look up account name by code from JSON file                   │
+│  │                                                                         │
+│  └── 📂 CATEGORIES REFERENCE FUNCTIONS:                                     │
+│      └── get_category_name_by_code(gc, category_code)                      │
+│          └── Look up category name by code from JSON file                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     ↕
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        📁 FILE MANAGEMENT LAYER                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  file_upload_manager.py (Google Drive Integration - 263 lines)             │
+│  ├── 🔧 HELPER FUNCTIONS:                                                   │
+│  │   ├── allowed_file(filename)                                            │
+│  │   │   └── Check if file extension is allowed                            │
+│  │   ├── unique_name(base, ext, transaction_number, file_type)             │
+│  │   │   └── Generate unique filename with transaction number              │
+│  │   ├── get_service_account_credentials()                                 │
+│  │   │   └── Get Google API credentials (same method as main app)          │
+│  │   └── build_drive_service(creds)                                        │
+│  │       └── Build Google Drive API service                                │
+│  │                                                                         │
+│  ├── 📤 MAIN UPLOAD FUNCTIONS:                                              │
+│  │   ├── upload_file_to_drive(file, transaction_number, file_type)         │
+│  │   │   ├── Upload file to specific Google Drive folder                   │
+│  │   │   ├── Support for multiple file types (bills, red_bills, docs)     │
+│  │   │   ├── Secure filename generation                                    │
+│  │   │   └── Return file URL and metadata                                  │
+│  │   └── handle_web_upload(file, transaction_number, file_type)            │
+│  │       └── Web interface wrapper for file uploads                        │
+│  │                                                                         │
+│  └── 📋 CONFIGURATION:                                                      │
+│      ├── FOLDER_IDS mapping for different file types                       │
+│      ├── ALLOWED_EXTENSIONS security list                                  │
+│      └── Google Drive API scopes                                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     ↕
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           📊 DATA STORAGE LAYER                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  data/ (JSON Reference Files)                                              │
+│  ├── 💰 funds.json                                                          │
+│  │   ├── Unrestricted Funds                                                │
+│  │   ├── Internal Transfer                                                 │
+│  │   ├── Conference Participation Fee                                      │
+│  │   └── Frankfurt Zoological Society                                      │
+│  │                                                                         │
+│  ├── 🏪 accounts.json                                                       │
+│  │   ├── VN Accounts: Indovina Bank, Wallets, Expenses, Revenues, Equity  │
+│  │   └── BE Accounts: Belfius, Expenses, Revenues, Equity                 │
+│  │                                                                         │
+│  └── 📂 categories.json                                                     │
+│      └── Transaction classification categories                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     ↕
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         ☁️ EXTERNAL SERVICES LAYER                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  🔗 Google Sheets API                                                       │
+│  ├── Transaction storage (double-entry bookkeeping)                        │
+│  ├── Sheet and worksheet management                                         │
+│  └── Real-time data synchronization                                        │
+│                                                                             │
+│  🔗 Google Drive API                                                        │
+│  ├── File storage (bills, receipts, documentation)                         │
+│  ├── Organized folder structure                                             │
+│  └── Shareable file links                                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+🔄 DATA FLOW & TRANSACTION PROCESS
+================================================================================
+
+1. 👤 User Access
+   └── Browser → Flask Web Server (app.py)
+
+2. 📝 Form Loading
+   ├── Load Google Sheets list → sheets_manager.get_available_sheets()
+   ├── Load funds → app.get_funds_from_json()
+   ├── Load accounts → app.get_accounts_from_json()
+   └── Load categories → app.get_categories_from_json()
+
+3. 📊 Sheet Selection
+   └── AJAX → app.get_worksheets() → sheets_manager.get_worksheets_from_sheet()
+
+4. 📤 File Upload (Optional)
+   └── AJAX → app.upload_file() → file_upload_manager.handle_web_upload()
+
+5. 💾 Transaction Submission
+   ├── Form validation
+   ├── Regular transaction → sheets_manager.add_transaction_to_selected_sheet()
+   └── Interbanking transfer → Dual entries in Master Ledger A & B
+
+6. ✅ Success Confirmation
+   └── Redirect to thank_you page
+
+================================================================================
+🎯 KEY FEATURES & CAPABILITIES
+================================================================================
+
+✅ Double-Entry Bookkeeping     ✅ Multi-System Support (VN/BE)
+✅ Google Sheets Integration    ✅ File Upload Management
+✅ Real-time Form Validation    ✅ Transaction Numbering
+✅ Responsive Web Design        ✅ Error Handling & Logging
+✅ JSON-based Reference Data    ✅ AJAX Dynamic Loading
+✅ Secure File Handling         ✅ Interbanking Transfers
+
+================================================================================

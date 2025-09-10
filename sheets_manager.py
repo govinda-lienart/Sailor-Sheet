@@ -545,41 +545,6 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
 # FUNDS REFERENCE FUNCTIONS
 # =============================================================================
 
-# Get Funds List
-# --------------
-def get_funds_list(gc):
-    """
-    DEPRECATED: Get funds from reference sheet for dropdown
-    THIS FUNCTION IS NO LONGER USED - USE get_funds_from_json() IN app.py INSTEAD
-    Args:
-        gc: Google Sheets client
-    Returns: List of fund dictionaries with id, name, and color
-    """
-    print("WARNING: get_funds_list() is deprecated - use get_funds_from_json() instead")
-    try:
-        funds_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Funds Reference")
-        funds_data = funds_sheet.get_all_records()
-        
-        # Return only active funds
-        active_funds = []
-        for fund in funds_data:
-            # Check for various possible TRUE values - handle column name with spaces
-            active_value = fund.get('Active') or fund.get('Active ')  # Handle both versions
-            color_value = fund.get('Fund_Color') or fund.get('Fund_Color ')  # Handle both versions
-            
-            if active_value == True or active_value == 'TRUE' or active_value == 'true' or str(active_value).upper() == 'TRUE':
-                active_funds.append({
-                    'id': fund['Fund_ID'],
-                    'name': fund['Fund_Name'],
-                    'color': color_value
-                })
-        
-        print(f"DEBUG: Found {len(active_funds)} active funds")
-        return active_funds
-        
-    except Exception as e:
-        print(f"Error getting funds: {e}")
-        return []
 
 # Get Fund Name By ID
 # -------------------
@@ -629,36 +594,6 @@ def get_fund_name_by_id(gc, fund_id):
 # ACCOUNTS REFERENCE FUNCTIONS
 # =============================================================================
 
-# Get Accounts List
-# -----------------
-def get_accounts_list(gc):
-    """
-    DEPRECATED: Get accounts from reference sheet for dropdown
-    THIS FUNCTION IS NO LONGER USED - USE get_accounts_from_json() IN app.py INSTEAD
-    Args:
-        gc: Google Sheets client
-    Returns: List of account dictionaries with code, name, and type
-    """
-    print("WARNING: get_accounts_list() is deprecated - use get_accounts_from_json() instead")
-    try:
-        accounts_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Accounts")
-        accounts_data = accounts_sheet.get_all_records()
-        
-        # Return all accounts (assuming they're all active)
-        accounts_list = []
-        for acc in accounts_data:
-            accounts_list.append({
-                'code': acc.get('Category Code', ''),
-                'name': acc.get('Account Name', ''),
-                'type': acc.get('Type of Account', '')
-            })
-        
-        print(f"DEBUG: Found {len(accounts_list)} accounts")
-        return accounts_list
-        
-    except Exception as e:
-        print(f"Error getting accounts: {e}")
-        return []
 
 # Get Account Name By Code
 # ------------------------
@@ -708,39 +643,6 @@ def get_account_name_by_code(gc, account_code):
 # CATEGORIES REFERENCE FUNCTIONS
 # =============================================================================
 
-# Get Categories List
-# ---------------------
-def get_categories_list(gc):
-    """
-    DEPRECATED: Get categories from reference sheet for dropdown
-    THIS FUNCTION IS NO LONGER USED - USE get_categories_from_json() IN app.py INSTEAD
-    Args:
-        gc: Google Sheets client
-    Returns: List of category dictionaries with code, name, and category
-    """
-    print("WARNING: get_categories_list() is deprecated - use get_categories_from_json() instead")
-    try:
-        categories_sheet = gc.open_by_key("1DE3YTidoVIQm4SxFvK2ByRahZ7qR_Kj_LDPTpIv5NQE").worksheet("Category")
-        categories_data = categories_sheet.get_all_records()
-        
-        # Return only active categories
-        active_categories = []
-        for cat in categories_data:
-            # Check if there's an Active column, default to True if not present
-            active_value = cat.get('Active', True)
-            if active_value == True or active_value == 'TRUE' or active_value == 'true' or str(active_value).upper() == 'TRUE':
-                active_categories.append({
-                    'code': cat['Category Code'],
-                    'name': cat['Category'],
-                    'category': cat['Description']
-                })
-        
-        print(f"DEBUG: Found {len(active_categories)} active categories")
-        return active_categories
-        
-    except Exception as e:
-        print(f"Error getting categories: {e}")
-        return []
 
 # Get Category Name By Code
 # ----------------------------

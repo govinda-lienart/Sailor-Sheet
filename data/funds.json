@@ -2,14 +2,8 @@
     "funds": [
         {
             "id": "unrestricted",
-            "name": "Unrestricted",
+            "name": "Unrestricted Funds",
             "color": "#28a745",
-            "active": true
-        },
-        {
-            "id": "restricted",
-            "name": "Restricted",
-            "color": "#dc3545",
             "active": true
         },
         {
@@ -27,6 +21,12 @@
         {
             "id": "frankfurt_zoological_society",
             "name": "Frankfurt Zoological Society",
+            "color": "#ffc107",
+            "active": true
+        },
+        {
+            "id": "frankfurt_zoological_society",
+            "name": "American Society of Primatology",
             "color": "#ffc107",
             "active": true
         }
