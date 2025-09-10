@@ -1012,8 +1012,22 @@ function submitToGoogleSheets(formData) {
             document.getElementById('mainForm').reset();
             // Generate new transaction number
             generateTransactionNumber();
-            // Update navigation progress to clear blue highlighting
-            setTimeout(() => updateNavigationProgress(), 100);
+            // Re-apply transaction type defaults after reset
+            setTimeout(() => {
+                const transactionSelect = document.getElementById('transaction_category');
+                if (transactionSelect && transactionSelect.value) {
+                    applyTransactionDefaults(transactionSelect.value);
+                }
+                
+                // Reload worksheets for the selected sheet
+                const sheetSelect = document.getElementById('sheet_select');
+                if (sheetSelect && sheetSelect.value) {
+                    loadWorksheets();
+                }
+                
+                // Update navigation progress to clear blue highlighting
+                updateNavigationProgress();
+            }, 100);
         } else {
             showErrorMessage('❌ Error: ' + data.error);
         }
