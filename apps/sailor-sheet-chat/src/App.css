@@ -24,11 +24,13 @@
   transition: all 0.3s ease;
   z-index: 1000;
   border: 3px solid white;
+  animation: gentleBounce 3s ease-in-out infinite;
 }
 
 .robot-icon:hover {
   transform: scale(1.1);
   box-shadow: 0 6px 25px rgba(33, 150, 243, 0.6);
+  animation-play-state: paused;
 }
 
 .robot-icon.open {
@@ -158,6 +160,16 @@
   }
   50% {
     transform: translateY(-1px);
+  }
+}
+
+/* Gentle bouncing animation for the robot button */
+@keyframes gentleBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 
