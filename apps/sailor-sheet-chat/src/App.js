@@ -7,6 +7,7 @@ function App() {
     { text: "Hello! I'm your AI Sailor Sheet assistant. I'm here to help you with your accounting questions. How can I assist you today?", sender: 'bot' }
   ]);
   const [inputMessage, setInputMessage] = useState('');
+  
 
   const handleSendMessage = () => {
     if (inputMessage.trim() === '') return;
