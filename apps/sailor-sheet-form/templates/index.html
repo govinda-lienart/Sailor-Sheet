@@ -607,8 +607,14 @@ Last Updated: 2025-01-05
     </div> <!-- End container -->
     
     <!-- =================================================================
-         CHATBOT INTEGRATION - Embeddable Widget Approach
+         CHATBOT INTEGRATION - Embeddable Widget with Lottie Animation
          ================================================================= -->
+    <!-- Lottie Animation Script -->
+    <script
+        src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js"
+        type="module">
+    </script>
+
     <!-- Container for the widget -->
     <div id="chatbot-widget" style="
         position: fixed;
@@ -617,7 +623,7 @@ Last Updated: 2025-01-05
         z-index: 9999;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     ">
-        <!-- Robot Button -->
+        <!-- Robot Button with Lottie Animation -->
         <div id="chat-toggle" style="
             width: 60px;
             height: 60px;
@@ -630,8 +636,16 @@ Last Updated: 2025-01-05
             box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
             transition: all 0.3s ease;
             animation: gentleBounce 3s ease-in-out infinite;
+            overflow: hidden;
         " onclick="toggleChat()">
-            <div style="color: white; font-size: 24px;">🤖</div>
+            <!-- Lottie Robot Animation -->
+            <dotlottie-wc
+                src="https://lottie.host/1274f05f-0d0e-470b-988e-b3f0a3426a5c/9K3tUb0dDP.lottie"
+                style="width: 50px; height: 50px;"
+                speed="1"
+                autoplay
+                loop>
+            </dotlottie-wc>
         </div>
 
         <!-- Chat Window (Hidden by default) -->
@@ -730,9 +744,25 @@ Last Updated: 2025-01-05
             50% { transform: translateY(-8px); }
         }
         
+        @keyframes blink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+        
+        @keyframes lookAround {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+        
         #chat-toggle:hover {
             animation-play-state: paused;
             transform: scale(1.1);
+        }
+        
+        /* Lottie Animation Styling */
+        dotlottie-wc {
+            display: block;
         }
         
         .chat-message {
