@@ -623,26 +623,26 @@ Last Updated: 2025-01-05
         z-index: 9999;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     ">
-        <!-- Robot Button with Lottie Animation -->
+        <!-- Robot Button with Lottie Animation - No Background -->
         <div id="chat-toggle" style="
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, #2196F3, #21CBF3);
-            border-radius: 50%;
+            width: 90px;
+            height: 90px;
+            background: none;
+            border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
             transition: all 0.3s ease;
             animation: gentleBounce 3s ease-in-out infinite;
-            overflow: hidden;
+            overflow: visible;
+            position: relative;
         " onclick="toggleChat()">
-            <!-- Lottie Robot Animation -->
+            <!-- Lottie Robot Animation - Full Size -->
             <dotlottie-wc
                 src="https://lottie.host/1274f05f-0d0e-470b-988e-b3f0a3426a5c/9K3tUb0dDP.lottie"
-                style="width: 50px; height: 50px;"
-                speed="1"
+                style="width: 80px; height: 80px; background: transparent;"
+                speed="1.2"
                 autoplay
                 loop>
             </dotlottie-wc>
@@ -760,9 +760,24 @@ Last Updated: 2025-01-05
             transform: scale(1.1);
         }
         
-        /* Lottie Animation Styling */
+        /* Lottie Animation Styling - No Background */
         dotlottie-wc {
             display: block;
+            background: transparent !important;
+            border-radius: 0 !important;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+        }
+        
+        /* Enhanced robot animation on hover */
+        #chat-toggle:hover dotlottie-wc {
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+        }
+        
+        /* Ensure no circular background anywhere */
+        #chat-toggle {
+            border-radius: 0 !important;
+            background: none !important;
+            box-shadow: none !important;
         }
         
         .chat-message {
