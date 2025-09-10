@@ -607,16 +607,153 @@ Last Updated: 2025-01-05
     </div> <!-- End container -->
     
     <!-- =================================================================
-         CHATBOT INTEGRATION - Simple Iframe
+         CHATBOT INTEGRATION - Embeddable Widget Approach
          ================================================================= -->
-    <iframe 
-        src="http://localhost:3000" 
-        width="100%" 
-        height="100%" 
-        frameborder="0"
-        style="border: none; position: fixed; bottom: 0; right: 0; width: 400px; height: 600px; z-index: 9999; background: transparent; pointer-events: auto;"
-        id="chatbot-iframe">
-    </iframe>
+    <!-- Container for the widget -->
+    <div id="chatbot-widget" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    ">
+        <!-- Robot Button -->
+        <div id="chat-toggle" style="
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+            transition: all 0.3s ease;
+            animation: gentleBounce 3s ease-in-out infinite;
+        " onclick="toggleChat()">
+            <div style="color: white; font-size: 24px;">🤖</div>
+        </div>
+
+        <!-- Chat Window (Hidden by default) -->
+        <div id="chat-window" style="
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        ">
+            <!-- Chat Header -->
+            <div style="
+                background: linear-gradient(45deg, #2196F3, #21CBF3);
+                color: white;
+                padding: 15px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            ">
+                <h4 style="margin: 0;">🤖 Sailor Sheet Assistant</h4>
+                <button onclick="toggleChat()" style="
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 20px;
+                    cursor: pointer;
+                    padding: 0;
+                    width: 25px;
+                    height: 25px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">&times;</button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chat-messages" style="
+                flex: 1;
+                padding: 15px;
+                overflow-y: auto;
+                background: #f8f9fa;
+            ">
+                <div style="
+                    background: white;
+                    padding: 10px 15px;
+                    border-radius: 15px;
+                    margin-bottom: 10px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                ">
+                    Hello! I'm your AI Sailor Sheet assistant. How can I help you today?
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div style="
+                padding: 15px;
+                border-top: 1px solid #e0e0e0;
+                background: white;
+                display: flex;
+                gap: 10px;
+            ">
+                <input type="text" id="chat-input" placeholder="Type your message..." style="
+                    flex: 1;
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 20px;
+                    outline: none;
+                    font-size: 14px;
+                " onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" style="
+                    background: #2196F3;
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                ">→</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes gentleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        #chat-toggle:hover {
+            animation-play-state: paused;
+            transform: scale(1.1);
+        }
+        
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .user-message {
+            background: #2196F3;
+            color: white;
+            margin-left: 50px;
+            text-align: right;
+        }
+        
+        .bot-message {
+            background: white;
+            margin-right: 50px;
+        }
+    </style>
 
     <!-- =================================================================
          JAVASCRIPT
@@ -625,8 +762,83 @@ Last Updated: 2025-01-05
     
     <!-- Chatbot Integration Script -->
     <script>
-        // Simple iframe integration - let React handle everything
-        console.log('Chatbot iframe loaded');
+        // Embeddable Chat Widget - Fully Self-Contained
+        let isOpen = false;
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            const chatToggle = document.getElementById('chat-toggle');
+            
+            isOpen = !isOpen;
+            
+            if (isOpen) {
+                chatWindow.style.display = 'flex';
+                chatToggle.style.transform = 'scale(0.9)';
+                document.getElementById('chat-input').focus();
+            } else {
+                chatWindow.style.display = 'none';
+                chatToggle.style.transform = 'scale(1)';
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Generate bot response after a delay
+            setTimeout(() => {
+                const response = getBotResponse(message);
+                addMessage(response, 'bot');
+            }, 800);
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            
+            messageDiv.className = `chat-message ${sender}-message`;
+            messageDiv.textContent = text;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function getBotResponse(message) {
+            const responses = {
+                'hello': 'Hi there! How can I help you with your accounting today?',
+                'hi': 'Hello! What would you like to know about Sailor Sheet?',
+                'help': 'I can help you with creating transactions, understanding categories, finding accounts, and general accounting questions.',
+                'transaction': 'To create a transaction, fill out the form fields: date, description, amount, category, account, and fund. Then click Submit to Google Sheets.',
+                'category': 'Categories help organize your transactions. You can select from the dropdown or add new ones.',
+                'account': 'Accounts represent where the money comes from or goes to. Choose the appropriate account from the dropdown.',
+                'fund': 'Funds help you track different sources of money or projects within your organization.',
+                'sheet': 'This form submits data directly to your Google Sheets. Make sure you have the right sheet selected!',
+                'how': 'I can guide you through the process. What specifically do you need help with?'
+            };
+
+            const lowerMessage = message.toLowerCase();
+            
+            for (const key in responses) {
+                if (lowerMessage.includes(key)) {
+                    return responses[key];
+                }
+            }
+            
+            return "I'm here to help with your accounting questions! Try asking about transactions, categories, accounts, or funds.";
+        }
+
+        // Close chat when clicking outside
+        document.addEventListener('click', function(e) {
+            const widget = document.getElementById('chatbot-widget');
+            if (isOpen && !widget.contains(e.target)) {
+                toggleChat();
+            }
+        });
     </script>
     
      </body>

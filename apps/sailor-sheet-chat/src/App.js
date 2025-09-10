@@ -8,6 +8,9 @@ function App() {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   
+  // Check if we're in a small iframe (embedded mode)
+  const isEmbedded = window.innerWidth <= 100;
+  
 
   const handleSendMessage = () => {
     if (inputMessage.trim() === '') return;
@@ -49,7 +52,7 @@ function App() {
     <div className="App">
       {/* Robot Icon - Always visible */}
       <div 
-        className={`robot-icon ${isOpen ? 'open' : ''}`}
+        className={`robot-icon ${isOpen ? 'open' : ''} ${isEmbedded ? 'embedded' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="robot">

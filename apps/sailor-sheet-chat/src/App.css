@@ -37,11 +37,32 @@
   background: linear-gradient(45deg, #4CAF50, #8BC34A);
 }
 
+/* Embedded mode - when iframe is small */
+.robot-icon.embedded {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Robot Design */
 .robot {
   position: relative;
   width: 32px;
   height: 32px;
+}
+
+/* Robot in embedded mode - smaller */
+.robot-icon.embedded .robot {
+  width: 28px;
+  height: 28px;
+  transform: scale(0.9);
 }
 
 .robot-head {
@@ -187,6 +208,15 @@
   flex-direction: column;
   z-index: 999;
   animation: slideUp 0.3s ease;
+}
+
+/* Chat window in embedded mode - position relative to iframe */
+.robot-icon.embedded + .chat-window {
+  position: absolute;
+  bottom: 70px;
+  right: -290px;
+  width: 350px;
+  height: 500px;
 }
 
 @keyframes slideUp {
