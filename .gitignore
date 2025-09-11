@@ -92,3 +92,4 @@ debug/
 Test/
 test/
 
+node_modules/
