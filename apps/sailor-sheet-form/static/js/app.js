@@ -494,13 +494,8 @@ function loadWorksheets() {
                     console.log('Auto-selected Master Ledger worksheet');
                 }
                 
-                // Apply transaction type defaults after worksheets are loaded
-                setTimeout(() => {
-                    const transactionSelect = document.getElementById('transaction_category');
-                    if (transactionSelect) {
-                        handleTransactionTypeChange();
-                    }
-                }, 500);
+                // Don't call handleTransactionTypeChange here - it will be called from DOMContentLoaded
+                console.log('Worksheets loaded, transaction defaults will be applied from DOMContentLoaded');
             } else {
                 worksheetSelect.innerHTML = '<option value="">No accounts found</option>';
                 console.log('No worksheets found');
@@ -520,6 +515,8 @@ function loadWorksheets() {
  * Apply default values based on transaction type
  */
 function applyTransactionDefaults(selectedType) {
+    console.log(`🎯 Applying defaults for transaction type: ${selectedType}`);
+    
     // Get the correct selectors based on transaction type
     let debitAccountSelect, creditAccountSelect;
     
@@ -536,11 +533,27 @@ function applyTransactionDefaults(selectedType) {
     const categorySelect = document.querySelector('select[name="category_id"]');
     const fundSelect = document.querySelector('select[name="fund_id"]');
     
-    // Clear previous selections first
+    // Debug: Check if elements are found
+    console.log(`🔍 Element availability check:`);
+    console.log(`  - Debit Account Select: ${debitAccountSelect ? 'Found' : 'NOT FOUND'}`);
+    console.log(`  - Credit Account Select: ${creditAccountSelect ? 'Found' : 'NOT FOUND'}`);
+    console.log(`  - Category Select: ${categorySelect ? 'Found' : 'NOT FOUND'}`);
+    console.log(`  - Fund Select: ${fundSelect ? 'Found' : 'NOT FOUND'}`);
+    
+    if (debitAccountSelect) {
+        console.log(`  - Debit Account Options: ${debitAccountSelect.options.length}`);
+    }
+    if (creditAccountSelect) {
+        console.log(`  - Credit Account Options: ${creditAccountSelect.options.length}`);
+    }
+    
+    // Clear previous account/category/fund selections first, but preserve worksheet selections
     if (debitAccountSelect) debitAccountSelect.value = '';
     if (creditAccountSelect) creditAccountSelect.value = '';
     if (categorySelect) categorySelect.value = '';
     if (fundSelect) fundSelect.value = '';
+    
+    console.log('🧹 Cleared previous selections (keeping worksheet selections intact)');
     
     // Set default accounts and category based on transaction type
     if (selectedType === 'donation') {
@@ -785,6 +798,20 @@ function applyTransactionDefaults(selectedType) {
         }
     }
 }
+
+/**
+ * Force apply transaction defaults - can be called manually if needed
+ */
+function forceApplyTransactionDefaults() {
+    const transactionSelect = document.getElementById('transaction_category');
+    if (transactionSelect) {
+        console.log('🔄 Force applying transaction defaults...');
+        applyTransactionDefaults(transactionSelect.value);
+    }
+}
+
+// Make the function available globally for debugging
+window.forceApplyTransactionDefaults = forceApplyTransactionDefaults;
 
 // ============================================================================
 // FILE UPLOAD FUNCTIONS
@@ -1135,10 +1162,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Apply default settings for the pre-selected transaction type
+    // Wait for accounts to be loaded before applying defaults
     setTimeout(function() {
         const transactionSelect = document.getElementById('transaction_category');
-        if (transactionSelect) {
+        const debitAccountSelect = document.querySelector('select[name="regular_debit_account_id"]');
+        
+        if (transactionSelect && debitAccountSelect && debitAccountSelect.options.length > 1) {
+            console.log('✅ Accounts loaded, applying transaction defaults...');
             handleTransactionTypeChange();
+        } else {
+            console.log('⏳ Accounts not ready yet, retrying in 500ms...');
+            // Retry after another 500ms if accounts aren't ready
+            setTimeout(function() {
+                if (transactionSelect) {
+                    console.log('🔄 Retrying to apply transaction defaults...');
+                    handleTransactionTypeChange();
+                }
+            }, 500);
         }
     }, 1000);
     

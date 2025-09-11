@@ -8,7 +8,9 @@ import json
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# Look for .env file in project root (two levels up)
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(env_path)
 
 # =============================================================================
 # GOOGLE SHEETS SETUP
