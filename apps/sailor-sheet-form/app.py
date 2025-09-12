@@ -1,4 +1,4 @@
-
+§
 
 # =============================================================================
 
@@ -384,17 +384,6 @@ def refresh_form_data():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # =============================================================================
-# THANK YOU PAGE ROUTE
-# =============================================================================
-
-# Thank You Route
-# ---------------
-@app.route('/thank-you')
-def thank_you():
-    """
-    Thank you page after successful submission
-    """
-    return render_template('thank_you.html')
 
 # =============================================================================
 # START THE APPLICATION
