@@ -92,4 +92,9 @@ debug/
 Test/
 test/
 
+# Launch Scripts (Personal Development Tools)
+launch_app.py
+launch_app.sh
+Makefile
+
 node_modules/

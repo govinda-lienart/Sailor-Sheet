@@ -1322,7 +1322,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Validate the date
         const date = new Date(year, month - 1, day);
         if (date.getFullYear() == year && date.getMonth() == month - 1 && date.getDate() == day) {
-            return `${year}-${month}-${day}`;
+            // Return in DD/MM/YY format
+            const shortYear = year.toString().slice(-2);
+            return `${day}/${month}/${shortYear}`;
         } else {
             return dateString; // Return original if invalid
         }
