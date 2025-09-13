@@ -1210,5 +1210,209 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // =============================================================================
+    // FUND COLOR HANDLING - Apply colors from data attributes
+    // =============================================================================
+    
+    // Apply fund colors to option elements
+    function applyFundColors() {
+        const fundSelect = document.querySelector('select[name="fund_id"]');
+        if (fundSelect) {
+            const options = fundSelect.querySelectorAll('option[data-color]');
+            options.forEach(option => {
+                const color = option.getAttribute('data-color');
+                if (color) {
+                    option.style.backgroundColor = color;
+                    option.style.color = 'white';
+                }
+            });
+        }
+    }
+    
+    // Apply colors when the page loads
+    applyFundColors();
+    
+    // Re-apply colors when funds are refreshed
+    const originalRefreshFormData = window.refreshFormData;
+    if (originalRefreshFormData) {
+        window.refreshFormData = function() {
+            const result = originalRefreshFormData.apply(this, arguments);
+            // Re-apply colors after form data is refreshed
+            setTimeout(applyFundColors, 100);
+            return result;
+        };
+    }
+
+    // =============================================================================
+    // DATE INPUT HANDLING - Smart Date Format Conversion
+    // =============================================================================
+    
+    // Function to convert various date formats to YYYY-MM-DD
+    function convertDateFormat(dateString) {
+        if (!dateString || dateString.trim() === '') return '';
+        
+        // Remove any extra spaces
+        dateString = dateString.trim();
+        
+        // Handle different separators and formats
+        let parts = [];
+        
+        // Try different separators
+        if (dateString.includes('/')) {
+            parts = dateString.split('/');
+        } else if (dateString.includes('-')) {
+            parts = dateString.split('-');
+        } else if (dateString.includes('.')) {
+            parts = dateString.split('.');
+        } else {
+            return dateString; // Return as-is if no recognizable separator
+        }
+        
+        if (parts.length !== 3) return dateString;
+        
+        let day, month, year;
+        
+        // Determine format based on part lengths and values
+        if (parts[0].length === 4) {
+            // YYYY/MM/DD format
+            year = parts[0];
+            month = parts[1].padStart(2, '0');
+            day = parts[2].padStart(2, '0');
+        } else if (parts[2].length === 4) {
+            // DD/MM/YYYY or MM/DD/YYYY format
+            year = parts[2];
+            
+            // Try to determine if it's DD/MM or MM/DD
+            const firstPart = parseInt(parts[0]);
+            const secondPart = parseInt(parts[1]);
+            
+            if (firstPart > 12 && secondPart <= 12) {
+                // DD/MM/YYYY (day > 12, month <= 12)
+                day = parts[0].padStart(2, '0');
+                month = parts[1].padStart(2, '0');
+            } else if (secondPart > 12 && firstPart <= 12) {
+                // MM/DD/YYYY (month > 12, day <= 12)
+                month = parts[0].padStart(2, '0');
+                day = parts[1].padStart(2, '0');
+            } else {
+                // Ambiguous case - assume DD/MM/YYYY (European format)
+                day = parts[0].padStart(2, '0');
+                month = parts[1].padStart(2, '0');
+            }
+        } else {
+            // Two-digit year - smart century detection
+            const currentYear = new Date().getFullYear();
+            const currentCentury = Math.floor(currentYear / 100) * 100;
+            const twoDigitYear = parseInt(parts[2]);
+            
+            // Smart year conversion: if 2-digit year is > current year's last 2 digits,
+            // assume it's from previous century, otherwise current century
+            const currentTwoDigitYear = currentYear % 100;
+            if (twoDigitYear > currentTwoDigitYear) {
+                year = currentCentury - 100 + twoDigitYear; // Previous century
+            } else {
+                year = currentCentury + twoDigitYear; // Current century
+            }
+            
+            // For DD/MM/YY format, assume DD/MM (European format)
+            day = parts[0].padStart(2, '0');
+            month = parts[1].padStart(2, '0');
+        }
+        
+        // Validate the date
+        const date = new Date(year, month - 1, day);
+        if (date.getFullYear() == year && date.getMonth() == month - 1 && date.getDate() == day) {
+            return `${year}-${month}-${day}`;
+        } else {
+            return dateString; // Return original if invalid
+        }
+    }
+    
+    // Function to validate date format
+    function validateDateFormat(dateString) {
+        if (!dateString) return false;
+        
+        // Check if it's already in YYYY-MM-DD format
+        const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (isoDateRegex.test(dateString)) return true;
+        
+        // Try to convert and validate
+        const converted = convertDateFormat(dateString);
+        return isoDateRegex.test(converted);
+    }
+    
+    // Add event listeners for date input
+    const dateInput = document.getElementById('date_input');
+    if (dateInput) {
+        // Handle paste events
+        dateInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                const value = this.value;
+                const converted = convertDateFormat(value);
+                if (converted !== value) {
+                    this.value = converted;
+                    // Show a brief success message
+                    showTemporaryMessage('Date format converted successfully!', 'success');
+                }
+            }, 10); // Small delay to allow paste to complete
+        });
+        
+        // Handle input changes
+        dateInput.addEventListener('blur', function() {
+            const value = this.value.trim();
+            if (value) {
+                const converted = convertDateFormat(value);
+                if (converted !== value && validateDateFormat(converted)) {
+                    this.value = converted;
+                    showTemporaryMessage('Date format converted to standard format', 'info');
+                } else if (!validateDateFormat(converted)) {
+                    showTemporaryMessage('Please enter a valid date format (dd/mm/yyyy or mm/dd/yyyy)', 'error');
+                    this.style.borderColor = '#dc3545';
+                } else {
+                    this.style.borderColor = '';
+                }
+            }
+        });
+        
+        // Clear error styling on focus
+        dateInput.addEventListener('focus', function() {
+            this.style.borderColor = '';
+        });
+    }
+    
+    // Helper function to show temporary messages
+    function showTemporaryMessage(message, type = 'info') {
+        // Create message element
+        const messageEl = document.createElement('div');
+        messageEl.className = `temp-message temp-message-${type}`;
+        messageEl.textContent = message;
+        messageEl.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            ${type === 'success' ? 'background-color: #28a745;' : ''}
+            ${type === 'error' ? 'background-color: #dc3545;' : ''}
+            ${type === 'info' ? 'background-color: #17a2b8;' : ''}
+        `;
+        
+        document.body.appendChild(messageEl);
+        
+        // Fade in
+        setTimeout(() => messageEl.style.opacity = '1', 10);
+        
+        // Fade out and remove
+        setTimeout(() => {
+            messageEl.style.opacity = '0';
+            setTimeout(() => document.body.removeChild(messageEl), 300);
+        }, 3000);
+    }
+
     console.log('NGO Accounting System initialized successfully! 🚀');
 });

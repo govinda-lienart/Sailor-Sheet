@@ -283,8 +283,8 @@ Last Updated: 2025-01-05
                     <h4 class="section-heading heading-date">📅 Date</h4>
                     <div class="form-group">
                         <label>Date:</label>
-                        <input type="date" name="date_input" required>
-                        <div class="form-text">Select the date for this transaction</div>
+                        <input type="text" name="date_input" id="date_input" placeholder="dd/mm/yyyy or dd/mm/yy" required>
+                        <div class="form-text">Enter date (dd/mm/yyyy or dd/mm/yy) or paste from Excel. You can also use the calendar icon.</div>
                         </div>
                      </div>
      
@@ -305,9 +305,9 @@ Last Updated: 2025-01-05
                          <select name="fund_id" required>
                              <option value="">Choose a fund...</option>
                              {% for fund in funds %}
-                             <option value="{{ fund.id }}" style="background-color: {{ fund.color }}">
-                                 {{ fund.name }}
-                             </option>
+                            <option value="{{ fund.id }}" data-color="{{ fund.color }}">
+                                {{ fund.name }}
+                            </option>
                              {% endfor %}
                          </select>
                          </div>
