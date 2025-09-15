@@ -1334,13 +1334,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function validateDateFormat(dateString) {
         if (!dateString) return false;
         
-        // Check if it's already in YYYY-MM-DD format
+        // Check if it's already in DD/MM/YY format (our standard format)
+        const standardDateRegex = /^\d{2}\/\d{2}\/\d{2}$/;
+        if (standardDateRegex.test(dateString)) return true;
+        
+        // Check if it's in YYYY-MM-DD format
         const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (isoDateRegex.test(dateString)) return true;
         
         // Try to convert and validate
         const converted = convertDateFormat(dateString);
-        return isoDateRegex.test(converted);
+        return standardDateRegex.test(converted);
     }
     
     // Add event listeners for date input
