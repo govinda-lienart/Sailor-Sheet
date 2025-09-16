@@ -48,6 +48,25 @@ input, textarea, select {
     transition: border-color 0.3s ease;
 }
 
+/* Custom Checkbox Styling */
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto !important;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.checkbox-label .checkmark {
+    margin-left: 5px;
+}
+
 input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: #007bff;

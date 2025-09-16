@@ -1023,6 +1023,10 @@ function submitToGoogleSheets(formData) {
         jsonData[key] = value;
     }
     
+    // Handle bank fee checkbox
+    const bankFeeCheckbox = document.getElementById('include_bank_fees');
+    jsonData['include_bank_fees'] = bankFeeCheckbox ? bankFeeCheckbox.checked : false;
+    
     // Submit to Flask API
     fetch('/api/submit_transaction', {
         method: 'POST',

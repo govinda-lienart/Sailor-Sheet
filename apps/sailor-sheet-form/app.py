@@ -145,6 +145,7 @@ def api_submit_transaction():
         transaction_number = data.get('transaction_number', '')
         reference_number = data.get('reference_number', '')
         payment_method = data.get('payment_method', 'bank')
+        include_bank_fees = data.get('include_bank_fees', False)
         
         # Handle file links
         file_links = {}
@@ -241,13 +242,59 @@ def api_submit_transaction():
             )
             
             if transaction_result:
+                # Handle bank fee transactions if checkbox is checked
+                bank_fee_results = []
+                if include_bank_fees:
+                    print(f"🏦 Creating bank fee transactions for main transaction: {transaction_number}")
+                    
+                    # Bank fee amounts
+                    bank_fee_amounts = [5000, 500]
+                    bank_fee_category = "8001"  # Bank Fee category code
+                    
+                    for i, bank_fee_amount in enumerate(bank_fee_amounts, 1):
+                        # Generate new transaction number for bank fee
+                        from datetime import datetime
+                        bank_fee_txn_number = f"{datetime.now().strftime('%d%m%y')}-{datetime.now().strftime('%H%M%S')}{i}"
+                        
+                        # Bank fee description (same as main transaction)
+                        bank_fee_description = description
+                        
+                        # Create bank fee transaction
+                        bank_fee_result = add_transaction_to_selected_sheet(
+                            gc, selected_sheet_id, selected_worksheet_title, bank_fee_amount, bank_fee_description, 
+                            fund_id, bank_fee_category, debit_account_id, credit_account_id, 
+                            transaction_type, date_input, bank_fee_txn_number, file_links, 
+                            origin_account, destination_account, transfer_type, payment_method, reference_number
+                        )
+                        
+                        bank_fee_results.append({
+                            'amount': bank_fee_amount,
+                            'transaction_number': bank_fee_txn_number,
+                            'success': bank_fee_result
+                        })
+                        
+                        if bank_fee_result:
+                            print(f"✅ Bank fee transaction {i} created: {bank_fee_amount} VND - {bank_fee_txn_number}")
+                        else:
+                            print(f"❌ Failed to create bank fee transaction {i}: {bank_fee_amount} VND")
+                
+                # Prepare response message
+                if include_bank_fees:
+                    successful_bank_fees = [r for r in bank_fee_results if r['success']]
+                    message = f'Transaction submitted successfully! Main transaction: {transaction_number}'
+                    if successful_bank_fees:
+                        message += f', Bank fees: {len(successful_bank_fees)} transactions created'
+                else:
+                    message = 'Transaction submitted successfully!'
+                
                 return jsonify({
                     'success': True,
-                    'message': 'Transaction submitted successfully!',
+                    'message': message,
                     'data': {
                         'transaction_number': transaction_number,
                         'amount': amount,
-                        'type': transaction_type
+                        'type': transaction_type,
+                        'bank_fees_created': len([r for r in bank_fee_results if r['success']]) if include_bank_fees else 0
                     }
                 })
             else:
