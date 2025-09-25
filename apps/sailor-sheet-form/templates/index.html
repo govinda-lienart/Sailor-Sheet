@@ -36,40 +36,7 @@ Last Updated: 2025-01-05
         <meta name="theme-color" content="#007bff">
         <meta name="msapplication-TileColor" content="#007bff">
         
-    <!-- =================================================================
-         LOADING ANIMATION SCRIPT
-         ================================================================= -->
-         <script>
-        // Show loading animation immediately when page starts loading
-             (function() {
-                 var loadingDiv = document.createElement('div');
-                 loadingDiv.id = 'loadingAnimation';
-                 loadingDiv.className = 'loading-container';
-                 loadingDiv.style.display = 'block';
-                 loadingDiv.innerHTML = '<div class="simple-loading"><div class="loading-text">Loading: Google Accounting System...</div></div>';
-                 
-            // Insert loading animation
-                 if (document.body) {
-                     document.body.insertBefore(loadingDiv, document.body.firstChild);
-                 } else {
-                     document.addEventListener('DOMContentLoaded', function() {
-                         document.body.insertBefore(loadingDiv, document.body.firstChild);
-                     });
-                 }
-                 
-            // Hide loading animation after DOM is ready
-                 document.addEventListener('DOMContentLoaded', function() {
-                     setTimeout(function() {
-                         if (loadingDiv) {
-                             loadingDiv.style.opacity = '0';
-                             setTimeout(function() {
-                                 loadingDiv.style.display = 'none';
-                             }, 100);
-                         }
-                     }, 100);
-                 });
-             })();
-         </script>
+    <!-- Loading animation removed - no longer needed -->
      </head>
      
      <body>
