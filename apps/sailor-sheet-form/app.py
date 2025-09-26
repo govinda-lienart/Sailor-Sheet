@@ -493,6 +493,71 @@ def api_search_transaction():
         }), 500
 
 # =============================================================================
+# DOCUMENT UPDATE API
+# =============================================================================
+
+@app.route('/api/update_document', methods=['POST'])
+def api_update_document():
+    """
+    API endpoint for updating document links in Google Sheets.
+    
+    Receives: JSON with sheet_type, transaction_number, document_type, and file_url
+    Returns: JSON with success status
+    """
+    try:
+        # Get data from request
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
+        sheet_type = data.get('sheet_type', 'vn')
+        transaction_number = data.get('transaction_number')
+        document_type = data.get('document_type')  # 'bill', 'redBill', 'documentation'
+        file_url = data.get('file_url')
+        
+        # Validate required fields
+        if not all([transaction_number, document_type, file_url]):
+            return jsonify({
+                'success': False,
+                'error': 'Transaction number, document type, and file URL are required'
+            }), 400
+        
+        print(f"\n" + "="*50)
+        print(f"DEBUG: UPDATE DOCUMENT API CALLED")
+        print(f"  - Sheet Type: {sheet_type}")
+        print(f"  - Transaction Number: {transaction_number}")
+        print(f"  - Document Type: {document_type}")
+        print(f"  - File URL: {file_url}")
+        print(f"="*50)
+        
+        # Call the update function
+        from sheets_manager import update_document_link
+        result = update_document_link(gc, sheet_type, transaction_number, document_type, file_url)
+        
+        if result:
+            print(f"DEBUG: Document updated successfully")
+            return jsonify({
+                'success': True,
+                'message': f'{document_type} updated successfully for transaction {transaction_number}'
+            })
+        else:
+            print(f"DEBUG: Document update failed")
+            return jsonify({
+                'success': False,
+                'error': f'Failed to update {document_type} for transaction {transaction_number}'
+            }), 500
+                
+    except Exception as e:
+        print(f"ERROR in api_update_document: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Document update failed: {str(e)}'
+        }), 500
+
+# =============================================================================
 # START THE APPLICATION
 # =============================================================================
 

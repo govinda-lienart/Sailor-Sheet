@@ -1313,20 +1313,74 @@ Last Updated: 2025-01-05
             
             transactionDetails.innerHTML = `
                 ${accountsHeader}
-                <div style="margin-top: 20px;">
-                    <h4 style="color: #495057; margin-bottom: 15px;">📊 Double-Entry Transaction Details</h4>
-                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
-                        <thead>
-                            <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                                <th style="padding: 12px; border: 1px solid #ddd; text-align: left; width: 20%;">Field</th>
-                                <th style="padding: 12px; border: 1px solid #ddd; text-align: center; width: 40%; background: #dc3545; color: white;">Debit Details</th>
-                                <th style="padding: 12px; border: 1px solid #ddd; text-align: center; width: 40%; background: #28a745; color: white;">Credit Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${threeColumnRows}
-                        </tbody>
-                    </table>
+                <div style="margin: 30px 0; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h4 style="color: #495057; margin-bottom: 20px; font-size: 1.2em;">📊 Double-Entry Transaction Details</h4>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd; background: white;">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    <th style="padding: 15px; border: 1px solid #ddd; text-align: left; width: 20%; font-weight: 600;">Field</th>
+                                    <th style="padding: 15px; border: 1px solid #ddd; text-align: center; width: 40%; background: #dc3545; color: white; font-weight: 600;">Debit Details</th>
+                                    <th style="padding: 15px; border: 1px solid #ddd; text-align: center; width: 40%; background: #28a745; color: white; font-weight: 600;">Credit Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${threeColumnRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Interactive Document Upload Subform -->
+                <div style="margin-top: 30px; padding: 25px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <h4 style="color: #495057; margin-bottom: 20px; font-size: 1.1em;">📎 Update Attached Documents</h4>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">Select Document Type to Update:</label>
+                        <select id="documentTypeSelect" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <option value="">Choose document type...</option>
+                            <option value="bill">📄 Bill (Normal Invoice)</option>
+                            <option value="redBill">🔴 Red Bill (Special Invoice)</option>
+                            <option value="documentation">📋 Supporting Documentation</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Dynamic Upload Form (initially hidden) -->
+                    <div id="uploadFormContainer" style="display: none; padding: 20px; background: white; border-radius: 6px; border: 1px solid #dee2e6;">
+                        <h5 style="margin: 0 0 15px 0; color: #495057;" id="uploadFormTitle">Upload Document</h5>
+                        
+                        <form id="documentUploadForm" enctype="multipart/form-data">
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Select File:</label>
+                                <input type="file" id="documentFile" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.txt" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+                                <small style="color: #6c757d; font-size: 12px;">Allowed: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, GIF, TXT</small>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">File Description (Optional):</label>
+                                <input type="text" id="fileDescription" name="description" placeholder="Brief description of the document"
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <button type="submit" id="uploadBtn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                    📤 Upload Document
+                                </button>
+                                <button type="button" id="cancelUploadBtn" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                    ❌ Cancel
+                                </button>
+                                <div id="uploadProgress" style="display: none; flex: 1; margin-left: 10px;">
+                                    <div style="background: #e9ecef; border-radius: 4px; height: 8px; overflow: hidden;">
+                                        <div id="progressBar" style="background: linear-gradient(90deg, #28a745, #20c997); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                                    </div>
+                                    <small id="progressText" style="color: #6c757d; font-size: 12px;">Uploading...</small>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div id="uploadResult" style="margin-top: 15px; display: none;"></div>
+                    </div>
                 </div>
             `;
             
@@ -1344,6 +1398,219 @@ Last Updated: 2025-01-05
                     `;
                 }
             }
+            
+            // Initialize document upload functionality
+            initializeDocumentUpload();
+        }
+        
+        // Initialize document upload functionality
+        function initializeDocumentUpload() {
+            const documentTypeSelect = document.getElementById('documentTypeSelect');
+            const uploadFormContainer = document.getElementById('uploadFormContainer');
+            const uploadFormTitle = document.getElementById('uploadFormTitle');
+            const documentUploadForm = document.getElementById('documentUploadForm');
+            const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+            
+            if (!documentTypeSelect || !uploadFormContainer) return;
+            
+            // Show/hide upload form based on document type selection
+            documentTypeSelect.addEventListener('change', function() {
+                const selectedType = this.value;
+                
+                if (selectedType) {
+                    // Show upload form
+                    uploadFormContainer.style.display = 'block';
+                    
+                    // Update form title based on selection
+                    const typeNames = {
+                        'bill': '📄 Bill (Normal Invoice)',
+                        'redBill': '🔴 Red Bill (Special Invoice)', 
+                        'documentation': '📋 Supporting Documentation'
+                    };
+                    uploadFormTitle.textContent = `Upload ${typeNames[selectedType]}`;
+                } else {
+                    // Hide upload form
+                    uploadFormContainer.style.display = 'none';
+                }
+            });
+            
+            // Cancel upload
+            if (cancelUploadBtn) {
+                cancelUploadBtn.addEventListener('click', function() {
+                    uploadFormContainer.style.display = 'none';
+                    documentTypeSelect.value = '';
+                    documentUploadForm.reset();
+                    hideUploadResult();
+                });
+            }
+            
+            // Handle form submission
+            if (documentUploadForm) {
+                documentUploadForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleDocumentUpload();
+                });
+            }
+        }
+        
+        // Handle document upload
+        function handleDocumentUpload() {
+            const documentTypeSelect = document.getElementById('documentTypeSelect');
+            const documentFile = document.getElementById('documentFile');
+            const fileDescription = document.getElementById('fileDescription');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            const selectedType = documentTypeSelect.value;
+            const file = documentFile.files[0];
+            const description = fileDescription.value;
+            
+            if (!selectedType || !file) {
+                showUploadResult('Please select a document type and file.', 'error');
+                return;
+            }
+            
+            // Get current transaction number from the search
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Transaction number not found. Please search for a transaction first.', 'error');
+                return;
+            }
+            
+            // Show progress
+            uploadBtn.disabled = true;
+            uploadProgress.style.display = 'flex';
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Preparing upload...';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('transaction_number', transactionNumber);
+            formData.append('file_type', selectedType);
+            if (description) {
+                formData.append('description', description);
+            }
+            
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + '%';
+                progressText.textContent = `Uploading... ${Math.round(progress)}%`;
+            }, 200);
+            
+            // Upload file
+            fetch('/upload_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Complete!';
+                
+                if (data.success) {
+                    // Update Google Sheets with the document link
+                    updateGoogleSheetsDocument(transactionNumber, selectedType, data.file_url);
+                    
+                    showUploadResult(`
+                        <div style="color: #28a745; font-weight: 600;">
+                            ✅ Document uploaded successfully!
+                            <br><strong>File:</strong> ${data.file_name}
+                            <br><strong>Type:</strong> ${selectedType}
+                            <br><a href="${data.file_url}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>
+                        </div>
+                    `, 'success');
+                    
+                    // Reset form
+                    documentUploadForm.reset();
+                    documentTypeSelect.value = '';
+                    setTimeout(() => {
+                        document.getElementById('uploadFormContainer').style.display = 'none';
+                    }, 2000);
+                } else {
+                    showUploadResult(`❌ Upload failed: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                clearInterval(progressInterval);
+                showUploadResult(`❌ Upload failed: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                uploadBtn.disabled = false;
+                setTimeout(() => {
+                    uploadProgress.style.display = 'none';
+                }, 1000);
+            });
+        }
+        
+        // Show upload result
+        function showUploadResult(message, type) {
+            const uploadResult = document.getElementById('uploadResult');
+            if (!uploadResult) return;
+            
+            uploadResult.style.display = 'block';
+            uploadResult.innerHTML = message;
+            uploadResult.style.padding = '10px';
+            uploadResult.style.borderRadius = '4px';
+            uploadResult.style.marginTop = '15px';
+            
+            if (type === 'success') {
+                uploadResult.style.backgroundColor = '#d4edda';
+                uploadResult.style.border = '1px solid #c3e6cb';
+                uploadResult.style.color = '#155724';
+            } else {
+                uploadResult.style.backgroundColor = '#f8d7da';
+                uploadResult.style.border = '1px solid #f5c6cb';
+                uploadResult.style.color = '#721c24';
+            }
+        }
+        
+        // Hide upload result
+        function hideUploadResult() {
+            const uploadResult = document.getElementById('uploadResult');
+            if (uploadResult) {
+                uploadResult.style.display = 'none';
+            }
+        }
+        
+        // Update Google Sheets with document link
+        function updateGoogleSheetsDocument(transactionNumber, documentType, fileUrl) {
+            // Get the current sheet type from the search form
+            const sheetTypeSelect = document.getElementById('sheetTypeSelect');
+            const sheetType = sheetTypeSelect ? sheetTypeSelect.value : 'vn';
+            
+            console.log(`DEBUG: Updating Google Sheets - Transaction: ${transactionNumber}, Type: ${documentType}, Sheet: ${sheetType}`);
+            
+            // Call the document update API
+            fetch('/api/update_document', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sheet_type: sheetType,
+                    transaction_number: transactionNumber,
+                    document_type: documentType,
+                    file_url: fileUrl
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ Google Sheets updated successfully:', data.message);
+                } else {
+                    console.error('❌ Google Sheets update failed:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error updating Google Sheets:', error);
+            });
         }
         
         // Create three-column layout for double-entry bookkeeping

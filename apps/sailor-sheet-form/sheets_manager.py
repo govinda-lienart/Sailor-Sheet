@@ -216,6 +216,103 @@ def search_transaction_tool(gc, sheet_type, transaction_number):
         return None
 
 # =============================================================================
+# DOCUMENT UPDATE FUNCTIONS
+# =============================================================================
+
+def update_document_link(gc, sheet_type, transaction_number, document_type, file_url):
+    """
+    Update document link in Google Sheets for both debit and credit rows.
+    
+    Args:
+        gc: Google Sheets client
+        sheet_type: 'vn' for Vietnamese or 'be' for Belgian
+        transaction_number: Transaction number to update
+        document_type: 'bill', 'redBill', or 'documentation'
+        file_url: URL of the uploaded file
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        print(f"DEBUG: Updating document link for transaction: {transaction_number}")
+        print(f"DEBUG: Document type: {document_type}")
+        print(f"DEBUG: File URL: {file_url}")
+        
+        # Define sheet IDs
+        sheet_ids = {
+            'vn': '1Fvrld1X0OioH7AbKCiSIMNac5U9OvlKJh0OSk02bTTI',  # Vietnamese Master Ledger
+            'be': '1o5RnuAmm00YAqZzLkyrhZx7CocEETBhi-snPGUzbqSk'   # Belgian Master Ledger
+        }
+        
+        if sheet_type not in sheet_ids:
+            print(f"ERROR: Invalid sheet type: {sheet_type}")
+            return False
+        
+        sheet_id = sheet_ids[sheet_type]
+        print(f"DEBUG: Using sheet ID: {sheet_id}")
+        
+        # Open the sheet
+        sheet = gc.open_by_key(sheet_id)
+        worksheet = sheet.sheet1
+        
+        # Get headers to find the correct column
+        headers = worksheet.row_values(1)
+        print(f"DEBUG: Headers: {headers}")
+        
+        # Find the document column index
+        document_column_map = {
+            'bill': 'Bill',
+            'redBill': 'Red BIll',  # Note the capital I
+            'documentation': 'Doc'
+        }
+        
+        target_column = document_column_map.get(document_type)
+        if not target_column:
+            print(f"ERROR: Invalid document type: {document_type}")
+            return False
+        
+        # Find column index
+        column_index = None
+        for i, header in enumerate(headers):
+            if header == target_column:
+                column_index = i
+                break
+        
+        if column_index is None:
+            print(f"ERROR: Column '{target_column}' not found in headers")
+            return False
+        
+        print(f"DEBUG: Found column '{target_column}' at index {column_index}")
+        
+        # Find all rows with this transaction number
+        transaction_column = worksheet.col_values(1)  # Column A
+        row_indices = []
+        for i, cell_value in enumerate(transaction_column):
+            if cell_value == transaction_number:
+                row_indices.append(i + 1)  # Convert to 1-based indexing
+        
+        print(f"DEBUG: Found transaction at rows: {row_indices}")
+        
+        if not row_indices:
+            print(f"ERROR: Transaction {transaction_number} not found")
+            return False
+        
+        # Update all rows for this transaction
+        for row_index in row_indices:
+            print(f"DEBUG: Updating row {row_index} with document link")
+            
+            # Update the cell with the document link
+            worksheet.update_cell(row_index, column_index + 1, file_url)
+            print(f"DEBUG: Updated row {row_index}, column {column_index + 1} with: {file_url}")
+        
+        print(f"DEBUG: Successfully updated {len(row_indices)} rows for transaction {transaction_number}")
+        return True
+        
+    except Exception as e:
+        print(f"ERROR: Failed to update document link: {str(e)}")
+        return False
+
+# =============================================================================
 # ACCOUNT REFERENCE MANAGEMENT
 # =============================================================================
 
