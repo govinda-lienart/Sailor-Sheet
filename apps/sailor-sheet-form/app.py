@@ -431,6 +431,66 @@ def refresh_form_data():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # =============================================================================
+# TRANSACTION SEARCH API
+# =============================================================================
+
+@app.route('/api/search_transaction', methods=['POST'])
+def api_search_transaction():
+    """
+    API endpoint for searching transactions in Google Sheets.
+    
+    Receives: JSON with sheet_type and transaction_number
+    Returns: JSON with transaction data or error message
+    """
+    try:
+        # Get data from request
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
+        sheet_type = data.get('sheet_type', 'vn')
+        transaction_number = data.get('transaction_number')
+        
+        # Validate required fields
+        if not transaction_number:
+            return jsonify({
+                'success': False,
+                'error': 'Transaction number is required'
+            }), 400
+        
+        print(f"\n" + "="*50)
+        print(f"DEBUG: SEARCH TRANSACTION API CALLED")
+        print(f"  - Sheet Type: {sheet_type}")
+        print(f"  - Transaction Number: {transaction_number}")
+        print(f"="*50)
+        
+        # Call the search tool
+        from sheets_manager import search_transaction_tool
+        result = search_transaction_tool(gc, sheet_type, transaction_number)
+        
+        if result:
+            print(f"DEBUG: Transaction found with {len(result)} fields")
+            return jsonify({
+                'success': True,
+                'data': result,
+                'message': 'Transaction found successfully'
+            })
+        else:
+            print(f"DEBUG: Transaction not found")
+            return jsonify({
+                'success': False,
+                'error': f'Transaction {transaction_number} not found in {sheet_type.upper()} sheet'
+            }), 404
+            
+    except Exception as e:
+        print(f"ERROR in api_search_transaction: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Search failed: {str(e)}'
+        }), 500
 
 # =============================================================================
 # START THE APPLICATION

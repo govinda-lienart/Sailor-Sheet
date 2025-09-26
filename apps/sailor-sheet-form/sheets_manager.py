@@ -4,6 +4,82 @@
 from datetime import datetime
 
 # =============================================================================
+# EFFICIENT TRANSACTION SEARCH TOOL
+# =============================================================================
+
+def search_transaction_tool(gc, sheet_type, transaction_number):
+    """
+    Efficiently search for a transaction by number without downloading all data.
+    
+    Method 1: Get only transaction number column first, then fetch specific row.
+    This avoids downloading all rows and columns.
+    
+    Args:
+        gc: Google Sheets client
+        sheet_type: 'vn' for Vietnamese or 'be' for Belgian
+        transaction_number: Transaction number to search for
+    
+    Returns:
+        dict: Transaction data if found, None if not found
+    """
+    try:
+        print(f"DEBUG: Searching for transaction: {transaction_number}")
+        print(f"DEBUG: In sheet type: {sheet_type}")
+        
+        # Define sheet IDs
+        sheet_ids = {
+            'vn': '1Fvrld1X0OioH7AbKCiSIMNac5U9OvlKJh0OSk02bTTI',  # Vietnamese Master Ledger
+            'be': '1o5RnuAmm00YAqZzLkyrhZx7CocEETBhi-snPGUzbqSk'   # Belgian Master Ledger
+        }
+        
+        if sheet_type not in sheet_ids:
+            print(f"ERROR: Invalid sheet type: {sheet_type}")
+            return None
+        
+        sheet_id = sheet_ids[sheet_type]
+        print(f"DEBUG: Using sheet ID: {sheet_id}")
+        
+        # Open the sheet
+        sheet = gc.open_by_key(sheet_id)
+        worksheet = sheet.sheet1  # Assuming we're searching the first worksheet
+        
+        # Step 1: Get only the transaction number column (Column A)
+        # This is much faster than getting all data
+        print("DEBUG: Getting transaction number column...")
+        transaction_column = worksheet.col_values(1)  # Column A only
+        
+        # Step 2: Check if transaction number exists
+        if transaction_number not in transaction_column:
+            print(f"DEBUG: Transaction {transaction_number} not found in column")
+            return None
+        
+        # Step 3: Find the row index (add 1 because col_values is 0-indexed)
+        row_index = transaction_column.index(transaction_number) + 1
+        print(f"DEBUG: Found transaction at row: {row_index}")
+        
+        # Step 4: Get only that specific row
+        print("DEBUG: Getting specific row data...")
+        row_data = worksheet.row_values(row_index)
+        
+        # Step 5: Get column headers to map data properly
+        headers = worksheet.row_values(1)  # First row contains headers
+        
+        # Step 6: Create dictionary mapping headers to values
+        transaction_data = {}
+        for i, header in enumerate(headers):
+            if i < len(row_data):
+                transaction_data[header] = row_data[i]
+            else:
+                transaction_data[header] = ""  # Empty if column doesn't exist
+        
+        print(f"DEBUG: Transaction found with {len(transaction_data)} fields")
+        return transaction_data
+        
+    except Exception as e:
+        print(f"ERROR: Failed to search transaction: {str(e)}")
+        return None
+
+# =============================================================================
 # ACCOUNT REFERENCE MANAGEMENT
 # =============================================================================
 

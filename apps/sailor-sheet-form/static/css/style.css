@@ -752,6 +752,77 @@ h1 {
     margin: 0;
 }
 
+/* =====================================================================
+   TRANSACTION DETAILS TABLE STYLING
+   ===================================================================== */
+.transaction-details-table {
+    margin: 20px 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.transaction-details-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.transaction-details-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.transaction-details-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+}
+
+.transaction-details-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.transaction-details-table tr:hover {
+    background-color: #e3f2fd;
+}
+
+.transaction-details-table .field-label {
+    font-weight: 600;
+    color: #495057;
+    width: 30%;
+}
+
+.transaction-details-table .field-value {
+    color: #212529;
+}
+
+/* Update Options Section */
+.update-options-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.update-options-section h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.update-description {
+    color: #6c757d;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .container {

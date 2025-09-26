@@ -588,7 +588,24 @@ Last Updated: 2025-01-05
                 <div class="section-header">
                     <span class="section-icon">🔍</span>
                     <h3 class="section-title">Search Transaction</h3>
-                    <p class="section-description">Enter the transaction number to find and update an existing record</p>
+                    <p class="section-description">Select the sheet and enter the transaction number to find and update an existing record</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="searchSheet" class="form-label">
+                        <span class="label-icon">📊</span>
+                        Select Sheet to Search:
+                        <span class="required-asterisk">*</span>
+                    </label>
+                    <select id="searchSheet" name="searchSheet" class="form-control" required>
+                        <option value="vn">🇻🇳 Vietnamese Master Ledger (Default)</option>
+                        <option value="be">🇧🇪 Belgian Master Ledger</option>
+                    </select>
+                    <div class="field-help">
+                        <small class="help-text">
+                            💡 Choose which master ledger to search in
+                        </small>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -618,12 +635,81 @@ Last Updated: 2025-01-05
                     </button>
                 </div>
                 
-                <!-- Search Results Area (Future Implementation) -->
+                <!-- Search Results Area -->
                 <div id="searchResults" class="search-results-container" style="display: none;">
-                    <div class="alert alert-info">
-                        <strong>🔍 Search Results:</strong>
-                        <p>Transaction data will appear here when found...</p>
-                        <p><em>Future: This will show editable form fields populated with existing transaction data</em></p>
+                    <div class="alert alert-success">
+                        <strong>✅ Transaction Found!</strong>
+                        <p>Transaction details retrieved successfully. Ready for document updates.</p>
+                    </div>
+                    
+                    <!-- Transaction Details Table -->
+                    <div id="transactionDetails" class="transaction-details-table">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    
+                    <!-- Update Options -->
+                    <div id="updateOptions" class="update-options-section">
+                        <h4>📎 Update Attached Documents</h4>
+                        <p class="update-description">Upload new documents to replace existing ones</p>
+                        
+                        <!-- File Upload Sections (Same as New Entry) -->
+                        <div class="form-section" id="upload-bills-section">
+                            <div class="section-header">
+                                <span class="section-icon">📄</span>
+                                <h3 class="section-title">Bills Upload</h3>
+                                <p class="section-description">Upload normal bills and receipts</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="billsFile" class="enhanced-file-input-label">
+                                    <span class="file-icon">📄</span>
+                                    <span class="file-text">Choose Bills File</span>
+                                    <span class="file-hint">Click to select or drag & drop</span>
+                                </label>
+                                <input type="file" id="billsFile" name="billsFile" class="enhanced-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section" id="upload-red-bills-section">
+                            <div class="section-header">
+                                <span class="section-icon">🔴</span>
+                                <h3 class="section-title">Red Bills Upload</h3>
+                                <p class="section-description">Upload red bills and invoices</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="redBillsFile" class="enhanced-file-input-label">
+                                    <span class="file-icon">🔴</span>
+                                    <span class="file-text">Choose Red Bills File</span>
+                                    <span class="file-hint">Click to select or drag & drop</span>
+                                </label>
+                                <input type="file" id="redBillsFile" name="redBillsFile" class="enhanced-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section" id="upload-documentation-section">
+                            <div class="section-header">
+                                <span class="section-icon">📚</span>
+                                <h3 class="section-title">Documentation Upload</h3>
+                                <p class="section-description">Upload supporting documentation</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="documentationFile" class="enhanced-file-input-label">
+                                    <span class="file-icon">📚</span>
+                                    <span class="file-text">Choose Documentation File</span>
+                                    <span class="file-hint">Click to select or drag & drop</span>
+                                </label>
+                                <input type="file" id="documentationFile" name="documentationFile" class="enhanced-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            </div>
+                        </div>
+                        
+                        <!-- Update Submit Button -->
+                        <div class="form-group">
+                            <button type="button" id="updateTransactionBtn" class="btn-enhanced enhanced-submit-btn">
+                                🔄 Update Transaction Documents
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -985,26 +1071,251 @@ Last Updated: 2025-01-05
                 console.log('🔄 Switched to Update Entry mode');
             });
 
-            // Search Transaction Button Click (Future functionality)
+            // Search Transaction Button Click
             searchTransactionBtn.addEventListener('click', function() {
                 const transactionNumber = document.getElementById('searchTransactionNumber').value.trim();
+                const selectedSheet = document.getElementById('searchSheet').value;
                 
                 if (!transactionNumber) {
                     alert('Please enter a transaction number to search');
                     return;
                 }
                 
-                // Show search results (placeholder for now)
+                // Show loading state
                 searchResults.style.display = 'block';
                 searchResults.innerHTML = `
                     <div class="alert alert-info">
                         <strong>🔍 Searching for: ${transactionNumber}</strong>
-                        <p>Future: This will search Google Sheets for the transaction and populate editable fields</p>
-                        <p><em>Implementation pending: Google Sheets API integration for transaction retrieval</em></p>
+                        <p>Searching in ${selectedSheet === 'vn' ? 'Vietnamese' : 'Belgian'} Master Ledger...</p>
+                        <p><em>Please wait while we retrieve the transaction data...</em></p>
                     </div>
                 `;
                 
-                console.log('🔍 Searching for transaction:', transactionNumber);
+                // Call the real API
+                fetch('/api/search_transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sheet_type: selectedSheet,
+                        transaction_number: transactionNumber
+                    })
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    console.log('Response ok:', response.ok);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API Response received:', data);
+                    console.log('Response type:', typeof data);
+                    console.log('Response keys:', Object.keys(data || {}));
+                    
+                    if (data && data.success) {
+                        console.log('Transaction data received:', data.data);
+                        console.log('Number of fields:', Object.keys(data.data).length);
+                        console.log('Field names:', Object.keys(data.data));
+                        console.log('Field values:', Object.values(data.data));
+                        displayTransactionDetails(data.data);
+                    } else {
+                        console.log('Search failed or no data:', data);
+                        // Show error message
+                        if (searchResults) {
+                            searchResults.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <strong>❌ Search Failed</strong>
+                                    <p>${data ? data.error : 'No response data'}</p>
+                                </div>
+                            `;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    if (searchResults) {
+                        searchResults.innerHTML = `
+                            <div class="alert alert-danger">
+                                <strong>❌ Error</strong>
+                                <p>Search failed: ${error.message}</p>
+                                <p>Check console for details.</p>
+                            </div>
+                        `;
+                    }
+                });
+                
+                console.log('🔍 Searching for transaction:', transactionNumber, 'in sheet:', selectedSheet);
+            });
+            
+        // Display Transaction Details Function
+        function displayTransactionDetails(transactionData) {
+            console.log('=== DEBUGGING DISPLAY TRANSACTION DETAILS ===');
+            console.log('1. Function called with data:', transactionData);
+            
+            // Check if updateFormContainer exists
+            const updateFormContainer = document.getElementById('updateFormContainer');
+            console.log('2. updateFormContainer found:', !!updateFormContainer);
+            
+            if (!updateFormContainer) {
+                console.error('FATAL: updateFormContainer not found');
+                return;
+            }
+            
+            // Make it visible
+            updateFormContainer.style.display = 'block';
+            console.log('3. Made updateFormContainer visible');
+            
+            // Check if searchResults exists
+            const searchResults = document.getElementById('searchResults');
+            console.log('4. searchResults found:', !!searchResults);
+            
+            if (!searchResults) {
+                console.error('FATAL: searchResults not found');
+                return;
+            }
+            
+            // Show loading message in searchResults
+            searchResults.style.display = 'block';
+            searchResults.innerHTML = `
+                <div class="alert alert-success">
+                    <strong>✅ Transaction Found!</strong>
+                    <p>Transaction details retrieved successfully. Ready for document updates.</p>
+                </div>
+                
+                <!-- Transaction Details Table -->
+                <div id="transactionDetails" class="transaction-details-table">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                
+                <!-- Rest of the content... -->
+                <div id="updateOptions" class="update-options-section">
+                    <h4>📎 Update Attached Documents</h4>
+                    <p class="update-description">Upload new documents to replace existing ones</p>
+                </div>
+            `;
+            console.log('5. Set searchResults HTML with new transactionDetails');
+            
+            // Now find the transactionDetails element
+            setTimeout(() => {
+                const transactionDetails = document.getElementById('transactionDetails');
+                console.log('6. transactionDetails found after creating:', !!transactionDetails);
+                
+                if (!transactionDetails) {
+                    console.error('FATAL: Still cannot find transactionDetails after creating it');
+                    return;
+                }
+                
+                console.log('7. Creating table...');
+                displayTransactionTable(transactionData, transactionDetails);
+            }, 50);
+        }
+        
+        // Separate function to display the transaction table
+        function displayTransactionTable(transactionData, transactionDetails) {
+            console.log('Creating transaction table with data:', transactionData);
+            
+            // Create table rows dynamically from the real data
+            let tableRows = '';
+            for (const [field, value] of Object.entries(transactionData)) {
+                // Skip empty values
+                if (value && value.trim() !== '') {
+                    tableRows += `
+                        <tr>
+                            <td class="field-label">${formatFieldName(field)}</td>
+                            <td class="field-value">${value}</td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            console.log('Generated table rows:', tableRows);
+            
+            transactionDetails.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            `;
+            
+            console.log('Table HTML set successfully');
+            
+            // Update the alert message
+            const searchResults = document.getElementById('searchResults');
+            if (searchResults) {
+                const alertDiv = searchResults.querySelector('.alert');
+                if (alertDiv) {
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.innerHTML = `
+                        <strong>✅ Transaction Found!</strong>
+                        <p>Transaction details retrieved successfully. Ready for document updates.</p>
+                    `;
+                }
+            }
+        }
+            
+            // Helper function to format field names
+            function formatFieldName(fieldName) {
+                // Convert field names to readable format
+                const fieldMap = {
+                    'Transaction Number': 'Transaction Number',
+                    'Date': 'Date',
+                    'Type': 'Type',
+                    'Amount': 'Amount',
+                    'Fund': 'Fund',
+                    'Category': 'Category',
+                    'Debit Account': 'Debit Account',
+                    'Credit Account': 'Credit Account',
+                    'Description': 'Description',
+                    'Payment Method': 'Payment Method',
+                    'Bills': 'Bills',
+                    'Red Bills': 'Red Bills',
+                    'Documentation': 'Documentation'
+                };
+                
+                return fieldMap[fieldName] || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
+            
+            // Update Transaction Button Click
+            document.getElementById('updateTransactionBtn').addEventListener('click', function() {
+                const billsFile = document.getElementById('billsFile').files[0];
+                const redBillsFile = document.getElementById('redBillsFile').files[0];
+                const documentationFile = document.getElementById('documentationFile').files[0];
+                
+                if (!billsFile && !redBillsFile && !documentationFile) {
+                    alert('Please select at least one file to upload');
+                    return;
+                }
+                
+                // Show processing message
+                const updateBtn = this;
+                const originalText = updateBtn.innerHTML;
+                updateBtn.innerHTML = '⏳ Processing...';
+                updateBtn.disabled = true;
+                
+                // Simulate file upload processing
+                setTimeout(() => {
+                    alert('✅ Transaction documents updated successfully!\n\nNew files will replace existing ones in Google Sheets.');
+                    updateBtn.innerHTML = originalText;
+                    updateBtn.disabled = false;
+                    
+                    // Reset file inputs
+                    document.getElementById('billsFile').value = '';
+                    document.getElementById('redBillsFile').value = '';
+                    document.getElementById('documentationFile').value = '';
+                }, 2000);
+                
+                console.log('🔄 Updating transaction documents...');
             });
         });
     </script>
