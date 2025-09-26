@@ -75,28 +75,31 @@ def search_transaction_tool(gc, sheet_type, transaction_number):
         # Step 6: Create combined transaction data from all rows
         transaction_data = {}
         
-        # First, add all fields from the first row
+        # Initialize with common fields from first row
         for i, header in enumerate(headers):
             if i < len(all_rows_data[0]):
                 transaction_data[header] = all_rows_data[0][i]
             else:
                 transaction_data[header] = ""
         
-        # Then, identify debit and credit accounts from the rows
+        # Identify debit and credit rows and extract their specific data
+        debit_row_data = None
+        credit_row_data = None
         debit_account = None
         credit_account = None
+        debit_amount = None
+        credit_amount = None
         
         print(f"DEBUG: Headers: {headers}")
         
         for row_idx, row_data in enumerate(all_rows_data):
             print(f"DEBUG: Processing row {row_idx + 1}: {row_data}")
             if len(row_data) > 0:  # Make sure row has data
-                # Find the Account column (Column F)
+                # Find column indices
                 account_col = None
                 debit_amount_col = None
                 credit_amount_col = None
                 
-                # Find column indices
                 for i, header in enumerate(headers):
                     if 'Account' in header:
                         account_col = i
@@ -124,21 +127,84 @@ def search_transaction_tool(gc, sheet_type, transaction_number):
                                 row_data[credit_amount_col] and 
                                 row_data[credit_amount_col].strip())
                     
-                    print(f"DEBUG: Has debit: {has_debit}, Has credit: {has_credit}")
+                    print(f"DEBUG: Has debit: {row_data[debit_amount_col] if debit_amount_col is not None and debit_amount_col < len(row_data) else 'N/A'}, Has credit: {row_data[credit_amount_col] if credit_amount_col is not None and credit_amount_col < len(row_data) else 'N/A'}")
                     
-                    # Assign account based on which amount column has data
-                    if has_debit and not debit_account:
+                    # Store the complete row data for debit or credit
+                    if has_debit and not debit_row_data:
+                        debit_row_data = row_data
                         debit_account = account_name
-                        print(f"DEBUG: Set debit account: {debit_account}")
-                    elif has_credit and not credit_account:
+                        debit_amount = row_data[debit_amount_col] if debit_amount_col is not None and debit_amount_col < len(row_data) else ""
+                        print(f"DEBUG: Set debit row data: {debit_row_data}")
+                        print(f"DEBUG: Set debit account: {debit_account}, amount: {debit_amount}")
+                    elif has_credit and not credit_row_data:
+                        credit_row_data = row_data
                         credit_account = account_name
-                        print(f"DEBUG: Set credit account: {credit_account}")
+                        credit_amount = row_data[credit_amount_col] if credit_amount_col is not None and credit_amount_col < len(row_data) else ""
+                        print(f"DEBUG: Set credit row data: {credit_row_data}")
+                        print(f"DEBUG: Set credit account: {credit_account}, amount: {credit_amount}")
         
-        # Add the identified accounts to the transaction data
+        # Add the identified accounts and amounts to the transaction data
         if debit_account:
             transaction_data['Debit Account'] = debit_account
         if credit_account:
             transaction_data['Credit Account'] = credit_account
+        if debit_amount:
+            transaction_data['Debit (VND)'] = debit_amount
+        if credit_amount:
+            transaction_data['Credit (VND)'] = credit_amount
+            
+        # Add document fields from both rows (Bill, Red Bill, Doc)
+        if debit_row_data:
+            # Find document column indices
+            bill_col = None
+            red_bill_col = None
+            doc_col = None
+            
+            for i, header in enumerate(headers):
+                if header == 'Bill':
+                    bill_col = i
+                elif header == 'Red BIll':  # Note the capital I
+                    red_bill_col = i
+                elif header == 'Doc':
+                    doc_col = i
+            
+            print(f"DEBUG: Document columns - Bill: {bill_col}, Red Bill: {red_bill_col}, Doc: {doc_col}")
+            
+            # Add debit side document data
+            if bill_col is not None and bill_col < len(debit_row_data):
+                transaction_data['Debit Bill'] = debit_row_data[bill_col] if debit_row_data[bill_col] else ""
+                print(f"DEBUG: Debit Bill: {transaction_data['Debit Bill']}")
+            if red_bill_col is not None and red_bill_col < len(debit_row_data):
+                transaction_data['Debit Red Bill'] = debit_row_data[red_bill_col] if debit_row_data[red_bill_col] else ""
+                print(f"DEBUG: Debit Red Bill: {transaction_data['Debit Red Bill']}")
+            if doc_col is not None and doc_col < len(debit_row_data):
+                transaction_data['Debit Doc'] = debit_row_data[doc_col] if debit_row_data[doc_col] else ""
+                print(f"DEBUG: Debit Doc: {transaction_data['Debit Doc']}")
+        
+        if credit_row_data:
+            # Find document column indices
+            bill_col = None
+            red_bill_col = None
+            doc_col = None
+            
+            for i, header in enumerate(headers):
+                if header == 'Bill':
+                    bill_col = i
+                elif header == 'Red BIll':  # Note the capital I
+                    red_bill_col = i
+                elif header == 'Doc':
+                    doc_col = i
+            
+            # Add credit side document data
+            if bill_col is not None and bill_col < len(credit_row_data):
+                transaction_data['Credit Bill'] = credit_row_data[bill_col] if credit_row_data[bill_col] else ""
+                print(f"DEBUG: Credit Bill: {transaction_data['Credit Bill']}")
+            if red_bill_col is not None and red_bill_col < len(credit_row_data):
+                transaction_data['Credit Red Bill'] = credit_row_data[red_bill_col] if credit_row_data[red_bill_col] else ""
+                print(f"DEBUG: Credit Red Bill: {transaction_data['Credit Red Bill']}")
+            if doc_col is not None and doc_col < len(credit_row_data):
+                transaction_data['Credit Doc'] = credit_row_data[doc_col] if credit_row_data[doc_col] else ""
+                print(f"DEBUG: Credit Doc: {transaction_data['Credit Doc']}")
         
         print(f"DEBUG: Identified Debit Account: {debit_account}")
         print(f"DEBUG: Identified Credit Account: {credit_account}")

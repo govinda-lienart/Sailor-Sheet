@@ -1265,12 +1265,14 @@ Last Updated: 2025-01-05
                 const docFields = new Set(['Bill', 'Red BIll', 'Doc']);
                 const rawValue = transactionData[field] ?? '';
                 const hasContent = typeof rawValue === 'string' ? rawValue.trim() !== '' : !!rawValue;
+                
+                // Always show document fields, even if empty
                 if (hasContent || docFields.has(field)) {
                     let fieldValue = rawValue;
 
                     // Document fields: create clickable links or show placeholders
                     if (docFields.has(field)) {
-                        if (!fieldValue) {
+                        if (!fieldValue || fieldValue.trim() === '') {
                             fieldValue = '—';
                         } else if (typeof fieldValue === 'string' && (fieldValue.startsWith('http') || fieldValue.startsWith('https'))) {
                             fieldValue = `<a href="${fieldValue}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>`;
@@ -1306,19 +1308,26 @@ Last Updated: 2025-01-05
             
             console.log('Generated table rows:', tableRows);
             
+            // Create three-column layout for double-entry bookkeeping
+            const threeColumnRows = createThreeColumnLayout(transactionData);
+            
             transactionDetails.innerHTML = `
                 ${accountsHeader}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRows}
-                    </tbody>
-                </table>
+                <div style="margin-top: 20px;">
+                    <h4 style="color: #495057; margin-bottom: 15px;">📊 Double-Entry Transaction Details</h4>
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: left; width: 20%;">Field</th>
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: center; width: 40%; background: #dc3545; color: white;">Debit Details</th>
+                                <th style="padding: 12px; border: 1px solid #ddd; text-align: center; width: 40%; background: #28a745; color: white;">Credit Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${threeColumnRows}
+                        </tbody>
+                    </table>
+                </div>
             `;
             
             console.log('Table HTML set successfully');
@@ -1335,6 +1344,106 @@ Last Updated: 2025-01-05
                     `;
                 }
             }
+        }
+        
+        // Create three-column layout for double-entry bookkeeping
+        function createThreeColumnLayout(transactionData) {
+            console.log('Creating three-column layout with data:', transactionData);
+            console.log('Available fields:', Object.keys(transactionData));
+            console.log('Debit Account:', transactionData['Debit Account']);
+            console.log('Credit Account:', transactionData['Credit Account']);
+            console.log('Debit (VND):', transactionData['Debit (VND)']);
+            console.log('Credit (VND):', transactionData['Credit (VND)']);
+            
+            // Define the fields to show in order
+            const fieldsToShow = [
+                'Transaction Number',
+                'dd/mm/YY',
+                'Month', 
+                'Year',
+                'Funds',
+                'Account',
+                'Category',
+                'Debit (VND)',
+                'Credit (VND)',
+                'Payment Method',
+                'Description',
+                'Bank Transaction Number',
+                'Bill',
+                'Red BIll',
+                'Doc'
+            ];
+            
+            let rows = '';
+            
+            for (const field of fieldsToShow) {
+                const fieldLabel = formatFieldName(field);
+                const rawValue = transactionData[field] || '';
+                
+                // Handle special cases for debit/credit display
+                let debitValue = '';
+                let creditValue = '';
+                
+                if (field === 'Account') {
+                    // Show the specific accounts for debit and credit
+                    debitValue = transactionData['Debit Account'] || '—';
+                    creditValue = transactionData['Credit Account'] || '—';
+                } else if (field === 'Debit (VND)') {
+                    // Show debit amount in debit column, empty in credit column
+                    debitValue = transactionData['Debit (VND)'] || '—';
+                    creditValue = '—';
+                } else if (field === 'Credit (VND)') {
+                    // Show credit amount in credit column, empty in debit column
+                    debitValue = '—';
+                    creditValue = transactionData['Credit (VND)'] || '—';
+                } else if (field === 'Bill') {
+                    // Show separate bill data for debit and credit sides
+                    debitValue = formatDocumentField(field, transactionData['Debit Bill'] || '');
+                    creditValue = formatDocumentField(field, transactionData['Credit Bill'] || '');
+                } else if (field === 'Red BIll') {
+                    // Show separate red bill data for debit and credit sides
+                    debitValue = formatDocumentField(field, transactionData['Debit Red Bill'] || '');
+                    creditValue = formatDocumentField(field, transactionData['Credit Red Bill'] || '');
+                } else if (field === 'Doc') {
+                    // Show separate doc data for debit and credit sides
+                    debitValue = formatDocumentField(field, transactionData['Debit Doc'] || '');
+                    creditValue = formatDocumentField(field, transactionData['Credit Doc'] || '');
+                } else {
+                    // For all other fields, show the same value in both columns
+                    const displayValue = formatDocumentField(field, rawValue);
+                    debitValue = displayValue;
+                    creditValue = displayValue;
+                }
+                
+                rows += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: bold;">${fieldLabel}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center; background: #fff5f5;">${debitValue}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center; background: #f0fff4;">${creditValue}</td>
+                    </tr>
+                `;
+            }
+            
+            return rows;
+        }
+        
+        // Format document fields for display
+        function formatDocumentField(field, value) {
+            const docFields = new Set(['Bill', 'Red BIll', 'Doc']);
+            
+            if (docFields.has(field)) {
+                if (!value || value.trim() === '') {
+                    return '—';
+                } else if (typeof value === 'string' && (value.startsWith('http') || value.startsWith('https'))) {
+                    return `<a href="${value}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>`;
+                } else if (value === '✔') {
+                    return '✔ Available (see sheet)';
+                } else {
+                    return `📄 ${value}`;
+                }
+            }
+            
+            return value || '—';
         }
             
             // Helper function to format field names
