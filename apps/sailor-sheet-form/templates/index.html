@@ -1217,12 +1217,37 @@ Last Updated: 2025-01-05
         // Separate function to display the transaction table
         function displayTransactionTable(transactionData, transactionDetails) {
             console.log('Creating transaction table with data:', transactionData);
+            console.log('Available field names:', Object.keys(transactionData));
+            
+            // Extract debit and credit account information
+            console.log('=== EXTRACTING ACCOUNTS ===');
+            console.log('Transaction data keys:', Object.keys(transactionData));
+            console.log('Full transaction data:', transactionData);
+            
+            // Use the accounts that were identified by the backend
+            const debitAccount = transactionData['Debit Account'] || 'Not specified';
+            const creditAccount = transactionData['Credit Account'] || 'Not specified';
+            
+            console.log('Debit Account from backend:', debitAccount);
+            console.log('Credit Account from backend:', creditAccount);
+            
+            // Create simple accounts header
+            const accountsHeader = `
+                <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                    <h4 style="margin: 0 0 8px 0; color: #495057; font-size: 1.1em;">Accounts Involved in this Transaction:</h4>
+                    <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                        <span><strong style="color: #dc3545;">Debit:</strong> ${debitAccount}</span>
+                        <span style="color: #6c757d;">↔️</span>
+                        <span><strong style="color: #28a745;">Credit:</strong> ${creditAccount}</span>
+                    </div>
+                </div>
+            `;
             
             // Create table rows dynamically from the real data
             let tableRows = '';
             for (const [field, value] of Object.entries(transactionData)) {
-                // Skip empty values
-                if (value && value.trim() !== '') {
+                // Skip empty values and the 'N' field (not relevant)
+                if (value && value.trim() !== '' && field !== 'N') {
                     tableRows += `
                         <tr>
                             <td class="field-label">${formatFieldName(field)}</td>
@@ -1235,6 +1260,7 @@ Last Updated: 2025-01-05
             console.log('Generated table rows:', tableRows);
             
             transactionDetails.innerHTML = `
+                ${accountsHeader}
                 <table>
                     <thead>
                         <tr>

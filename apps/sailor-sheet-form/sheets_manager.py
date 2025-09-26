@@ -53,25 +53,95 @@ def search_transaction_tool(gc, sheet_type, transaction_number):
             print(f"DEBUG: Transaction {transaction_number} not found in column")
             return None
         
-        # Step 3: Find the row index (add 1 because col_values is 0-indexed)
-        row_index = transaction_column.index(transaction_number) + 1
-        print(f"DEBUG: Found transaction at row: {row_index}")
+        # Step 3: Find ALL rows with this transaction number (debit and credit entries)
+        row_indices = []
+        for i, cell_value in enumerate(transaction_column):
+            if cell_value == transaction_number:
+                row_indices.append(i + 1)  # Convert to 1-based indexing
         
-        # Step 4: Get only that specific row
-        print("DEBUG: Getting specific row data...")
-        row_data = worksheet.row_values(row_index)
+        print(f"DEBUG: Found transaction at rows: {row_indices}")
+        
+        # Step 4: Get all rows for this transaction
+        print("DEBUG: Getting all rows data...")
+        all_rows_data = []
+        for row_index in row_indices:
+            row_data = worksheet.row_values(row_index)
+            all_rows_data.append(row_data)
+            print(f"DEBUG: Row {row_index} data: {row_data}")
         
         # Step 5: Get column headers to map data properly
         headers = worksheet.row_values(1)  # First row contains headers
         
-        # Step 6: Create dictionary mapping headers to values
+        # Step 6: Create combined transaction data from all rows
         transaction_data = {}
-        for i, header in enumerate(headers):
-            if i < len(row_data):
-                transaction_data[header] = row_data[i]
-            else:
-                transaction_data[header] = ""  # Empty if column doesn't exist
         
+        # First, add all fields from the first row
+        for i, header in enumerate(headers):
+            if i < len(all_rows_data[0]):
+                transaction_data[header] = all_rows_data[0][i]
+            else:
+                transaction_data[header] = ""
+        
+        # Then, identify debit and credit accounts from the rows
+        debit_account = None
+        credit_account = None
+        
+        print(f"DEBUG: Headers: {headers}")
+        
+        for row_idx, row_data in enumerate(all_rows_data):
+            print(f"DEBUG: Processing row {row_idx + 1}: {row_data}")
+            if len(row_data) > 0:  # Make sure row has data
+                # Find the Account column (Column F)
+                account_col = None
+                debit_amount_col = None
+                credit_amount_col = None
+                
+                # Find column indices
+                for i, header in enumerate(headers):
+                    if 'Account' in header:
+                        account_col = i
+                    elif 'Debit' in header and 'VND' in header:
+                        debit_amount_col = i
+                    elif 'Credit' in header and 'VND' in header:
+                        credit_amount_col = i
+                
+                print(f"DEBUG: Account col: {account_col}, Debit col: {debit_amount_col}, Credit col: {credit_amount_col}")
+                
+                # Get account name from Account column
+                if account_col is not None and account_col < len(row_data):
+                    account_name = row_data[account_col]
+                    print(f"DEBUG: Account name: {account_name}")
+                    
+                    # Check if this row has debit amount
+                    has_debit = (debit_amount_col is not None and 
+                               debit_amount_col < len(row_data) and 
+                               row_data[debit_amount_col] and 
+                               row_data[debit_amount_col].strip())
+                    
+                    # Check if this row has credit amount  
+                    has_credit = (credit_amount_col is not None and 
+                                credit_amount_col < len(row_data) and 
+                                row_data[credit_amount_col] and 
+                                row_data[credit_amount_col].strip())
+                    
+                    print(f"DEBUG: Has debit: {has_debit}, Has credit: {has_credit}")
+                    
+                    # Assign account based on which amount column has data
+                    if has_debit and not debit_account:
+                        debit_account = account_name
+                        print(f"DEBUG: Set debit account: {debit_account}")
+                    elif has_credit and not credit_account:
+                        credit_account = account_name
+                        print(f"DEBUG: Set credit account: {credit_account}")
+        
+        # Add the identified accounts to the transaction data
+        if debit_account:
+            transaction_data['Debit Account'] = debit_account
+        if credit_account:
+            transaction_data['Credit Account'] = credit_account
+        
+        print(f"DEBUG: Identified Debit Account: {debit_account}")
+        print(f"DEBUG: Identified Credit Account: {credit_account}")
         print(f"DEBUG: Transaction found with {len(transaction_data)} fields")
         return transaction_data
         
