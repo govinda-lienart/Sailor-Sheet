@@ -62,17 +62,9 @@ Last Updated: 2025-01-05
     <div class="container">
         
         <!-- =============================================================
-             MAIN FORM CONTENT
+             LEFT ACCESS PANEL
              ============================================================= -->
-        <div class="main-content">
-         
-        <!-- =============================================================
-             NGO HEADER SECTION
-             ============================================================= -->
-            <!-- Header content will go here -->
-            
-            <!-- LEFT ACCESS PANEL -->
-            <div id="form-access-panel" class="form-access-panel">
+        <div id="form-access-panel" class="form-access-panel">
                 <h5>📊 Quick Access</h5>
                 
             <!-- Google Sheets Access -->
@@ -100,22 +92,31 @@ Last Updated: 2025-01-05
                        target="_blank" class="access-link access-link-documentation">📚 Documentation</a>
                     </div>
                 </div>
-            </div>
+                
+            <!-- Tools Section -->
+                <div class="access-section">
+                <h6 class="access-heading-main">🔧 Tools</h6>
+                    <div class="access-links">
+                    <button id="newEntryBtn" class="access-link access-link-new-entry tool-btn active">✏️ New Entry</button>
+                    <button id="updateEntryBtn" class="access-link access-link-update-entry tool-btn">🔄 Update Entry</button>
+                    </div>
+                </div>
+        </div>
+        
+        <!-- =============================================================
+             MAIN FORM CONTENT
+             ============================================================= -->
+        <div class="main-content">
             
         <!-- =============================================================
              MAIN FORM CONTAINER
              ============================================================= -->
-                         <div class="form-container">
+            <div class="form-container">
             
             <!-- HEADER SECTION -->
-                <div class="enhanced-logo-title-section">
-                    <div class="logo-section">
-                        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="NGO Logo">
-                    </div>
-                    <div class="title-section">
-                        <h1>NGO Accounting System</h1>
-                        <p>Professional Financial Management</p>
-                    </div>
+                <div class="form-header-section">
+                    <h1 class="form-main-title">✏️ New Entry</h1>
+                    <p class="form-subtitle">Create a new transaction record</p>
                 </div>
      
             <!-- FLASH MESSAGES -->
@@ -570,6 +571,65 @@ Last Updated: 2025-01-05
                 </button>
             
         </div> <!-- End form-container -->
+        
+        <!-- =============================================================
+             UPDATE ENTRY FORM (Initially Hidden)
+             ============================================================= -->
+        <div id="updateFormContainer" class="form-container update-form-container" style="display: none;">
+            
+            <!-- UPDATE FORM HEADER -->
+            <div class="form-header-section">
+                <h1 class="form-main-title">🔄 Update Transaction</h1>
+                <p class="form-subtitle">Search and modify existing transaction records</p>
+            </div>
+            
+            <!-- SEARCH TRANSACTION SECTION -->
+            <div class="form-section" id="search-transaction-section">
+                <div class="section-header">
+                    <span class="section-icon">🔍</span>
+                    <h3 class="section-title">Search Transaction</h3>
+                    <p class="section-description">Enter the transaction number to find and update an existing record</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="searchTransactionNumber" class="form-label">
+                        <span class="label-icon">🔢</span>
+                        Search Transaction Number:
+                        <span class="required-asterisk">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="searchTransactionNumber" 
+                        name="searchTransactionNumber" 
+                        class="form-control" 
+                        placeholder="Enter transaction number (e.g., 260925-110759)"
+                        required
+                    >
+                    <div class="field-help">
+                        <small class="help-text">
+                            💡 Enter the complete transaction number to search for existing records
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" id="searchTransactionBtn" class="btn-enhanced enhanced-search-btn">
+                        🔍 Search Transaction
+                    </button>
+                </div>
+                
+                <!-- Search Results Area (Future Implementation) -->
+                <div id="searchResults" class="search-results-container" style="display: none;">
+                    <div class="alert alert-info">
+                        <strong>🔍 Search Results:</strong>
+                        <p>Transaction data will appear here when found...</p>
+                        <p><em>Future: This will show editable form fields populated with existing transaction data</em></p>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <!-- End update-form-container -->
+        
         </div> <!-- End main-content -->
         
         <!-- =============================================================
@@ -886,6 +946,66 @@ Last Updated: 2025-01-05
             if (isOpen && !widget.contains(e.target)) {
                 toggleChat();
             }
+        });
+
+        // =====================================================================
+        // TOOLS FUNCTIONALITY - Toggle between New Entry and Update Entry
+        // =====================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const newEntryBtn = document.getElementById('newEntryBtn');
+            const updateEntryBtn = document.getElementById('updateEntryBtn');
+            const mainFormContainer = document.querySelector('.form-container:not(.update-form-container)');
+            const updateFormContainer = document.getElementById('updateFormContainer');
+            const searchTransactionBtn = document.getElementById('searchTransactionBtn');
+            const searchResults = document.getElementById('searchResults');
+
+            // New Entry Button Click
+            newEntryBtn.addEventListener('click', function() {
+                // Update active states
+                newEntryBtn.classList.add('active');
+                updateEntryBtn.classList.remove('active');
+                
+                // Show/hide forms
+                mainFormContainer.style.display = 'block';
+                updateFormContainer.style.display = 'none';
+                
+                console.log('✏️ Switched to New Entry mode');
+            });
+
+            // Update Entry Button Click
+            updateEntryBtn.addEventListener('click', function() {
+                // Update active states
+                updateEntryBtn.classList.add('active');
+                newEntryBtn.classList.remove('active');
+                
+                // Show/hide forms
+                mainFormContainer.style.display = 'none';
+                updateFormContainer.style.display = 'block';
+                
+                console.log('🔄 Switched to Update Entry mode');
+            });
+
+            // Search Transaction Button Click (Future functionality)
+            searchTransactionBtn.addEventListener('click', function() {
+                const transactionNumber = document.getElementById('searchTransactionNumber').value.trim();
+                
+                if (!transactionNumber) {
+                    alert('Please enter a transaction number to search');
+                    return;
+                }
+                
+                // Show search results (placeholder for now)
+                searchResults.style.display = 'block';
+                searchResults.innerHTML = `
+                    <div class="alert alert-info">
+                        <strong>🔍 Searching for: ${transactionNumber}</strong>
+                        <p>Future: This will search Google Sheets for the transaction and populate editable fields</p>
+                        <p><em>Implementation pending: Google Sheets API integration for transaction retrieval</em></p>
+                    </div>
+                `;
+                
+                console.log('🔍 Searching for transaction:', transactionNumber);
+            });
         });
     </script>
     

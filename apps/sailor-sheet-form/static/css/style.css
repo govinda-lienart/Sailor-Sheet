@@ -573,16 +573,16 @@ h1 {
 }
 
 .form-access-panel {
-    position: fixed;
-    top: 20px;
-    left: 20px;
+    position: sticky;
+    top: 90px; /* Stick below the fixed navbar */
     width: 200px;
+    min-width: 200px;
     background: white;
     border: 2px solid #e0e0e0;
     border-radius: 12px;
     padding: 15px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
+    height: fit-content;
     height: auto;
     max-height: none;
     overflow: visible;
@@ -641,7 +641,9 @@ h1 {
     font-weight: 500;
     text-align: center;
     transition: all 0.3s ease;
-    border: 1px solid rgba(0,0,0,0.1);
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 1px solid #e9ecef;
 }
 
 .access-link:hover {
@@ -662,11 +664,107 @@ h1 {
     margin-bottom: 0;
 }
 
+/* =====================================================================
+   TOOLS SECTION STYLING
+   ===================================================================== */
+.tool-btn {
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.tool-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.tool-btn.active {
+    border: 2px solid #007bff;
+    box-shadow: 0 0 10px rgba(0,123,255,0.3);
+}
+
+.access-link-new-entry {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #28a745;
+}
+
+.access-link-update-entry {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #ffc107;
+}
+
+/* Update Form Styling */
+.update-form-container {
+    margin-top: 20px;
+}
+
+.enhanced-search-btn {
+    background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.enhanced-search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(23,162,184,0.4);
+}
+
+.search-results-container {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+/* =====================================================================
+   FORM HEADER STYLING
+   ===================================================================== */
+.form-header-section {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.form-main-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.form-subtitle {
+    font-size: 16px;
+    color: #6c757d;
+    font-style: italic;
+    margin: 0;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .container {
         padding: 10px;
-        flex-direction: column; /* Stack form and navigation vertically on mobile */
+        flex-direction: column; /* Stack all panels vertically on mobile */
+    }
+    
+    .form-access-panel {
+        position: static;
+        width: 100%;
+        min-width: auto;
+        margin-bottom: 20px;
+        order: -2; /* Show Quick Access first on mobile */
     }
     
     .form-container {
@@ -854,35 +952,41 @@ h1 {
     margin-bottom: 15px;
 }
 
-/* Access panel link colors */
+/* Access panel link colors - Updated to match navigation panel style */
 .access-link-be {
-    background-color: #6b8cae;
-    color: #fff;
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #6b8cae;
 }
 
 .access-link-vn {
-    background-color: #c7965e;
-    color: #fff;
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #c7965e;
 }
 
 .access-link-bills {
-    background-color: #7ba05b;
-    color: #fff;
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #7ba05b;
 }
 
 .access-link-red-bills {
-    background-color: #c85a5a;
-    color: #fff;
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #c85a5a;
 }
 
 .access-link-bank-statement {
-    background-color: #8967a3;
-    color: #fff;
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #8967a3;
 }
 
 .access-link-documentation {
-    background-color: #7a8288;
-    color: #fff;
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #7a8288;
 }
 
 /* Navigation link base styles */
