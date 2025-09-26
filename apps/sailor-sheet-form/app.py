@@ -547,7 +547,7 @@ def api_update_document():
             print(f"DEBUG: Document update failed")
             return jsonify({
                 'success': False,
-                'error': f'Failed to update {document_type} for transaction {transaction_number}'
+                'error': f'Failed to update {document_type} for transaction {transaction_number}. Check server logs for details.'
             }), 500
                 
     except Exception as e:

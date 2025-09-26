@@ -38,10 +38,15 @@ def search_transaction_tool(gc, sheet_type, transaction_number):
         
         sheet_id = sheet_ids[sheet_type]
         print(f"DEBUG: Using sheet ID: {sheet_id}")
+        print(f"DEBUG: This should be the SAME sheet as the search function")
         
         # Open the sheet
         sheet = gc.open_by_key(sheet_id)
         worksheet = sheet.sheet1  # Assuming we're searching the first worksheet
+        
+        print(f"DEBUG: Opened sheet: {sheet.title}")
+        print(f"DEBUG: Using worksheet: {worksheet.title}")
+        print(f"DEBUG: Worksheet ID: {worksheet.id}")
         
         # Step 1: Get only the transaction number column (Column A)
         # This is much faster than getting all data
@@ -249,11 +254,16 @@ def update_document_link(gc, sheet_type, transaction_number, document_type, file
             return False
         
         sheet_id = sheet_ids[sheet_type]
-        print(f"DEBUG: Using sheet ID: {sheet_id}")
+        print(f"DEBUG: UPDATE FUNCTION - Using sheet ID: {sheet_id}")
+        print(f"DEBUG: UPDATE FUNCTION - This should be the SAME sheet as the search function")
         
         # Open the sheet
         sheet = gc.open_by_key(sheet_id)
         worksheet = sheet.sheet1
+        
+        print(f"DEBUG: UPDATE FUNCTION - Opened sheet: {sheet.title}")
+        print(f"DEBUG: UPDATE FUNCTION - Using worksheet: {worksheet.title}")
+        print(f"DEBUG: UPDATE FUNCTION - Worksheet ID: {worksheet.id}")
         
         # Get headers to find the correct column
         headers = worksheet.row_values(1)
@@ -261,51 +271,111 @@ def update_document_link(gc, sheet_type, transaction_number, document_type, file
         
         # Find the document column index
         document_column_map = {
-            'bill': 'Bill',
-            'redBill': 'Red BIll',  # Note the capital I
-            'documentation': 'Doc'
+            'bill': ['Bill'],
+            'redBill': ['Red BIll', 'Red Bill', 'Red Bills'],  # Try different variations
+            'documentation': ['Doc', 'Documentation']
         }
         
-        target_column = document_column_map.get(document_type)
-        if not target_column:
+        possible_columns = document_column_map.get(document_type)
+        if not possible_columns:
             print(f"ERROR: Invalid document type: {document_type}")
             return False
         
+        print(f"DEBUG: Looking for columns {possible_columns} in headers: {headers}")
+        
         # Find column index
         column_index = None
+        target_column = None
         for i, header in enumerate(headers):
-            if header == target_column:
+            print(f"DEBUG: Checking header {i}: '{header}'")
+            if header in possible_columns:
                 column_index = i
+                target_column = header
+                print(f"DEBUG: Found column '{target_column}' at index {i}")
                 break
         
         if column_index is None:
-            print(f"ERROR: Column '{target_column}' not found in headers")
+            print(f"ERROR: None of the columns {possible_columns} found in headers")
+            print(f"DEBUG: Available headers: {headers}")
             return False
         
         print(f"DEBUG: Found column '{target_column}' at index {column_index}")
         
         # Find all rows with this transaction number
         transaction_column = worksheet.col_values(1)  # Column A
+        print(f"DEBUG: Searching for transaction '{transaction_number}' in column A")
+        print(f"DEBUG: Transaction number type: {type(transaction_number)}")
+        print(f"DEBUG: Transaction number length: {len(transaction_number)}")
+        print(f"DEBUG: Total rows in sheet: {len(transaction_column)}")
+        
+        # Show some sample transaction numbers for debugging
+        sample_transactions = [txn for txn in transaction_column[1:6] if txn]  # Skip header, get first 5 transactions
+        print(f"DEBUG: Sample transaction numbers in sheet: {sample_transactions}")
+        
+        # Check for exact matches with detailed debugging
         row_indices = []
+        found_similar = []
         for i, cell_value in enumerate(transaction_column):
             if cell_value == transaction_number:
                 row_indices.append(i + 1)  # Convert to 1-based indexing
+                print(f"DEBUG: EXACT MATCH found at row {i + 1}: '{cell_value}'")
+            elif transaction_number in str(cell_value):
+                found_similar.append((i + 1, cell_value))
+        
+        if found_similar:
+            print(f"DEBUG: Found similar transaction numbers: {found_similar}")
+        
+        # Also try string comparison with strip
+        if not row_indices:
+            print(f"DEBUG: No exact matches, trying with stripped values...")
+            for i, cell_value in enumerate(transaction_column):
+                if str(cell_value).strip() == str(transaction_number).strip():
+                    row_indices.append(i + 1)
+                    print(f"DEBUG: STRIPPED MATCH found at row {i + 1}: '{cell_value}'")
         
         print(f"DEBUG: Found transaction at rows: {row_indices}")
         
         if not row_indices:
-            print(f"ERROR: Transaction {transaction_number} not found")
+            print(f"ERROR: Transaction '{transaction_number}' not found in sheet")
+            print(f"DEBUG: Available transaction numbers (first 10): {[txn for txn in transaction_column[1:11] if txn]}")
+            print(f"DEBUG: Transaction number format should be DDMMYY-HHMMSS (e.g., 080925-180635)")
+            print(f"DEBUG: You searched for: {transaction_number}")
             return False
         
-        # Update all rows for this transaction
-        for row_index in row_indices:
-            print(f"DEBUG: Updating row {row_index} with document link")
-            
-            # Update the cell with the document link
-            worksheet.update_cell(row_index, column_index + 1, file_url)
-            print(f"DEBUG: Updated row {row_index}, column {column_index + 1} with: {file_url}")
+        # Create HYPERLINK formula like in the main form
+        hyperlink_formula = f'=HYPERLINK("{file_url}", "✔")'
+        print(f"DEBUG: Created HYPERLINK formula: {hyperlink_formula}")
         
-        print(f"DEBUG: Successfully updated {len(row_indices)} rows for transaction {transaction_number}")
+        # Map document types to column letters (same as main form)
+        column_mapping = {
+            'bill': 'N',      # Bill column
+            'redBill': 'O',   # Red Bill column  
+            'documentation': 'P'  # Doc column
+        }
+        
+        # Get the column letter for this document type
+        column_letter = column_mapping.get(document_type)
+        if not column_letter:
+            print(f"ERROR: Invalid document type: {document_type}")
+            return False
+        
+        print(f"DEBUG: Using column {column_letter} for document type {document_type}")
+        
+        # Update all rows for this transaction with HYPERLINK formula
+        for row_index in row_indices:
+            print(f"DEBUG: Updating row {row_index} with HYPERLINK formula")
+            
+            try:
+                # Update the cell with the HYPERLINK formula using USER_ENTERED (same as main form)
+                cell_address = f'{column_letter}{row_index}'
+                print(f"DEBUG: Updating cell {cell_address} with formula: {hyperlink_formula}")
+                worksheet.update(cell_address, hyperlink_formula, value_input_option='USER_ENTERED')
+                print(f"DEBUG: Successfully updated cell {cell_address}")
+            except Exception as e:
+                print(f"ERROR: Failed to update cell {cell_address}: {str(e)}")
+                return False
+        
+        print(f"DEBUG: Successfully updated {len(row_indices)} rows for transaction {transaction_number} with HYPERLINK formulas")
         return True
         
     except Exception as e:

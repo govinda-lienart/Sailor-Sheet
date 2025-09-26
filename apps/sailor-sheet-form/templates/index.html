@@ -1357,15 +1357,13 @@ Last Updated: 2025-01-05
                                 <small style="color: #6c757d; font-size: 12px;">Allowed: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, GIF, TXT</small>
                             </div>
                             
-                            <div style="margin-bottom: 15px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">File Description (Optional):</label>
-                                <input type="text" id="fileDescription" name="description" placeholder="Brief description of the document"
-                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            </div>
                             
-                            <div style="display: flex; gap: 10px; align-items: center;">
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                                 <button type="submit" id="uploadBtn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                                    📤 Upload Document
+                                    📤 Upload to Google Drive
+                                </button>
+                                <button type="button" id="updateSheetsBtn" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: none;">
+                                    📊 Update Google Sheets
                                 </button>
                                 <button type="button" id="cancelUploadBtn" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">
                                     ❌ Cancel
@@ -1441,14 +1439,34 @@ Last Updated: 2025-01-05
                     documentTypeSelect.value = '';
                     documentUploadForm.reset();
                     hideUploadResult();
+                    
+                    // Hide the Google Sheets update button
+                    const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                    if (updateSheetsBtn) {
+                        updateSheetsBtn.style.display = 'none';
+                        updateSheetsBtn.disabled = false;
+                        updateSheetsBtn.textContent = '📊 Update Google Sheets';
+                        updateSheetsBtn.style.background = 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)';
+                    }
+                    
+                    // Clear uploaded file data
+                    window.uploadedFileData = null;
                 });
             }
             
-            // Handle form submission
+            // Handle form submission (Step 1: Upload to Google Drive)
             if (documentUploadForm) {
                 documentUploadForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     handleDocumentUpload();
+                });
+            }
+            
+            // Handle Google Sheets update (Step 2: Update Google Sheets)
+            const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+            if (updateSheetsBtn) {
+                updateSheetsBtn.addEventListener('click', function() {
+                    handleGoogleSheetsUpdate();
                 });
             }
         }
@@ -1465,15 +1483,35 @@ Last Updated: 2025-01-05
             
             const selectedType = documentTypeSelect.value;
             const file = documentFile.files[0];
-            const description = fileDescription.value;
             
             if (!selectedType || !file) {
                 showUploadResult('Please select a document type and file.', 'error');
                 return;
             }
             
-            // Get current transaction number from the search
-            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            // Get current transaction number from the search results instead of input field
+            const searchResults = document.getElementById('searchResults');
+            const transactionTable = searchResults ? searchResults.querySelector('table') : null;
+            let transactionNumber = '';
+            
+            // Try to get transaction number from the displayed table
+            if (transactionTable) {
+                const transactionRow = Array.from(transactionTable.querySelectorAll('tr')).find(row => 
+                    row.cells[0] && row.cells[0].textContent.trim() === 'Transaction Number'
+                );
+                if (transactionRow && transactionRow.cells[1]) {
+                    transactionNumber = transactionRow.cells[1].textContent.trim();
+                }
+            }
+            
+            // Fallback to input field if table method fails
+            if (!transactionNumber) {
+                transactionNumber = document.getElementById('transactionNumberInput').value;
+            }
+            
+            console.log(`DEBUG: Transaction number from search results: "${transactionNumber}"`);
+            console.log(`DEBUG: Transaction number from input field: "${document.getElementById('transactionNumberInput').value}"`);
+            
             if (!transactionNumber) {
                 showUploadResult('Transaction number not found. Please search for a transaction first.', 'error');
                 return;
@@ -1490,9 +1528,6 @@ Last Updated: 2025-01-05
             formData.append('file', file);
             formData.append('transaction_number', transactionNumber);
             formData.append('file_type', selectedType);
-            if (description) {
-                formData.append('description', description);
-            }
             
             // Simulate progress
             let progress = 0;
@@ -1515,24 +1550,31 @@ Last Updated: 2025-01-05
                 progressText.textContent = 'Complete!';
                 
                 if (data.success) {
-                    // Update Google Sheets with the document link
-                    updateGoogleSheetsDocument(transactionNumber, selectedType, data.file_url);
+                    // Store the upload data for Google Sheets update
+                    window.uploadedFileData = {
+                        transactionNumber: transactionNumber,
+                        documentType: selectedType,
+                        fileUrl: data.file_url,
+                        fileName: data.file_name
+                    };
                     
+                    // Show success message and enable Google Sheets update button
                     showUploadResult(`
                         <div style="color: #28a745; font-weight: 600;">
-                            ✅ Document uploaded successfully!
+                            ✅ File uploaded to Google Drive successfully!
                             <br><strong>File:</strong> ${data.file_name}
                             <br><strong>Type:</strong> ${selectedType}
                             <br><a href="${data.file_url}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>
+                            <br><br><strong>Next Step:</strong> Click "Update Google Sheets" to add the document link to your transaction.
                         </div>
                     `, 'success');
                     
-                    // Reset form
-                    documentUploadForm.reset();
-                    documentTypeSelect.value = '';
-                    setTimeout(() => {
-                        document.getElementById('uploadFormContainer').style.display = 'none';
-                    }, 2000);
+                    // Show the Google Sheets update button
+                    const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                    if (updateSheetsBtn) {
+                        updateSheetsBtn.style.display = 'inline-block';
+                    }
+                    
                 } else {
                     showUploadResult(`❌ Upload failed: ${data.error}`, 'error');
                 }
@@ -1579,13 +1621,58 @@ Last Updated: 2025-01-05
             }
         }
         
+        // Handle Google Sheets update (Step 2)
+        function handleGoogleSheetsUpdate() {
+            if (!window.uploadedFileData) {
+                showUploadResult('❌ No uploaded file data found. Please upload a file first.', 'error');
+                return;
+            }
+            
+            let { transactionNumber, documentType, fileUrl, fileName } = window.uploadedFileData;
+            
+            // Double-check the transaction number from the displayed search results
+            const searchResults = document.getElementById('searchResults');
+            const transactionTable = searchResults ? searchResults.querySelector('table') : null;
+            
+            if (transactionTable) {
+                const transactionRow = Array.from(transactionTable.querySelectorAll('tr')).find(row => 
+                    row.cells[0] && row.cells[0].textContent.trim() === 'Transaction Number'
+                );
+                if (transactionRow && transactionRow.cells[1]) {
+                    const tableTransactionNumber = transactionRow.cells[1].textContent.trim();
+                    console.log(`DEBUG: Transaction number from uploaded data: "${transactionNumber}"`);
+                    console.log(`DEBUG: Transaction number from search results table: "${tableTransactionNumber}"`);
+                    
+                    // Use the transaction number from the search results table (most reliable)
+                    if (tableTransactionNumber) {
+                        transactionNumber = tableTransactionNumber;
+                        console.log(`DEBUG: Using transaction number from search results: "${transactionNumber}"`);
+                    }
+                }
+            }
+            
+            console.log(`DEBUG: Starting Google Sheets update for transaction: ${transactionNumber}`);
+            console.log(`DEBUG: Document type: ${documentType}`);
+            console.log(`DEBUG: File URL: ${fileUrl}`);
+            
+            // Show loading state
+            const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+            if (updateSheetsBtn) {
+                updateSheetsBtn.disabled = true;
+                updateSheetsBtn.textContent = '🔄 Updating...';
+            }
+            
+            // Call the Google Sheets update API
+            updateGoogleSheetsDocument(transactionNumber, documentType, fileUrl);
+        }
+        
         // Update Google Sheets with document link
         function updateGoogleSheetsDocument(transactionNumber, documentType, fileUrl) {
             // Get the current sheet type from the search form
-            const sheetTypeSelect = document.getElementById('sheetTypeSelect');
+            const sheetTypeSelect = document.getElementById('searchSheet');
             const sheetType = sheetTypeSelect ? sheetTypeSelect.value : 'vn';
             
-            console.log(`DEBUG: Updating Google Sheets - Transaction: ${transactionNumber}, Type: ${documentType}, Sheet: ${sheetType}`);
+            console.log(`DEBUG: Updating Google Sheets - Transaction: ${transactionNumber}, Type: ${documentType}, Sheet: ${sheetType}, URL: ${fileUrl}`);
             
             // Call the document update API
             fetch('/api/update_document', {
@@ -1600,16 +1687,53 @@ Last Updated: 2025-01-05
                     file_url: fileUrl
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('DEBUG: API response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('DEBUG: API response data:', data);
                 if (data.success) {
                     console.log('✅ Google Sheets updated successfully:', data.message);
+                    
+                    // Reset button state
+                    const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                    if (updateSheetsBtn) {
+                        updateSheetsBtn.disabled = false;
+                        updateSheetsBtn.textContent = '✅ Updated Successfully!';
+                        updateSheetsBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                    }
+                    
+                    // Show success message to user
+                    showUploadResult(`
+                        <div style="color: #28a745; font-weight: 600;">
+                            ✅ Google Sheets updated successfully!
+                            <br><strong>Transaction:</strong> ${transactionNumber}
+                            <br><strong>Document Type:</strong> ${documentType}
+                            <br><strong>Status:</strong> Both debit and credit rows updated with document link
+                            <br><a href="${fileUrl}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>
+                        </div>
+                    `, 'success');
+                    
+                    // Clear the uploaded file data
+                    window.uploadedFileData = null;
+                    
                 } else {
                     console.error('❌ Google Sheets update failed:', data.error);
+                    
+                    // Reset button state
+                    const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                    if (updateSheetsBtn) {
+                        updateSheetsBtn.disabled = false;
+                        updateSheetsBtn.textContent = '📊 Update Google Sheets';
+                    }
+                    
+                    showUploadResult(`❌ Google Sheets update failed: ${data.error}`, 'error');
                 }
             })
             .catch(error => {
                 console.error('❌ Error updating Google Sheets:', error);
+                showUploadResult(`❌ Error updating Google Sheets: ${error.message}`, 'error');
             });
         }
         
