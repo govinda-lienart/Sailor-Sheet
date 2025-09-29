@@ -558,6 +558,72 @@ def api_update_document():
         }), 500
 
 # =============================================================================
+# GOOGLE DRIVE LINK PROCESSING API
+# =============================================================================
+
+@app.route('/api/process_google_drive_link', methods=['POST'])
+def api_process_google_drive_link():
+    """
+    API endpoint for processing Google Drive links.
+    
+    Receives: JSON with google_drive_url and document_type
+    Downloads the file and re-uploads it to the correct folder
+    Returns: JSON with new file URL and name
+    """
+    try:
+        # Get data from request
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
+        google_drive_url = data.get('google_drive_url')
+        document_type = data.get('document_type')
+        transaction_number = data.get('transaction_number')
+        
+        # Validate required fields
+        if not all([google_drive_url, document_type]):
+            return jsonify({
+                'success': False,
+                'error': 'Google Drive URL and document type are required'
+            }), 400
+        
+        print(f"\n" + "="*50)
+        print(f"DEBUG: PROCESS GOOGLE DRIVE LINK API CALLED")
+        print(f"  - Google Drive URL: {google_drive_url}")
+        print(f"  - Document Type: {document_type}")
+        print(f"  - Transaction Number: {transaction_number}")
+        print(f"="*50)
+        
+        # Call the processing function with transaction number for proper naming
+        from file_upload_manager import process_google_drive_link
+        result = process_google_drive_link(google_drive_url, document_type, transaction_number)
+        
+        if result and result.get('success'):
+            print(f"DEBUG: Google Drive link processed successfully")
+            return jsonify({
+                'success': True,
+                'file_url': result['file_url'],
+                'file_name': result['file_name'],
+                'message': f'File downloaded and uploaded to {document_type} folder successfully'
+            })
+        else:
+            print(f"DEBUG: Google Drive link processing failed")
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Failed to process Google Drive link')
+            }), 500
+                
+    except Exception as e:
+        print(f"ERROR in api_process_google_drive_link: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Google Drive link processing failed: {str(e)}'
+        }), 500
+
+# =============================================================================
 # START THE APPLICATION
 # =============================================================================
 

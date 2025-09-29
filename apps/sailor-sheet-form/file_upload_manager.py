@@ -260,3 +260,268 @@ def handle_web_upload(file, transaction_number=None, file_type='bills'):
         return {'success': False, 'error': str(e)}
 
 
+# Upload File Content To Drive
+# ----------------------------
+def upload_file_content_to_drive(file_content, filename, document_type):
+    """
+    Upload file content (BytesIO) to Google Drive shared folder
+    Args:
+        file_content: BytesIO object with file content
+        filename: Name for the uploaded file
+        document_type: Type of document ('bill', 'redBill', 'documentation')
+    Returns: dict with success status, file_url, and file_name
+    """
+    try:
+        # Map document_type to file_type for folder selection
+        document_type_mapping = {
+            'bill': 'bills',
+            'redBill': 'redBills',
+            'documentation': 'documentation'
+        }
+        file_type = document_type_mapping.get(document_type, 'bills')
+        
+        # Get the correct folder ID for this file type
+        folder_id = FOLDER_IDS.get(file_type, FOLDER_ID)
+        
+        print(f"DEBUG: Content upload - Filename: {filename}")
+        print(f"DEBUG: Content upload - Document type: {document_type}")
+        print(f"DEBUG: Content upload - File type: {file_type}")
+        print(f"DEBUG: Content upload - Folder ID: {folder_id}")
+        
+        # Get credentials and build service
+        creds = get_service_account_credentials()
+        drive = build_drive_service(creds)
+        
+        # Check folder access first
+        try:
+            folder = drive.files().get(
+                fileId=folder_id,
+                supportsAllDrives=True,
+                fields="id,name"
+            ).execute()
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Cannot access folder: {str(e)}'
+            }
+        
+        # Determine MIME type from filename extension
+        import mimetypes
+        mime_type, _ = mimetypes.guess_type(filename)
+        if not mime_type:
+            mime_type = 'application/octet-stream'
+        
+        # Upload the file content
+        media = MediaIoBaseUpload(
+            file_content,
+            mimetype=mime_type,
+            resumable=True
+        )
+        
+        file_metadata = {
+            'name': filename,
+            'parents': [folder_id]
+        }
+        
+        uploaded_file = drive.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields="id,name,webViewLink",
+            supportsAllDrives=True
+        ).execute()
+        
+        return {
+            'success': True,
+            'file_url': uploaded_file['webViewLink'],
+            'file_name': uploaded_file['name'],
+            'file_id': uploaded_file['id']
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Upload failed: {str(e)}'
+        }
+
+
+# =============================================================================
+# GOOGLE DRIVE LINK PROCESSING
+# =============================================================================
+
+def process_google_drive_link(google_drive_url, document_type, transaction_number=None):
+    """
+    Process a Google Drive link by downloading the file and re-uploading it to the correct folder.
+    Uses the same naming system as the main form.
+    
+    Args:
+        google_drive_url: The Google Drive share URL
+        document_type: The type of document ('bill', 'redBill', 'documentation')
+        transaction_number: Optional transaction number for naming (from search results)
+    
+    Returns:
+        dict: {'success': True/False, 'file_url': str, 'file_name': str, 'error': str}
+    """
+    try:
+        print(f"DEBUG: Processing Google Drive link: {google_drive_url}")
+        print(f"DEBUG: Document type: {document_type}")
+        print(f"DEBUG: Transaction number: {transaction_number}")
+        
+        # Extract file ID from Google Drive URL
+        file_id = extract_file_id_from_url(google_drive_url)
+        if not file_id:
+            return {'success': False, 'error': 'Invalid Google Drive URL format'}
+        
+        print(f"DEBUG: Extracted file ID: {file_id}")
+        
+        # Download file from Google Drive
+        file_content, original_file_name = download_file_from_google_drive(file_id)
+        if not file_content:
+            return {'success': False, 'error': 'Failed to download file from Google Drive'}
+        
+        print(f"DEBUG: Downloaded file: {original_file_name}")
+        print(f"DEBUG: File size: {len(file_content)} bytes")
+        
+        # Generate unique filename using the same system as main form
+        base = original_file_name.rsplit('.', 1)[0] if '.' in original_file_name else original_file_name
+        ext = original_file_name.rsplit('.', 1)[1].lower() if '.' in original_file_name else 'bin'
+        
+        # Map document_type to file_type for the unique_name function
+        document_type_mapping = {
+            'bill': 'bills',
+            'redBill': 'redBills',
+            'documentation': 'documentation'
+        }
+        file_type = document_type_mapping.get(document_type, 'bills')
+        
+        # Generate unique filename using the same naming system as main form
+        unique_filename = unique_name(base, ext, transaction_number, file_type)
+        print(f"DEBUG: Generated unique filename: {unique_filename}")
+        
+        # Create a file-like object from the downloaded content
+        import io
+        file_obj = io.BytesIO(file_content)
+        
+        # Upload to the correct folder using the existing upload function
+        result = upload_file_content_to_drive(file_obj, unique_filename, document_type)
+        
+        if result['success']:
+            print(f"DEBUG: File successfully uploaded to {document_type} folder with name: {unique_filename}")
+            return {
+                'success': True,
+                'file_url': result['file_url'],
+                'file_name': unique_filename,  # Use the generated unique name
+                'message': f'File downloaded and uploaded to {document_type} folder successfully'
+            }
+        else:
+            return {'success': False, 'error': result['error']}
+            
+    except Exception as e:
+        print(f"DEBUG: Error in process_google_drive_link: {e}")
+        import traceback
+        traceback.print_exc()
+        return {'success': False, 'error': str(e)}
+
+
+def extract_file_id_from_url(google_drive_url):
+    """
+    Extract file ID from various Google Drive URL formats.
+    
+    Args:
+        google_drive_url: Google Drive share URL
+    
+    Returns:
+        str: File ID or None if not found
+    """
+    import re
+    
+    # Common Google Drive URL patterns
+    patterns = [
+        r'drive\.google\.com/file/d/([a-zA-Z0-9-_]+)',
+        r'drive\.google\.com/open\?id=([a-zA-Z0-9-_]+)',
+        r'docs\.google\.com/document/d/([a-zA-Z0-9-_]+)',
+        r'docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, google_drive_url)
+        if match:
+            return match.group(1)
+    
+    return None
+
+
+def download_file_from_google_drive(file_id):
+    """
+    Download file content from Google Drive using the file ID.
+    
+    Args:
+        file_id: Google Drive file ID
+    
+    Returns:
+        tuple: (file_content, file_name) or (None, None) if failed
+    """
+    try:
+        import requests
+        
+        # Google Drive direct download URL
+        download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+        
+        print(f"DEBUG: Downloading from URL: {download_url}")
+        
+        # Make request to download file
+        response = requests.get(download_url, stream=True)
+        response.raise_for_status()
+        
+        # Get file name from Content-Disposition header
+        file_name = None
+        if 'Content-Disposition' in response.headers:
+            import re
+            match = re.search(r'filename="([^"]+)"', response.headers['Content-Disposition'])
+            if match:
+                file_name = match.group(1)
+        
+        # If no filename in header, generate one
+        if not file_name:
+            content_type = response.headers.get('Content-Type', 'application/octet-stream')
+            extension = get_extension_from_content_type(content_type)
+            file_name = f"downloaded_file_{file_id[:8]}{extension}"
+        
+        print(f"DEBUG: File name: {file_name}")
+        print(f"DEBUG: Content-Type: {response.headers.get('Content-Type')}")
+        
+        # Read file content
+        file_content = response.content
+        
+        return file_content, file_name
+        
+    except Exception as e:
+        print(f"DEBUG: Error downloading file: {e}")
+        return None, None
+
+
+def get_extension_from_content_type(content_type):
+    """
+    Get file extension from MIME content type.
+    
+    Args:
+        content_type: MIME content type
+    
+    Returns:
+        str: File extension with dot
+    """
+    mime_to_extension = {
+        'application/pdf': '.pdf',
+        'image/jpeg': '.jpg',
+        'image/jpg': '.jpg',
+        'image/png': '.png',
+        'image/gif': '.gif',
+        'application/msword': '.doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+        'application/vnd.ms-excel': '.xls',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+        'text/plain': '.txt',
+    }
+    
+    return mime_to_extension.get(content_type.lower(), '.bin')
+
+

@@ -1350,13 +1350,41 @@ Last Updated: 2025-01-05
                         <h5 style="margin: 0 0 15px 0; color: #495057;" id="uploadFormTitle">Upload Document</h5>
                         
                         <form id="documentUploadForm" enctype="multipart/form-data">
-                            <div style="margin-bottom: 15px;">
+                            <!-- Upload Mode Toggle -->
+                            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📎 Upload Method:</label>
+                                <div style="display: flex; gap: 20px; margin-bottom: 10px;">
+                                    <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #e3f2fd; border: 1px solid #2196f3;">
+                                        <input type="radio" name="uploadMode" value="file" checked style="margin-right: 8px;">
+                                        <span style="font-weight: 500;">📁 Upload New File</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #f3e5f5; border: 1px solid #9c27b0;">
+                                        <input type="radio" name="uploadMode" value="link" style="margin-right: 8px;">
+                                        <span style="font-weight: 500;">🔗 Link Existing File</span>
+                                    </label>
+                                </div>
+                                <small style="color: #6c757d; font-size: 12px;">
+                                    💡 Choose how you want to add the document: upload a new file or link to an existing Google Drive file
+                                </small>
+                            </div>
+                            
+                            <!-- File Upload Section -->
+                            <div id="fileUploadSection" style="margin-bottom: 15px;">
                                 <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Select File:</label>
                                 <input type="file" id="documentFile" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.txt" 
-                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                                 <small style="color: #6c757d; font-size: 12px;">Allowed: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, GIF, TXT</small>
                             </div>
                             
+                            <!-- Google Drive Link Section -->
+                            <div id="linkInputSection" style="margin-bottom: 15px; display: none;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Google Drive Link:</label>
+                                <input type="url" id="googleDriveLink" placeholder="Paste Google Drive URL here..." 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <small style="color: #6c757d; font-size: 12px; margin-top: 5px; display: block;">
+                                    💡 Tip: Copy the "Share" link from Google Drive (make sure it's set to "Anyone with the link can view")
+                                </small>
+                            </div>
                             
                             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                                 <button type="submit" id="uploadBtn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">
@@ -1409,7 +1437,38 @@ Last Updated: 2025-01-05
             const documentUploadForm = document.getElementById('documentUploadForm');
             const cancelUploadBtn = document.getElementById('cancelUploadBtn');
             
+            // Upload mode toggle elements
+            const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const linkInputSection = document.getElementById('linkInputSection');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
             if (!documentTypeSelect || !uploadFormContainer) return;
+            
+            // Handle upload mode toggle
+            uploadModeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'file') {
+                        // Show file upload, hide link input
+                        fileUploadSection.style.display = 'block';
+                        linkInputSection.style.display = 'none';
+                        uploadBtn.textContent = '📤 Upload to Google Drive';
+                        uploadBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                        
+                        // Clear link input
+                        document.getElementById('googleDriveLink').value = '';
+                    } else if (this.value === 'link') {
+                        // Show link input, hide file upload
+                        fileUploadSection.style.display = 'none';
+                        linkInputSection.style.display = 'block';
+                        uploadBtn.textContent = '🔗 Process Google Drive Link';
+                        uploadBtn.style.background = 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)';
+                        
+                        // Clear file input
+                        document.getElementById('documentFile').value = '';
+                    }
+                });
+            });
             
             // Show/hide upload form based on document type selection
             documentTypeSelect.addEventListener('change', function() {
@@ -1454,11 +1513,19 @@ Last Updated: 2025-01-05
                 });
             }
             
-            // Handle form submission (Step 1: Upload to Google Drive)
+            // Handle form submission (Step 1: Upload to Google Drive or Process Link)
             if (documentUploadForm) {
                 documentUploadForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    handleDocumentUpload();
+                    
+                    // Check which mode is selected
+                    const selectedMode = document.querySelector('input[name="uploadMode"]:checked').value;
+                    
+                    if (selectedMode === 'file') {
+                        handleDocumentUpload();
+                    } else if (selectedMode === 'link') {
+                        handleGoogleDriveLink();
+                    }
                 });
             }
             
@@ -1618,6 +1685,118 @@ Last Updated: 2025-01-05
             const uploadResult = document.getElementById('uploadResult');
             if (uploadResult) {
                 uploadResult.style.display = 'none';
+            }
+        }
+        
+        // Handle Google Drive link processing
+        async function handleGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('googleDriveLink').value.trim();
+            const documentTypeSelect = document.getElementById('documentTypeSelect');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error');
+                return;
+            }
+            
+            const selectedType = documentTypeSelect.value;
+            if (!selectedType) {
+                showUploadResult('Please select a document type.', 'error');
+                return;
+            }
+            
+            // Validate Google Drive URL
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error');
+                return;
+            }
+            
+            // Get transaction number from search results (same as file upload)
+            const searchResults = document.getElementById('searchResults');
+            const transactionTable = searchResults ? searchResults.querySelector('table') : null;
+            let transactionNumber = '';
+            
+            if (transactionTable) {
+                const transactionRow = Array.from(transactionTable.querySelectorAll('tr')).find(row => 
+                    row.cells[0] && row.cells[0].textContent.trim() === 'Transaction Number'
+                );
+                if (transactionRow && transactionRow.cells[1]) {
+                    transactionNumber = transactionRow.cells[1].textContent.trim();
+                }
+            }
+            
+            console.log(`DEBUG: Processing Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Document type: ${selectedType}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show progress
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '🔄 Processing Link...';
+            uploadProgress.style.display = 'flex';
+            progressBar.style.width = '25%';
+            
+            try {
+                // Call backend to process the Google Drive link
+                const response = await fetch('/api/process_google_drive_link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        google_drive_url: googleDriveLink,
+                        document_type: selectedType,
+                        transaction_number: transactionNumber
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    progressBar.style.width = '75%';
+                    
+                    // Store the processed file data for Google Sheets update
+                    window.uploadedFileData = {
+                        transactionNumber: null, // Will be set from search results
+                        documentType: selectedType,
+                        fileUrl: data.file_url,
+                        fileName: data.file_name
+                    };
+                    
+                    console.log('DEBUG: Google Drive link processed successfully');
+                    console.log('DEBUG: File URL:', data.file_url);
+                    console.log('DEBUG: File Name:', data.file_name);
+                    
+                    // Show success and enable Google Sheets update button
+                    progressBar.style.width = '100%';
+                    setTimeout(() => {
+                        uploadProgress.style.display = 'none';
+                        uploadBtn.disabled = false;
+                        uploadBtn.textContent = '✅ Link Processed Successfully!';
+                        uploadBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                        
+                        // Show Google Sheets update button
+                        const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                        if (updateSheetsBtn) {
+                            updateSheetsBtn.style.display = 'inline-block';
+                        }
+                        
+                        showUploadResult(`✅ Google Drive link processed successfully!<br>File: ${data.file_name}<br>Ready to update Google Sheets.`, 'success');
+                    }, 500);
+                    
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+                
+            } catch (error) {
+                console.error('Error processing Google Drive link:', error);
+                uploadProgress.style.display = 'none';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '🔗 Process Google Drive Link';
+                uploadBtn.style.background = 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)';
+                
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error');
             }
         }
         
