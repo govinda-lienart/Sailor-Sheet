@@ -342,8 +342,8 @@ def update_document_link(gc, sheet_type, transaction_number, document_type, file
             print(f"DEBUG: You searched for: {transaction_number}")
             return False
         
-        # Create HYPERLINK formula like in the main form
-        hyperlink_formula = f'=HYPERLINK("{file_url}", "✔")'
+        # Create HYPERLINK formula using semicolon separator (working format)
+        hyperlink_formula = f'=HYPERLINK("{file_url}"; "✔")'
         print(f"DEBUG: Created HYPERLINK formula: {hyperlink_formula}")
         
         # Map document types to column letters (same as main form)
@@ -795,8 +795,8 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         if isinstance(file_links, dict):
             for file_type, file_data in file_links.items():
                 if isinstance(file_data, dict) and 'filename' in file_data and 'url' in file_data:
-                    # Create the HYPERLINK formula with ✔ as display text
-                    file_link_values[file_type] = f'=HYPERLINK("{file_data["url"]}", "✔")'
+                    # Create the HYPERLINK formula with ✔ as display text (using semicolon separator)
+                    file_link_values[file_type] = f'=HYPERLINK("{file_data["url"]}"; "✔")'
                     print(f"DEBUG: Created link for {file_type}: {file_link_values[file_type]}")
         
         print(f"DEBUG: File link values: {file_link_values}")
