@@ -885,7 +885,7 @@ function uploadFile(fileType) {
 
 // Specific upload functions for each file type
 function uploadBills() { uploadFile('bills'); }
-function uploadRedBills() { uploadFile('redBills'); }
+function uploadRedBills() { uploadFile('redBills'); }  // This matches FOLDER_IDS['redBills']
 function uploadDocumentation() { uploadFile('documentation'); }
 
 /**

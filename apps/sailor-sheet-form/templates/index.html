@@ -1594,7 +1594,15 @@ Last Updated: 2025-01-05
             const formData = new FormData();
             formData.append('file', file);
             formData.append('transaction_number', transactionNumber);
-            formData.append('file_type', selectedType);
+            
+            // Map document types to file types that match Python FOLDER_IDS keys
+            const fileTypeMapping = {
+                'bill': 'bills',
+                'redBill': 'redBills',  // Add 's' to match FOLDER_IDS['redBills']
+                'documentation': 'documentation'
+            };
+            const fileType = fileTypeMapping[selectedType] || selectedType;
+            formData.append('file_type', fileType);
             
             // Simulate progress
             let progress = 0;
