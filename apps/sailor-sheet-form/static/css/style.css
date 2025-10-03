@@ -83,11 +83,11 @@ body {
 
 /* Container */
 .container {
-    max-width: 1400px; /* Increased to accommodate scaled forms + navigation */
+    max-width: 1600px; /* Increased to accommodate larger spacing */
     margin: 0 auto;
-    padding: 20px;
+    padding: 30px;
     display: flex;
-    gap: 30px; /* Increased gap for better spacing */
+    gap: 80px; /* Large professional gap between all elements */
     align-items: flex-start;
 }
 
@@ -95,17 +95,18 @@ body {
 .main-content {
     flex: 1;
     min-width: 0; /* Allow shrinking */
+    max-width: 800px; /* Constrain form width for better layout */
+    margin: 0 auto; /* Center the form */
 }
 
 /* Form styling */
 .form-container {
     background: white;
-    padding: 33px; /* 10% increase from 30px */
+    padding: 25px; /* Reduced padding for more compact form */
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     margin-top: 20px;
-    transform: scale(1.1); /* 10% larger */
-    transform-origin: top left;
+    /* Removed scale transform for better layout control */
 }
 
 .form-group {
@@ -561,37 +562,39 @@ h1 {
 .form-navigation {
     position: sticky;
     top: 90px; /* Stick below the fixed navbar */
-    width: 250px;
-    min-width: 250px;
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
     background: white;
     border: 2px solid #e0e0e0;
     border-radius: 12px;
-    padding: 15px;
+    padding: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     height: fit-content;
     height: auto;
     max-height: none;
     overflow: visible;
     flex-shrink: 0; /* Prevent shrinking */
-    margin-left: 20px; /* Add margin to prevent overlap */
+    margin-left: 0; /* Container gap handles spacing */
 }
 
 .form-access-panel {
     position: sticky;
     top: 90px; /* Stick below the fixed navbar */
-    width: 200px;
-    min-width: 200px;
+    width: 240px;
+    min-width: 240px;
+    max-width: 240px;
     background: white;
     border: 2px solid #e0e0e0;
     border-radius: 12px;
-    padding: 15px;
+    padding: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     height: fit-content;
     height: auto;
     max-height: none;
     overflow: visible;
     flex-shrink: 0; /* Prevent shrinking */
-    margin-right: 20px; /* Add margin to prevent overlap */
+    margin-right: 0; /* Container gap handles spacing */
 }
 
 .form-navigation h5, .form-access-panel h5 {
