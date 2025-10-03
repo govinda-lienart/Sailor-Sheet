@@ -32,6 +32,28 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
 # =============================================================================
+# ERROR HANDLERS - Ensure all errors return JSON for API routes
+# =============================================================================
+
+@app.errorhandler(413)
+def too_large(e):
+    """Handle file too large error"""
+    return jsonify({'success': False, 'error': 'File too large. Maximum size is 16MB.'}), 413
+
+@app.errorhandler(500)
+def internal_error(e):
+    """Handle internal server errors"""
+    print(f"ERROR: Internal server error: {e}")
+    return jsonify({'success': False, 'error': 'Internal server error'}), 500
+
+@app.errorhandler(404)
+def not_found(e):
+    """Handle 404 errors for API routes"""
+    if request.path.startswith('/api/'):
+        return jsonify({'success': False, 'error': 'API endpoint not found'}), 404
+    return e
+
+# =============================================================================
 # INITIALIZE GOOGLE SHEETS
 # =============================================================================
 
@@ -390,23 +412,44 @@ def get_worksheets(sheet_id):
 
 # Upload File Route
 # -----------------
-@app.route('/upload_file', methods=['POST'])
+@app.route('/api/upload_file', methods=['POST'])
 def upload_file():
     """
     AJAX route to upload file first, before form submission
     """
     try:
+        print(f"DEBUG: upload_file route called")
+        print(f"DEBUG: Request method: {request.method}")
+        print(f"DEBUG: Request content type: {request.content_type}")
+        
+        # Check if request has files
+        if 'file' not in request.files:
+            print("DEBUG: No 'file' key in request.files")
+            return jsonify({'success': False, 'error': 'No file in request'}), 400
+        
         file = request.files.get('file')
         transaction_number = request.form.get('transaction_number', '')
         file_type = request.form.get('file_type', 'bills')
         
+        print(f"DEBUG: File received: {file.filename if file else 'None'}")
+        print(f"DEBUG: Transaction number: {transaction_number}")
+        print(f"DEBUG: File type: {file_type}")
+        
+        # Validate file
+        if not file or file.filename == '':
+            print("DEBUG: No file selected")
+            return jsonify({'success': False, 'error': 'No file selected'}), 400
+        
         # Use the file upload manager to handle the upload
         result = file_upload_manager.handle_web_upload(file, transaction_number, file_type)
         
+        print(f"DEBUG: Upload result: {result}")
         return jsonify(result)
             
     except Exception as e:
         print(f"DEBUG: Error in upload_file route: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # Refresh Form Data Route
@@ -651,4 +694,4 @@ def api_process_google_drive_link():
 if __name__ == '__main__':
     # Run the Flask app with environment-based debug mode
     # Bind to 0.0.0.0 to make it accessible from the internet
-    app.run(debug=app.config['DEBUG'], host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))
+    app.run(debug=DEBUG_MODE, host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))
