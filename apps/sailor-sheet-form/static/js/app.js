@@ -1920,12 +1920,6 @@ async function handleUpdateFormLinkUpload() {
         return;
     }
     
-    // Validate that it's a file URL, not a folder URL
-    if (googleDriveLink.includes('/folders/')) {
-        showUpdateUploadResult('Please use a direct file link, not a folder link. Right-click on the specific file in Google Drive and select "Get link" or "Share".', 'error');
-        return;
-    }
-    
     // Get transaction number from search
     const transactionNumber = document.getElementById('searchTransactionNumber').value.trim();
     if (!transactionNumber) {
@@ -2237,12 +2231,6 @@ async function handleGoogleDriveLink() {
     
     if (!googleDriveLink) {
         showUploadResult('Please enter a Google Drive URL.', 'error');
-        return;
-    }
-    
-    // Validate that it's a file URL, not a folder URL
-    if (googleDriveLink.includes('/folders/')) {
-        showUploadResult('Please use a direct file link, not a folder link. Right-click on the specific file in Google Drive and select "Get link" or "Share".', 'error');
         return;
     }
     
