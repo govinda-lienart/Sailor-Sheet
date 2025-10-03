@@ -467,7 +467,13 @@ Last Updated: 2025-01-05
                          <div class="form-text">Enter the reference number from your bank statement</div>
                          </div>
      
-                    <!-- Hidden fields for file uploads (removed - using update form system) -->
+                    <!-- Hidden fields for file uploads -->
+                         <input type="hidden" name="bills_file_link" id="billsFileLinkInput">
+                         <input type="hidden" name="bills_file_name" id="billsFileNameInput">
+                         <input type="hidden" name="red_bills_file_link" id="redBillsFileLinkInput">
+                         <input type="hidden" name="red_bills_file_name" id="redBillsFileNameInput">
+                         <input type="hidden" name="documentation_file_link" id="documentationFileLinkInput">
+                         <input type="hidden" name="documentation_file_name" id="documentationFileNameInput">
                          <input type="hidden" name="transaction_number" id="transactionNumberInput">
                      </div>
      
@@ -477,105 +483,104 @@ Last Updated: 2025-01-05
                  FILE UPLOAD SECTIONS
                  ========================================================== -->
                  
-            <!-- ==========================================================
-                 FILE UPLOAD SECTIONS
-                 ========================================================== -->
+            <!-- Bills Upload -->
+                <div id="upload-bills-section" class="enhanced-upload-section">
+                    <h4>
+                        📄 Upload Bills
+                        <span>Drag & Drop Enabled</span>
+                    </h4>
+                    <div class="form-group">
+                        <label>Upload Bills:</label>
+                        <div class="enhanced-file-input">
+                            <input type="file" id="billsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                            <label for="billsFileInput" class="enhanced-file-input-label">
+                                📁 Click to select file or drag & drop
+                            <small>Receipts, invoices, or supporting documents</small>
+                            </label>
+                        </div>
+                        <div class="file-info-enhanced">
+                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                            <strong>Maximum size:</strong> 16MB
+                        </div>
+                        <button type="button" id="billsUploadBtn" class="btn-enhanced btn-upload">Upload Bills</button>
+                    </div>
+    
+                    <div id="billsUploadStatus" style="display: none;">
+                        <div id="billsUploadProgress" class="alert alert-info">Uploading file...</div>
+                        <div id="billsUploadResult" style="display: none;">
+                            <div class="alert alert-success">
+                                <strong>Bills file uploaded successfully!</strong>
+                                <div id="billsFileLink"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                  
-            <!-- Upload Section with File/Link Toggle -->
-            <div id="upload-section" class="form-section" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-                <h3 style="color: #495057; margin-bottom: 20px; display: flex; align-items: center;">
-                    📎 Attach Documents (Optional)
-                </h3>
-                
-                <!-- Upload Mode Toggle -->
-                <div style="margin-bottom: 20px; padding: 15px; background: #ffffff; border-radius: 6px; border: 1px solid #dee2e6;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📎 Upload Method:</label>
-                    <div style="display: flex; gap: 20px; margin-bottom: 10px;">
-                        <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #e3f2fd; border: 1px solid #2196f3;">
-                            <input type="radio" name="mainUploadMode" value="file" checked style="margin-right: 8px;">
-                            <span style="font-weight: 500;">📁 Upload New File</span>
-                        </label>
-                        <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #f3e5f5; border: 1px solid #9c27b0;">
-                            <input type="radio" name="mainUploadMode" value="link" style="margin-right: 8px;">
-                            <span style="font-weight: 500;">🔗 Link Existing File</span>
-                        </label>
-                    </div>
-                    <small style="color: #6c757d; font-size: 12px;">
-                        💡 Upload files or link existing Google Drive documents
-                    </small>
-                </div>
-                
-                <!-- File Upload Section -->
-                <div id="mainFileUploadSection" style="margin-bottom: 15px;">
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
-                            <span style="margin-right: 8px;">📁</span>
-                            Select File:
-                        </label>
-                        <input type="file" id="mainDocumentFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg" 
-                               style="width: 100%; padding: 10px; border: 2px dashed #dee2e6; border-radius: 6px; background: #f8f9fa; cursor: pointer;">
-                        <small style="color: #6c757d; font-size: 12px; margin-top: 5px; display: block;">
-                            Supported formats: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG (Max: 16MB)
-                        </small>
-                    </div>
-                </div>
-                
-                <!-- Google Drive Link Section -->
-                <div id="mainLinkInputSection" style="margin-bottom: 15px; display: none;">
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
-                            <span style="margin-right: 8px;">🔗</span>
-                            Google Drive URL:
-                        </label>
-                        <input type="url" id="mainGoogleDriveLink" placeholder="https://drive.google.com/file/d/..." 
-                               style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px;">
-                        <small style="color: #6c757d; font-size: 12px; margin-top: 5px; display: block;">
-                            Paste the Google Drive sharing link here
-                        </small>
-                    </div>
-                </div>
-                
-                <!-- Document Type Selection -->
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
-                        <span style="margin-right: 8px;">📋</span>
-                        Document Type:
-                    </label>
-                    <select id="mainDocumentTypeSelect" style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px;">
-                        <option value="bill">📄 Bill (Receipts, Invoices)</option>
-                        <option value="redBill">🔴 Red Bill (Urgent Payments)</option>
-                        <option value="documentation">📚 Documentation (Supporting Materials)</option>
-                    </select>
-                </div>
-                
-                <!-- Upload Button -->
-                <div style="text-align: center; margin-top: 20px;">
-                    <button type="button" id="mainUploadBtn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 16px;">
-                        📤 Upload to Google Drive
-                    </button>
-                </div>
-                
-                <!-- Progress Indicator -->
-                <div id="mainUploadProgress" style="display: none; margin-top: 20px;">
-                    <div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 6px; padding: 15px;">
-                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <div style="width: 20px; height: 20px; border: 2px solid #2196f3; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px;"></div>
-                            <span id="mainProgressText" style="font-weight: 600; color: #1976d2;">Processing...</span>
+            <!-- Red Bills Upload -->
+            <div id="upload-red-bills-section" class="enhanced-upload-section upload-section-red-bills">
+                <h4 class="red-bills-heading">
+                        🔴 Upload Red Bills
+                        <span>Drag & Drop Enabled</span>
+                    </h4>
+                    <div class="form-group">
+                        <label>Upload Red Bills:</label>
+                        <div class="enhanced-file-input">
+                            <input type="file" id="redBillsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                            <label for="redBillsFileInput" class="enhanced-file-input-label">
+                                📁 Click to select file or drag & drop
+                            <small>Red bills or urgent payment documents</small>
+                            </label>
                         </div>
-                        <div style="background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
-                            <div id="mainProgressBar" style="background: linear-gradient(90deg, #2196f3, #21cbf3); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                    <div class="file-info-enhanced file-info-red-bills">
+                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                            <strong>Maximum size:</strong> 16MB
+                        </div>
+                    <button type="button" id="redBillsUploadBtn" class="btn-enhanced btn-upload red-bills-upload-btn">Upload Red Bills</button>
+                    </div>
+    
+                    <div id="redBillsUploadStatus" style="display: none;">
+                        <div id="redBillsUploadProgress" class="alert alert-info">Uploading file...</div>
+                        <div id="redBillsUploadResult" style="display: none;">
+                            <div class="alert alert-success">
+                                <strong>Red Bills file uploaded successfully!</strong>
+                                <div id="redBillsFileLink"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Upload Result -->
-                <div id="mainUploadResult" style="display: none; margin-top: 20px;"></div>
-                
-                <!-- Hidden fields to store uploaded file URLs -->
-                <input type="hidden" id="uploadedBillUrl" name="uploaded_bill_url">
-                <input type="hidden" id="uploadedRedBillUrl" name="uploaded_redbill_url">
-                <input type="hidden" id="uploadedDocUrl" name="uploaded_doc_url">
-            </div>
+                 
+            <!-- Documentation Upload -->
+            <div id="upload-documentation-section" class="enhanced-upload-section upload-section-documentation">
+                <h4 class="documentation-heading">
+                        📚 Upload Documentation
+                        <span>Drag & Drop Enabled</span>
+                    </h4>
+                    <div class="form-group">
+                        <label>Upload Documentation:</label>
+                        <div class="enhanced-file-input">
+                            <input type="file" id="documentationFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
+                            <label for="documentationFileInput" class="enhanced-file-input-label">
+                                📁 Click to select file or drag & drop
+                            <small>Supporting documentation or reference materials</small>
+                            </label>
+                        </div>
+                    <div class="file-info-enhanced file-info-documentation">
+                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                            <strong>Maximum size:</strong> 16MB
+                        </div>
+                        <button type="button" id="documentationUploadBtn" class="btn-enhanced btn-upload">Upload Documentation</button>
+                    </div>
+    
+                    <div id="documentationUploadStatus" style="display: none;">
+                        <div id="documentationUploadProgress" class="alert alert-info">Uploading file...</div>
+                        <div id="documentationUploadResult" style="display: none;">
+                            <div class="alert alert-success">
+                                <strong>Documentation file uploaded successfully!</strong>
+                                <div id="documentationFileLink"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
      
             <!-- FINAL SUBMIT BUTTON -->
             <button type="submit" form="mainForm" class="btn-enhanced enhanced-submit-btn">
@@ -661,105 +666,65 @@ Last Updated: 2025-01-05
                     
                     <!-- Update Options -->
                     <div id="updateOptions" class="update-options-section">
-                        <h4>📎 Attach Documents to Transaction</h4>
-                        <p class="update-description">Upload files or link existing Google Drive documents</p>
+                        <h4>📎 Update Attached Documents</h4>
+                        <p class="update-description">Upload new documents to replace existing ones</p>
                         
-                        <!-- Unified Upload Section (Same as Main Form) -->
-                        <div class="form-section" style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-                            <!-- Upload Mode Toggle -->
-                            <div style="margin-bottom: 20px; padding: 15px; background: #ffffff; border-radius: 6px; border: 1px solid #dee2e6;">
-                                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📎 Upload Method:</label>
-                                <div style="display: flex; gap: 20px; margin-bottom: 10px;">
-                                    <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #e3f2fd; border: 1px solid #2196f3;">
-                                        <input type="radio" name="updateUploadMode" value="file" checked style="margin-right: 8px;">
-                                        <span style="font-weight: 500;">📁 Upload New File</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #f3e5f5; border: 1px solid #9c27b0;">
-                                        <input type="radio" name="updateUploadMode" value="link" style="margin-right: 8px;">
-                                        <span style="font-weight: 500;">🔗 Link Existing File</span>
-                                    </label>
-                                </div>
-                                <small style="color: #6c757d; font-size: 12px;">
-                                    💡 Upload files or link existing Google Drive documents
-                                </small>
+                        <!-- File Upload Sections (Same as New Entry) -->
+                        <div class="form-section" id="upload-bills-section">
+                            <div class="section-header">
+                                <span class="section-icon">📄</span>
+                                <h3 class="section-title">Bills Upload</h3>
+                                <p class="section-description">Upload normal bills and receipts</p>
                             </div>
                             
-                            <!-- File Upload Section -->
-                            <div id="updateFileUploadSection" style="margin-bottom: 15px;">
-                                <div style="margin-bottom: 15px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
-                                        <span style="margin-right: 8px;">📁</span>
-                                        Select File:
-                                    </label>
-                                    <input type="file" id="updateDocumentFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg" 
-                                           style="width: 100%; padding: 10px; border: 2px dashed #dee2e6; border-radius: 6px; background: #f8f9fa; cursor: pointer;">
-                                    <small style="color: #6c757d; font-size: 12px; margin-top: 5px; display: block;">
-                                        Supported formats: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG (Max: 16MB)
-                                    </small>
-                                </div>
-                            </div>
-                            
-                            <!-- Google Drive Link Section -->
-                            <div id="updateLinkInputSection" style="margin-bottom: 15px; display: none;">
-                                <div style="margin-bottom: 15px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
-                                        <span style="margin-right: 8px;">🔗</span>
-                                        Google Drive URL:
-                                    </label>
-                                    <input type="url" id="updateGoogleDriveLink" placeholder="https://drive.google.com/file/d/..." 
-                                           style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px;">
-                                    <small style="color: #6c757d; font-size: 12px; margin-top: 5px; display: block;">
-                                        Paste the Google Drive sharing link here
-                                    </small>
-                                </div>
-                            </div>
-                            
-                            <!-- Document Type Selection -->
-                            <div style="margin-bottom: 15px;">
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
-                                    <span style="margin-right: 8px;">📋</span>
-                                    Document Type:
+                            <div class="form-group">
+                                <label for="billsFile" class="enhanced-file-input-label">
+                                    <span class="file-icon">📄</span>
+                                    <span class="file-text">Choose Bills File</span>
+                                    <span class="file-hint">Click to select or drag & drop</span>
                                 </label>
-                                <select id="updateDocumentTypeSelect" style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px;">
-                                    <option value="bill">📄 Bill (Receipts, Invoices)</option>
-                                    <option value="redBill">🔴 Red Bill (Urgent Payments)</option>
-                                    <option value="documentation">📚 Documentation (Supporting Materials)</option>
-                                </select>
+                                <input type="file" id="billsFile" name="billsFile" class="enhanced-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section" id="upload-red-bills-section">
+                            <div class="section-header">
+                                <span class="section-icon">🔴</span>
+                                <h3 class="section-title">Red Bills Upload</h3>
+                                <p class="section-description">Upload red bills and invoices</p>
                             </div>
                             
-                            <!-- Upload Button -->
-                            <div style="text-align: center; margin-top: 20px;">
-                                <button type="button" id="updateUploadBtn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 16px;">
-                                    📤 Upload to Google Drive
-                                </button>
+                            <div class="form-group">
+                                <label for="redBillsFile" class="enhanced-file-input-label">
+                                    <span class="file-icon">🔴</span>
+                                    <span class="file-text">Choose Red Bills File</span>
+                                    <span class="file-hint">Click to select or drag & drop</span>
+                                </label>
+                                <input type="file" id="redBillsFile" name="redBillsFile" class="enhanced-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section" id="upload-documentation-section">
+                            <div class="section-header">
+                                <span class="section-icon">📚</span>
+                                <h3 class="section-title">Documentation Upload</h3>
+                                <p class="section-description">Upload supporting documentation</p>
                             </div>
                             
-                            <!-- Progress Indicator -->
-                            <div id="updateUploadProgress" style="display: none; margin-top: 20px;">
-                                <div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 6px; padding: 15px;">
-                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                        <div style="width: 20px; height: 20px; border: 2px solid #2196f3; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px;"></div>
-                                        <span id="updateProgressText" style="font-weight: 600; color: #1976d2;">Processing...</span>
-                                    </div>
-                                    <div style="background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
-                                        <div id="updateProgressBar" style="background: linear-gradient(90deg, #2196f3, #21cbf3); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
-                                    </div>
-                                </div>
+                            <div class="form-group">
+                                <label for="documentationFile" class="enhanced-file-input-label">
+                                    <span class="file-icon">📚</span>
+                                    <span class="file-text">Choose Documentation File</span>
+                                    <span class="file-hint">Click to select or drag & drop</span>
+                                </label>
+                                <input type="file" id="documentationFile" name="documentationFile" class="enhanced-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                             </div>
-                            
-                            <!-- Upload Result -->
-                            <div id="updateUploadResult" style="display: none; margin-top: 20px;"></div>
-                            
-                            <!-- Hidden fields to store uploaded file URLs -->
-                            <input type="hidden" id="updateUploadedBillUrl">
-                            <input type="hidden" id="updateUploadedRedBillUrl">
-                            <input type="hidden" id="updateUploadedDocUrl">
                         </div>
                         
                         <!-- Update Submit Button -->
-                        <div class="form-group" style="margin-top: 30px;">
+                        <div class="form-group">
                             <button type="button" id="updateTransactionBtn" class="btn-enhanced enhanced-submit-btn">
-                                🔄 Update Transaction in Google Sheets
+                                🔄 Update Transaction Documents
                             </button>
                         </div>
                     </div>

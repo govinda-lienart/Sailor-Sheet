@@ -749,12 +749,8 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
                 # Date is in YYYY-MM-DD format
                 parsed_date = datetime.strptime(date_input, '%Y-%m-%d')
             else:
-                # Try DD/MM/YYYY format first (4-digit year)
-                try:
-                    parsed_date = datetime.strptime(formatted_date, '%d/%m/%Y')
-                except ValueError:
-                    # If that fails, try DD/MM/YY format (2-digit year)
-                    parsed_date = datetime.strptime(formatted_date, '%d/%m/%y')
+                # Date is in DD/MM/YY format
+                parsed_date = datetime.strptime(formatted_date, '%d/%m/%y')
             
             # Generate month, year, and month-year values
             month_name = parsed_date.strftime('%B')  # e.g., "September", "October"
@@ -763,12 +759,10 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             
         except Exception as e:
             # Fallback to current month/year if parsing fails
-            from datetime import datetime
-            now = datetime.now()
             month_name = now.strftime('%B')  # Full month name
             year_value = str(now.year)
             month_year = f"{month_name}-{year_value}"
-            print(f"Warning: Could not parse date for month/year extraction, using current: {month_year}. Error: {e}")
+            print(f"Warning: Could not parse date for month/year extraction, using current: {month_year}")
         
         # Convert amount to number (not string)
         try:
