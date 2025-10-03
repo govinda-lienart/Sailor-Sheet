@@ -1665,39 +1665,16 @@ Last Updated: 2025-01-05
                 progressText.textContent = `Uploading... ${Math.round(progress)}%`;
             }, 200);
             
-            // Upload file - FIXED: Use correct API endpoint and proper error handling
-            fetch('/api/upload_file', {
+            // Upload file
+            fetch('/upload_file', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => {
-                console.log('Upload response status:', response.status);
-                console.log('Upload response OK:', response.ok);
-                
-                // Check if response is OK
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                // Check if response is JSON
-                const contentType = response.headers.get('content-type');
-                console.log('Content-Type:', contentType);
-                
-                if (!contentType || !contentType.includes('application/json')) {
-                    return response.text().then(text => {
-                        console.error('Non-JSON response:', text);
-                        throw new Error('Server returned non-JSON response. This usually indicates a server error.');
-                    });
-                }
-                
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 clearInterval(progressInterval);
                 progressBar.style.width = '100%';
                 progressText.textContent = 'Complete!';
-                
-                console.log('Upload response data:', data);
                 
                 if (data.success) {
                     // Store the upload data for Google Sheets update
@@ -1726,7 +1703,7 @@ Last Updated: 2025-01-05
                     }
                     
                 } else {
-                    showUploadResult(`❌ Upload failed: ${data.error || data.message || 'Unknown error'}`, 'error');
+                    showUploadResult(`❌ Upload failed: ${data.error}`, 'error');
                 }
             })
             .catch(error => {

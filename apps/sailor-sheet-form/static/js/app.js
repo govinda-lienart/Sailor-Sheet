@@ -907,150 +907,6 @@ function uploadBills() { uploadFile('bills'); }
 function uploadRedBills() { uploadFile('redBills'); }  // This matches FOLDER_IDS['redBills']
 function uploadDocumentation() { uploadFile('documentation'); }
 
-// ============================================================================
-// REUSABLE UPLOAD FUNCTION - For both main and update forms
-// ============================================================================
-
-/**
- * Universal file upload function that works for both main and update forms
- * @param {Object} config - Configuration object with all necessary parameters
- * @param {string} config.fileInputId - ID of the file input element
- * @param {string} config.transactionNumberId - ID of the transaction number input
- * @param {string} config.documentTypeId - ID of the document type select
- * @param {string} config.progressId - ID of the progress container
- * @param {string} config.progressBarId - ID of the progress bar
- * @param {string} config.progressTextId - ID of the progress text
- * @param {string} config.resultUrlId - ID of the hidden field to store file URL
- * @param {Function} config.showResultFunction - Function to show result messages
- * @param {string} config.formType - 'main' or 'update' for different behaviors
- */
-async function universalFileUpload(config) {
-    console.log('🚀 DEBUG: universalFileUpload called with config:', config);
-    
-    const {
-        fileInputId,
-        transactionNumberId,
-        documentTypeId,
-        progressId,
-        progressBarId,
-        progressTextId,
-        resultUrlId,
-        showResultFunction,
-        formType = 'main'
-    } = config;
-    
-    console.log('🚀 DEBUG: Form type:', formType);
-    console.log('🚀 DEBUG: Transaction number ID:', transactionNumberId);
-    
-    // Get DOM elements
-    const documentFile = document.getElementById(fileInputId);
-    const documentTypeSelect = document.getElementById(documentTypeId);
-    const uploadProgress = document.getElementById(progressId);
-    const progressBar = document.getElementById(progressBarId);
-    const progressText = document.getElementById(progressTextId);
-    
-    const file = documentFile.files[0];
-    const selectedType = documentTypeSelect.value;
-    
-    if (!file) {
-        showResultFunction('Please select a file to upload.', 'error');
-        return;
-    }
-    
-    // Get transaction number based on form type
-    let transactionNumber;
-    if (formType === 'main') {
-        transactionNumber = document.getElementById(transactionNumberId).value;
-        if (!transactionNumber || transactionNumber === 'Generating...') {
-            showResultFunction('Transaction number not ready. Please wait.', 'error');
-            return;
-        }
-    } else if (formType === 'update') {
-        transactionNumber = document.getElementById(transactionNumberId).value.trim();
-        if (!transactionNumber) {
-            showResultFunction('Transaction number not found. Please search for a transaction first.', 'error');
-            return;
-        }
-    }
-    
-    // Show progress
-    uploadProgress.style.display = 'flex';
-    progressBar.style.width = '25%';
-    progressText.textContent = 'Uploading file...';
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('transaction_number', transactionNumber);
-    formData.append('file_type', selectedType);
-    
-    try {
-        console.log('🚀 DEBUG: About to make fetch request to /api/upload_file');
-        const response = await fetch('/api/upload_file', {
-            method: 'POST',
-            body: formData
-        });
-        
-        console.log('🚀 DEBUG: Upload response status:', response.status);
-        console.log('🚀 DEBUG: Upload response headers:', response.headers);
-        console.log('🚀 DEBUG: Response OK:', response.ok);
-        
-        // Check if response is OK
-        if (!response.ok) {
-            console.log('🚀 DEBUG: Response not OK, throwing error');
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        // Check if response is JSON
-        const contentType = response.headers.get('content-type');
-        console.log('🚀 DEBUG: Content-Type:', contentType);
-        
-        if (!contentType || !contentType.includes('application/json')) {
-            console.log('🚀 DEBUG: Non-JSON response detected, getting text...');
-            return response.text().then(text => {
-                console.error('🚀 DEBUG: Non-JSON response text:', text);
-                throw new Error('Server returned non-JSON response. This usually indicates a server error.');
-            });
-        }
-        
-        console.log('🚀 DEBUG: About to parse JSON response...');
-        const data = await response.json();
-        console.log('🚀 DEBUG: Parsed JSON data:', data);
-        
-        progressBar.style.width = '100%';
-        progressText.textContent = 'Upload complete!';
-        
-        console.log('Upload response data:', data);
-        
-        if (data.success) {
-            // Store the file URL in the appropriate hidden field
-            if (resultUrlId) {
-                document.getElementById(resultUrlId).value = data.file_url;
-            }
-            
-            showResultFunction(`
-                <div style="color: #28a745; font-weight: 600;">
-                    ✅ File uploaded successfully!
-                    <br><strong>File:</strong> ${data.file_name}
-                    <br><strong>Type:</strong> ${selectedType}
-                    <br><a href="${data.file_url}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>
-                    <br><br><strong>Note:</strong> File will be attached when you ${formType === 'main' ? 'submit the form' : 'update the transaction'}.
-                </div>
-            `, 'success');
-            
-            // Clear file input
-            documentFile.value = '';
-        } else {
-            showResultFunction(data.error || data.message || 'Upload failed', 'error');
-        }
-    } catch (error) {
-        console.error('Upload error:', error);
-        showResultFunction(`Upload failed: ${error.message}`, 'error');
-    } finally {
-        uploadProgress.style.display = 'none';
-        progressBar.style.width = '0%';
-    }
-}
-
 /**
  * Enhanced Drag & Drop Functionality
  */
@@ -1693,33 +1549,91 @@ function initializeMainFormUploadSystem() {
 }
 
 /**
- * Handle file upload for main form - Now uses universal function
+ * Handle file upload for main form
  */
 async function handleMainFormFileUpload() {
-    const selectedType = document.getElementById('mainDocumentTypeSelect').value;
+    const documentFile = document.getElementById('mainDocumentFile');
+    const documentTypeSelect = document.getElementById('mainDocumentTypeSelect');
+    const uploadProgress = document.getElementById('mainUploadProgress');
+    const progressBar = document.getElementById('mainProgressBar');
+    const progressText = document.getElementById('mainProgressText');
     
-    // Determine which hidden field to store the URL based on document type
-    let resultUrlId;
-    if (selectedType === 'bill') {
-        resultUrlId = 'uploadedBillUrl';
-    } else if (selectedType === 'redBill') {
-        resultUrlId = 'uploadedRedBillUrl';
-    } else if (selectedType === 'documentation') {
-        resultUrlId = 'uploadedDocUrl';
+    const file = documentFile.files[0];
+    const selectedType = documentTypeSelect.value;
+    
+    if (!file) {
+        showMainUploadResult('Please select a file to upload.', 'error');
+        return;
     }
     
-    // Use the universal upload function with main form configuration
-    await universalFileUpload({
-        fileInputId: 'mainDocumentFile',
-        transactionNumberId: 'transactionNumberDisplay',
-        documentTypeId: 'mainDocumentTypeSelect',
-        progressId: 'mainUploadProgress',
-        progressBarId: 'mainProgressBar',
-        progressTextId: 'mainProgressText',
-        resultUrlId: resultUrlId,
-        showResultFunction: showMainUploadResult,
-        formType: 'main'
-    });
+    const transactionNumber = document.getElementById('transactionNumberDisplay').value;
+    if (!transactionNumber || transactionNumber === 'Generating...') {
+        showMainUploadResult('Transaction number not ready. Please wait.', 'error');
+        return;
+    }
+    
+    // Show progress
+    uploadProgress.style.display = 'flex';
+    progressBar.style.width = '25%';
+    progressText.textContent = 'Uploading file...';
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('transaction_number', transactionNumber);
+    formData.append('file_type', selectedType);
+    
+    try {
+        const response = await fetch('/api/upload_file', {
+            method: 'POST',
+            body: formData
+        });
+        
+        // Check if response is OK
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server error:', errorText);
+            showMainUploadResult(`Upload failed: Server error (${response.status})`, 'error');
+            uploadProgress.style.display = 'none';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        progressBar.style.width = '100%';
+        progressText.textContent = 'Upload complete!';
+        
+        if (data.success) {
+            // Store the file URL in hidden field based on document type
+            if (selectedType === 'bill') {
+                document.getElementById('uploadedBillUrl').value = data.file_url;
+            } else if (selectedType === 'redBill') {
+                document.getElementById('uploadedRedBillUrl').value = data.file_url;
+            } else if (selectedType === 'documentation') {
+                document.getElementById('uploadedDocUrl').value = data.file_url;
+            }
+            
+            showMainUploadResult(`
+                <div style="color: #28a745; font-weight: 600;">
+                    ✅ File uploaded successfully!
+                    <br><strong>File:</strong> ${data.file_name}
+                    <br><strong>Type:</strong> ${selectedType}
+                    <br><a href="${data.file_url}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>
+                    <br><br><strong>Note:</strong> File will be attached when you submit the form.
+                </div>
+            `, 'success');
+            
+            // Clear file input
+            documentFile.value = '';
+        } else {
+            showMainUploadResult(data.error || data.message || 'Upload failed', 'error');
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        showMainUploadResult(`Upload failed: ${error.message}`, 'error');
+    } finally {
+        uploadProgress.style.display = 'none';
+        progressBar.style.width = '0%';
+    }
 }
 
 /**
@@ -1869,41 +1783,92 @@ function initializeUpdateFormUploadSystem() {
 }
 
 /**
- * Handle file upload for update form - Now uses universal function
+ * Handle file upload for update form
  */
 async function handleUpdateFormFileUpload() {
-    console.log('🚀 DEBUG: handleUpdateFormFileUpload called - using NEW universal function');
+    const documentFile = document.getElementById('updateDocumentFile');
+    const documentTypeSelect = document.getElementById('updateDocumentTypeSelect');
+    const uploadProgress = document.getElementById('updateUploadProgress');
+    const progressBar = document.getElementById('updateProgressBar');
+    const progressText = document.getElementById('updateProgressText');
     
-    const selectedType = document.getElementById('updateDocumentTypeSelect').value;
-    console.log('🚀 DEBUG: Selected type:', selectedType);
+    const file = documentFile.files[0];
+    const selectedType = documentTypeSelect.value;
     
-    // Determine which hidden field to store the URL based on document type
-    let resultUrlId;
-    if (selectedType === 'bill') {
-        resultUrlId = 'updateUploadedBillUrl';
-    } else if (selectedType === 'redBill') {
-        resultUrlId = 'updateUploadedRedBillUrl';
-    } else if (selectedType === 'documentation') {
-        resultUrlId = 'updateUploadedDocUrl';
+    if (!file) {
+        showUpdateUploadResult('Please select a file to upload.', 'error');
+        return;
     }
     
-    console.log('🚀 DEBUG: Result URL ID:', resultUrlId);
-    console.log('🚀 DEBUG: About to call universalFileUpload with config...');
+    // Get transaction number from search
+    const transactionNumber = document.getElementById('searchTransactionNumber').value.trim();
+    if (!transactionNumber) {
+        showUpdateUploadResult('Transaction number not found. Please search for a transaction first.', 'error');
+        return;
+    }
     
-    // Use the universal upload function with update form configuration
-    await universalFileUpload({
-        fileInputId: 'updateDocumentFile',
-        transactionNumberId: 'searchTransactionNumber',
-        documentTypeId: 'updateDocumentTypeSelect',
-        progressId: 'updateUploadProgress',
-        progressBarId: 'updateProgressBar',
-        progressTextId: 'updateProgressText',
-        resultUrlId: resultUrlId,
-        showResultFunction: showUpdateUploadResult,
-        formType: 'update'
-    });
+    // Show progress
+    uploadProgress.style.display = 'flex';
+    progressBar.style.width = '25%';
+    progressText.textContent = 'Uploading file...';
     
-    console.log('🚀 DEBUG: universalFileUpload completed');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('transaction_number', transactionNumber);
+    formData.append('file_type', selectedType);
+    
+    try {
+        const response = await fetch('/api/upload_file', {
+            method: 'POST',
+            body: formData
+        });
+        
+        // Check if response is OK
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server error:', errorText);
+            showUpdateUploadResult(`Upload failed: Server error (${response.status})`, 'error');
+            uploadProgress.style.display = 'none';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        progressBar.style.width = '100%';
+        progressText.textContent = 'Upload complete!';
+        
+        if (data.success) {
+            // Store the file URL in hidden field based on document type
+            if (selectedType === 'bill') {
+                document.getElementById('updateUploadedBillUrl').value = data.file_url;
+            } else if (selectedType === 'redBill') {
+                document.getElementById('updateUploadedRedBillUrl').value = data.file_url;
+            } else if (selectedType === 'documentation') {
+                document.getElementById('updateUploadedDocUrl').value = data.file_url;
+            }
+            
+            showUpdateUploadResult(`
+                <div style="color: #28a745; font-weight: 600;">
+                    ✅ File uploaded successfully!
+                    <br><strong>File:</strong> ${data.file_name}
+                    <br><strong>Type:</strong> ${selectedType}
+                    <br><a href="${data.file_url}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>
+                    <br><br><strong>Note:</strong> File will be attached when you click "Update Transaction".
+                </div>
+            `, 'success');
+            
+            // Clear file input
+            documentFile.value = '';
+        } else {
+            showUpdateUploadResult(data.error || data.message || 'Upload failed', 'error');
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        showUpdateUploadResult(`Upload failed: ${error.message}`, 'error');
+    } finally {
+        uploadProgress.style.display = 'none';
+        progressBar.style.width = '0%';
+    }
 }
 
 /**
