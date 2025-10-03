@@ -695,6 +695,10 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         print(f"  - date_input: {date_input}")
         print(f"  - transaction_number: {transaction_number}")
         print(f"  - file_links: {file_links}")
+        print(f"  - file_links type: {type(file_links)}")
+        if isinstance(file_links, dict):
+            for key, value in file_links.items():
+                print(f"    - {key}: {value}")
         print(f"  - description: {description}")
         # Use the centralized sheet opening function
         print(f"DEBUG: Opening sheet with ID: {sheet_id}")
@@ -817,11 +821,21 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         
         # Process each file type if provided
         if isinstance(file_links, dict):
+            print(f"DEBUG: Processing file_links dict with {len(file_links)} items")
             for file_type, file_data in file_links.items():
+                print(f"DEBUG: Processing file_type: {file_type}, file_data: {file_data}")
                 if isinstance(file_data, dict) and 'filename' in file_data and 'url' in file_data:
                     # Create the HYPERLINK formula with ✔ as display text (using semicolon separator)
-                    file_link_values[file_type] = f'=HYPERLINK("{file_data["url"]}"; "✔")'
-                    print(f"DEBUG: Created link for {file_type}: {file_link_values[file_type]}")
+                    url = file_data["url"].strip()
+                    # Make sure the URL doesn't have any quotes or special characters that could break the formula
+                    if '"' in url:
+                        url = url.replace('"', '')
+                    file_link_values[file_type] = f'=HYPERLINK("{url}"; "✔")'
+                    print(f"DEBUG: Created HYPERLINK for {file_type}")
+                    print(f"DEBUG:   URL: {url}")
+                    print(f"DEBUG:   Formula: {file_link_values[file_type]}")
+                else:
+                    print(f"DEBUG: Skipping {file_type} - invalid file_data format")
         
         print(f"DEBUG: File link values: {file_link_values}")
         
@@ -886,14 +900,24 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
         ]
         
         print(f"DEBUG: Prepared DEBIT entry:")
+        column_names = ['Transaction', 'Date', 'Month', 'Year', 'Funds', 'Account', 'Category', 'Sub-Category', 
+                       'Debit (VND)', 'Credit (VND)', 'Offset', 'Payment', 'Description', 'Bank Transaction', 'Bill', 'Red Bill', 'Doc']
         for i, cell in enumerate(debit_row):
             column_letter = chr(65 + i)  # A=65, B=66, etc.
-            print(f"  - Column {column_letter}: '{cell}' (type: {type(cell)})")
+            column_name = column_names[i] if i < len(column_names) else f'Column{i}'
+            if 'HYPERLINK' in str(cell):
+                print(f"  - Column {column_letter} ({column_name}): HYPERLINK FORMULA - {cell[:100]}...")
+            else:
+                print(f"  - Column {column_letter} ({column_name}): '{cell}' (type: {type(cell).__name__})")
             
         print(f"DEBUG: Prepared CREDIT entry:")
         for i, cell in enumerate(credit_row):
             column_letter = chr(65 + i)  # A=65, B=66, etc.
-            print(f"  - Column {column_letter}: '{cell}' (type: {type(cell)})")
+            column_name = column_names[i] if i < len(column_names) else f'Column{i}'
+            if 'HYPERLINK' in str(cell):
+                print(f"  - Column {column_letter} ({column_name}): HYPERLINK FORMULA - {cell[:100]}...")
+            else:
+                print(f"  - Column {column_letter} ({column_name}): '{cell}' (type: {type(cell).__name__})")
         
         # Add both entries to the worksheet
         print(f"DEBUG: Adding DEBIT entry to worksheet: {worksheet.title}")
@@ -913,11 +937,13 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             last_row = len(all_values)
             
             # Update HYPERLINK formulas for all file types in both entries
-            # Column mapping: N=Bill, O=Red Bill, P=Doc (updated column order with Bank Transaction Number in M)
+            # Column mapping: O=Bill, P=Red Bill, Q=Doc (MUST MATCH update_document_link function!)
+            # A=Transaction, B=Date, C=Month, D=Year, E=Funds, F=Account, G=Category, H=Sub-Category,
+            # I=Debit, J=Credit, K=Offset, L=Payment, M=Description, N=Bank Transaction, O=Bill, P=Red Bill, Q=Doc
             column_mapping = {
-                'bills': 'N',
-                'red_bills': 'O', 
-                'documentation': 'P'
+                'bills': 'O',           # Bill column - MATCHES update_document_link
+                'red_bills': 'P',       # Red Bill column - MATCHES update_document_link  
+                'documentation': 'Q'    # Doc column - MATCHES update_document_link
             }
             
             for file_type, column_letter in column_mapping.items():

@@ -469,108 +469,77 @@
      
                  </form>
      
+                
             <!-- ==========================================================
-                 FILE UPLOAD SECTIONS
+                 DOCUMENT UPLOAD SECTION (Simplified with Dropdown)
                  ========================================================== -->
-                 
-            <!-- Bills Upload -->
-                <div id="upload-bills-section" class="enhanced-upload-section">
-                    <h4>
-                        📄 Upload Bills
-                        <span>Drag & Drop Enabled</span>
-                    </h4>
-                    <div class="form-group">
-                        <label>Upload Bills:</label>
-                        <div class="enhanced-file-input">
-                            <input type="file" id="billsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
-                            <label for="billsFileInput" class="enhanced-file-input-label">
-                                📁 Click to select file or drag & drop
-                            <small>Receipts, invoices, or supporting documents</small>
-                            </label>
-                        </div>
-                        <div class="file-info-enhanced">
-                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
-                            <strong>Maximum size:</strong> 16MB
-                        </div>
-                        <button type="button" id="billsUploadBtn" class="btn-enhanced btn-upload">Upload Bills</button>
-                    </div>
-    
-                    <div id="billsUploadStatus" style="display: none;">
-                        <div id="billsUploadProgress" class="alert alert-info">Uploading file...</div>
-                        <div id="billsUploadResult" style="display: none;">
-                            <div class="alert alert-success">
-                                <strong>Bills file uploaded successfully!</strong>
-                                <div id="billsFileLink"></div>
-                            </div>
-                        </div>
+            <div class="form-section section-document-upload" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 8px; border: 2px solid #dee2e6;">
+                <div class="section-header" style="margin-bottom: 20px;">
+                    <span class="section-icon" style="font-size: 24px; margin-right: 10px;">📎</span>
+                    <h3 class="section-title" style="margin: 0; color: #495057; font-size: 20px; font-weight: 600;">Document Upload</h3>
+                </div>
+                <p style="margin-bottom: 20px; color: #6c757d; font-size: 14px;">Choose document type and either upload a file or paste a Google Drive link.</p>
+                
+                <!-- Document Type Dropdown -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">📋 Select Document Type:</label>
+                    <select id="documentTypeDropdown" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; background: white;">
+                        <option value="">-- Choose document type --</option>
+                        <option value="bills">📄 Bills (Receipts, invoices, supporting documents)</option>
+                        <option value="redBills">🔴 Red Bills (Urgent payment documents)</option>
+                        <option value="documentation">📚 Documentation (Reference materials)</option>
+                    </select>
+                </div>
+                
+                <!-- Upload Mode Toggle -->
+                <div id="uploadModeToggle" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 6px; border: 1px solid #ddd; display: none;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📎 Upload Method:</label>
+                    <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                        <label style="display: flex; align-items: center; cursor: pointer; padding: 10px 15px; border-radius: 6px; background: #e3f2fd; border: 2px solid #2196f3;">
+                            <input type="radio" name="uploadMode" value="file" checked style="margin-right: 8px;">
+                            <span style="font-weight: 500;">📁 Upload File</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer; padding: 10px 15px; border-radius: 6px; background: #f3e5f5; border: 2px solid #9c27b0;">
+                            <input type="radio" name="uploadMode" value="link" style="margin-right: 8px;">
+                            <span style="font-weight: 500;">🔗 Google Drive Link</span>
+                        </label>
                     </div>
                 </div>
-                 
-            <!-- Red Bills Upload -->
-            <div id="upload-red-bills-section" class="enhanced-upload-section upload-section-red-bills">
-                <h4 class="red-bills-heading">
-                        🔴 Upload Red Bills
-                        <span>Drag & Drop Enabled</span>
-                    </h4>
-                    <div class="form-group">
-                        <label>Upload Red Bills:</label>
-                        <div class="enhanced-file-input">
-                            <input type="file" id="redBillsFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
-                            <label for="redBillsFileInput" class="enhanced-file-input-label">
-                                📁 Click to select file or drag & drop
-                            <small>Red bills or urgent payment documents</small>
-                            </label>
-                        </div>
-                    <div class="file-info-enhanced file-info-red-bills">
-                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
-                            <strong>Maximum size:</strong> 16MB
-                        </div>
-                    <button type="button" id="redBillsUploadBtn" class="btn-enhanced btn-upload red-bills-upload-btn">Upload Red Bills</button>
+                
+                <!-- File Upload Section -->
+                <div id="fileUploadSection" style="display: none; background: white; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📁 Select File:</label>
+                    <input type="file" id="documentFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg" 
+                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 10px;">
+                    <div style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">
+                        <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                        <strong>Maximum size:</strong> 16MB
                     </div>
-    
-                    <div id="redBillsUploadStatus" style="display: none;">
-                        <div id="redBillsUploadProgress" class="alert alert-info">Uploading file...</div>
-                        <div id="redBillsUploadResult" style="display: none;">
-                            <div class="alert alert-success">
-                                <strong>Red Bills file uploaded successfully!</strong>
-                                <div id="redBillsFileLink"></div>
-                            </div>
-                        </div>
-                    </div>
+                    <button type="button" id="uploadFileBtn" class="btn-enhanced" 
+                            style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        Upload File
+                    </button>
                 </div>
-                 
-            <!-- Documentation Upload -->
-            <div id="upload-documentation-section" class="enhanced-upload-section upload-section-documentation">
-                <h4 class="documentation-heading">
-                        📚 Upload Documentation
-                        <span>Drag & Drop Enabled</span>
-                    </h4>
-                    <div class="form-group">
-                        <label>Upload Documentation:</label>
-                        <div class="enhanced-file-input">
-                            <input type="file" id="documentationFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg">
-                            <label for="documentationFileInput" class="enhanced-file-input-label">
-                                📁 Click to select file or drag & drop
-                            <small>Supporting documentation or reference materials</small>
-                            </label>
-                        </div>
-                    <div class="file-info-enhanced file-info-documentation">
-                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
-                            <strong>Maximum size:</strong> 16MB
-                        </div>
-                        <button type="button" id="documentationUploadBtn" class="btn-enhanced btn-upload">Upload Documentation</button>
+                
+                <!-- Google Drive Link Section -->
+                <div id="googleDriveLinkSection" style="display: none; background: white; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">🔗 Google Drive Link:</label>
+                    <input type="url" id="googleDriveLinkInput" placeholder="Paste Google Drive URL here..." 
+                           style="width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; min-height: 50px; box-sizing: border-box; margin-bottom: 10px;">
+                    <div style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">
+                        💡 <strong>Tip:</strong> Copy the "Share" link from Google Drive (make sure it's set to "Anyone with the link can view")
                     </div>
-    
-                    <div id="documentationUploadStatus" style="display: none;">
-                        <div id="documentationUploadProgress" class="alert alert-info">Uploading file...</div>
-                        <div id="documentationUploadResult" style="display: none;">
-                            <div class="alert alert-success">
-                                <strong>Documentation file uploaded successfully!</strong>
-                                <div id="documentationFileLink"></div>
-                            </div>
-                        </div>
-                    </div>
+                    <button type="button" id="processGoogleDriveBtn" class="btn-enhanced" 
+                            style="background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        Process Google Drive Link
+                    </button>
                 </div>
+                
+                <!-- Upload Status -->
+                <div id="uploadStatus" style="display: none; margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 6px; border: 1px solid #c3e6cb;">
+                    <div id="uploadStatusMessage" style="color: #155724; font-weight: 600;"></div>
+                </div>
+            </div>
      
             <!-- FINAL SUBMIT BUTTON -->
             <button type="submit" form="mainForm" class="btn-enhanced enhanced-submit-btn">
@@ -2091,6 +2060,750 @@
                 
                 console.log('🔄 Updating transaction documents...');
             });
+        });
+        
+        // =====================================================================
+        // GOOGLE DRIVE LINK PROCESSING FOR NEW ENTRY FORM
+        // =====================================================================
+        
+        // Process Google Drive link for Bills
+        function processBillsGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('billsGoogleDriveLink').value.trim();
+            const processBtn = document.getElementById('billsGoogleDriveBtn');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error', 'bills');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error', 'bills');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Please generate a transaction number first.', 'error', 'bills');
+                return;
+            }
+            
+            console.log(`DEBUG: Processing Bills Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'bill',
+                    transaction_number: transactionNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('billsFileLinkInput').value = data.file_url;
+                    document.getElementById('billsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    showUploadResult(`✅ Bills file processed successfully!<br>File: ${data.file_name}`, 'success', 'bills');
+                    
+                    // Clear the input
+                    document.getElementById('billsGoogleDriveLink').value = '';
+                    
+                    console.log('DEBUG: Bills Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Bills Google Drive link:', error);
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error', 'bills');
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Link';
+            });
+        }
+        
+        // Process Google Drive link for Red Bills
+        function processRedBillsGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('redBillsGoogleDriveLink').value.trim();
+            const processBtn = document.getElementById('redBillsGoogleDriveBtn');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error', 'redBills');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error', 'redBills');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Please generate a transaction number first.', 'error', 'redBills');
+                return;
+            }
+            
+            console.log(`DEBUG: Processing Red Bills Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'redBill',
+                    transaction_number: transactionNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('redBillsFileLinkInput').value = data.file_url;
+                    document.getElementById('redBillsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    showUploadResult(`✅ Red Bills file processed successfully!<br>File: ${data.file_name}`, 'success', 'redBills');
+                    
+                    // Clear the input
+                    document.getElementById('redBillsGoogleDriveLink').value = '';
+                    
+                    console.log('DEBUG: Red Bills Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Red Bills Google Drive link:', error);
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error', 'redBills');
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Link';
+            });
+        }
+        
+        // Process Google Drive link for Documentation
+        function processDocumentationGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('documentationGoogleDriveLink').value.trim();
+            const processBtn = document.getElementById('documentationGoogleDriveBtn');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error', 'documentation');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error', 'documentation');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Please generate a transaction number first.', 'error', 'documentation');
+                return;
+            }
+            
+            console.log(`DEBUG: Processing Documentation Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'documentation',
+                    transaction_number: transactionNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('documentationFileLinkInput').value = data.file_url;
+                    document.getElementById('documentationFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    showUploadResult(`✅ Documentation file processed successfully!<br>File: ${data.file_name}`, 'success', 'documentation');
+                    
+                    // Clear the input
+                    document.getElementById('documentationGoogleDriveLink').value = '';
+                    
+                    console.log('DEBUG: Documentation Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Documentation Google Drive link:', error);
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error', 'documentation');
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Link';
+            });
+        }
+        
+        // Helper function to show upload results
+        function showUploadResult(message, type, section) {
+            const statusDiv = document.getElementById(`${section}UploadStatus`);
+            const resultDiv = document.getElementById(`${section}UploadResult`);
+            
+            if (statusDiv && resultDiv) {
+                statusDiv.style.display = 'block';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'danger'}">${message}</div>`;
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    resultDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Process Google Drive link for Bills (Main Section)
+        function processBillsGoogleDriveLinkMain() {
+            const googleDriveLink = document.getElementById('billsGoogleDriveLinkMain').value.trim();
+            const processBtn = document.getElementById('billsGoogleDriveBtnMain');
+            
+            if (!googleDriveLink) {
+                alert('Please enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            console.log(`DEBUG: Processing Bills Google Drive link (Main): ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'bill',
+                    transaction_number: transactionNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('billsFileLinkInput').value = data.file_url;
+                    document.getElementById('billsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    alert(`✅ Bills file processed successfully!\nFile: ${data.file_name}`);
+                    
+                    // Clear the input
+                    document.getElementById('billsGoogleDriveLinkMain').value = '';
+                    
+                    console.log('DEBUG: Bills Google Drive link processed successfully (Main)');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Bills Google Drive link (Main):', error);
+                alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Bills Link';
+            });
+        }
+        
+        // Process Google Drive link for Red Bills (Main Section)
+        function processRedBillsGoogleDriveLinkMain() {
+            const googleDriveLink = document.getElementById('redBillsGoogleDriveLinkMain').value.trim();
+            const processBtn = document.getElementById('redBillsGoogleDriveBtnMain');
+            
+            if (!googleDriveLink) {
+                alert('Please enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            console.log(`DEBUG: Processing Red Bills Google Drive link (Main): ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'redBill',
+                    transaction_number: transactionNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('redBillsFileLinkInput').value = data.file_url;
+                    document.getElementById('redBillsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    alert(`✅ Red Bills file processed successfully!\nFile: ${data.file_name}`);
+                    
+                    // Clear the input
+                    document.getElementById('redBillsGoogleDriveLinkMain').value = '';
+                    
+                    console.log('DEBUG: Red Bills Google Drive link processed successfully (Main)');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Red Bills Google Drive link (Main):', error);
+                alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Red Bills Link';
+            });
+        }
+        
+        // Process Google Drive link for Documentation (Main Section)
+        function processDocumentationGoogleDriveLinkMain() {
+            const googleDriveLink = document.getElementById('documentationGoogleDriveLinkMain').value.trim();
+            const processBtn = document.getElementById('documentationGoogleDriveBtnMain');
+            
+            if (!googleDriveLink) {
+                alert('Please enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            console.log(`DEBUG: Processing Documentation Google Drive link (Main): ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'documentation',
+                    transaction_number: transactionNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('documentationFileLinkInput').value = data.file_url;
+                    document.getElementById('documentationFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    alert(`✅ Documentation file processed successfully!\nFile: ${data.file_name}`);
+                    
+                    // Clear the input
+                    document.getElementById('documentationGoogleDriveLinkMain').value = '';
+                    
+                    console.log('DEBUG: Documentation Google Drive link processed successfully (Main)');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Documentation Google Drive link (Main):', error);
+                alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Documentation Link';
+            });
+        }
+        
+        // =====================================================================
+        // SIMPLIFIED DOCUMENT UPLOAD WITH DROPDOWN
+        // =====================================================================
+        
+        // Handle document type dropdown change
+        function handleDocumentTypeChange() {
+            const dropdown = document.getElementById('documentTypeDropdown');
+            const uploadModeToggle = document.getElementById('uploadModeToggle');
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            if (dropdown.value) {
+                uploadModeToggle.style.display = 'block';
+                uploadStatus.style.display = 'none';
+            } else {
+                uploadModeToggle.style.display = 'none';
+                fileUploadSection.style.display = 'none';
+                googleDriveLinkSection.style.display = 'none';
+                uploadStatus.style.display = 'none';
+            }
+        }
+        
+        // Handle upload mode change
+        function handleUploadModeChange() {
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
+            const uploadMode = document.querySelector('input[name="uploadMode"]:checked').value;
+            
+            if (uploadMode === 'file') {
+                fileUploadSection.style.display = 'block';
+                googleDriveLinkSection.style.display = 'none';
+            } else if (uploadMode === 'link') {
+                fileUploadSection.style.display = 'none';
+                googleDriveLinkSection.style.display = 'block';
+            }
+        }
+        
+        // Handle file upload
+        function handleFileUpload() {
+            const dropdown = document.getElementById('documentTypeDropdown');
+            const fileInput = document.getElementById('documentFileInput');
+            const uploadBtn = document.getElementById('uploadFileBtn');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadStatusMessage = document.getElementById('uploadStatusMessage');
+            
+            const selectedType = dropdown.value;
+            const file = fileInput.files[0];
+            
+            if (!selectedType || !file) {
+                alert('Please select a document type and file.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            console.log(`DEBUG: Uploading file for ${selectedType}: ${file.name}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '🔄 Uploading...';
+            uploadStatus.style.display = 'block';
+            uploadStatusMessage.textContent = 'Uploading file...';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('transaction_number', transactionNumber);
+            
+            // Map document types to file types
+            const fileTypeMapping = {
+                'bills': 'bills',
+                'redBills': 'redBills',
+                'documentation': 'documentation'
+            };
+            const fileType = fileTypeMapping[selectedType];
+            formData.append('file_type', fileType);
+            
+            // Upload file
+            fetch('/upload_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    // Map dropdown values to correct field IDs
+                    const fieldMapping = {
+                        'bills': 'bills',
+                        'redBills': 'redBills', 
+                        'documentation': 'documentation'
+                    };
+                    
+                    const fieldPrefix = fieldMapping[selectedType];
+                    const linkField = document.getElementById(`${fieldPrefix}FileLinkInput`);
+                    const nameField = document.getElementById(`${fieldPrefix}FileNameInput`);
+                    
+                    if (linkField && nameField) {
+                        linkField.value = data.file_url;
+                        nameField.value = data.file_name;
+                    }
+                    
+                    // Show success
+                    uploadStatus.style.background = '#d4edda';
+                    uploadStatus.style.borderColor = '#c3e6cb';
+                    uploadStatusMessage.style.color = '#155724';
+                    uploadStatusMessage.textContent = `✅ File uploaded successfully! File: ${data.file_name}`;
+                    
+                    // Clear inputs
+                    fileInput.value = '';
+                    dropdown.value = '';
+                    document.getElementById('uploadModeToggle').style.display = 'none';
+                    document.getElementById('fileUploadSection').style.display = 'none';
+                    
+                    console.log('DEBUG: File uploaded successfully');
+                } else {
+                    throw new Error(data.error || 'Upload failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                uploadStatus.style.background = '#f8d7da';
+                uploadStatus.style.borderColor = '#f5c6cb';
+                uploadStatusMessage.style.color = '#721c24';
+                uploadStatusMessage.textContent = `❌ Upload failed: ${error.message}`;
+            })
+            .finally(() => {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload File';
+            });
+        }
+        
+        // Handle Google Drive link processing
+        function handleGoogleDriveProcessing() {
+            const dropdown = document.getElementById('documentTypeDropdown');
+            const googleDriveLink = document.getElementById('googleDriveLinkInput').value.trim();
+            const processBtn = document.getElementById('processGoogleDriveBtn');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadStatusMessage = document.getElementById('uploadStatusMessage');
+            
+            const selectedType = dropdown.value;
+            
+            if (!selectedType || !googleDriveLink) {
+                alert('Please select a document type and enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            console.log(`DEBUG: Processing Google Drive link for ${selectedType}: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            uploadStatus.style.display = 'block';
+            uploadStatusMessage.textContent = 'Processing Google Drive link...';
+            
+            // Map document types to API document types
+            const documentTypeMapping = {
+                'bills': 'bill',
+                'redBills': 'redBill',
+                'documentation': 'documentation'
+            };
+            const documentType = documentTypeMapping[selectedType];
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: documentType,
+                    transaction_number: transactionNumber
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    // Map dropdown values to correct field IDs
+                    const fieldMapping = {
+                        'bills': 'bills',
+                        'redBills': 'redBills', 
+                        'documentation': 'documentation'
+                    };
+                    
+                    const fieldPrefix = fieldMapping[selectedType];
+                    const linkField = document.getElementById(`${fieldPrefix}FileLinkInput`);
+                    const nameField = document.getElementById(`${fieldPrefix}FileNameInput`);
+                    
+                    if (linkField && nameField) {
+                        linkField.value = data.file_url;
+                        nameField.value = data.file_name;
+                    }
+                    
+                    // Show success
+                    uploadStatus.style.background = '#d4edda';
+                    uploadStatus.style.borderColor = '#c3e6cb';
+                    uploadStatusMessage.style.color = '#155724';
+                    uploadStatusMessage.textContent = `✅ Google Drive link processed successfully! File: ${data.file_name}`;
+                    
+                    // Clear inputs
+                    document.getElementById('googleDriveLinkInput').value = '';
+                    dropdown.value = '';
+                    document.getElementById('uploadModeToggle').style.display = 'none';
+                    document.getElementById('googleDriveLinkSection').style.display = 'none';
+                    
+                    console.log('DEBUG: Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Google Drive link:', error);
+                uploadStatus.style.background = '#f8d7da';
+                uploadStatus.style.borderColor = '#f5c6cb';
+                uploadStatusMessage.style.color = '#721c24';
+                uploadStatusMessage.textContent = `❌ Processing failed: ${error.message}`;
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Google Drive Link';
+            });
+        }
+        
+        // Add event listeners for Google Drive buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bills Google Drive button (Original)
+            const billsGoogleDriveBtn = document.getElementById('billsGoogleDriveBtn');
+            if (billsGoogleDriveBtn) {
+                billsGoogleDriveBtn.addEventListener('click', processBillsGoogleDriveLink);
+            }
+            
+            // Red Bills Google Drive button (Original)
+            const redBillsGoogleDriveBtn = document.getElementById('redBillsGoogleDriveBtn');
+            if (redBillsGoogleDriveBtn) {
+                redBillsGoogleDriveBtn.addEventListener('click', processRedBillsGoogleDriveLink);
+            }
+            
+            // Documentation Google Drive button (Original)
+            const documentationGoogleDriveBtn = document.getElementById('documentationGoogleDriveBtn');
+            if (documentationGoogleDriveBtn) {
+                documentationGoogleDriveBtn.addEventListener('click', processDocumentationGoogleDriveLink);
+            }
+            
+            // Bills Google Drive button (Main Section)
+            const billsGoogleDriveBtnMain = document.getElementById('billsGoogleDriveBtnMain');
+            if (billsGoogleDriveBtnMain) {
+                billsGoogleDriveBtnMain.addEventListener('click', processBillsGoogleDriveLinkMain);
+            }
+            
+            // Red Bills Google Drive button (Main Section)
+            const redBillsGoogleDriveBtnMain = document.getElementById('redBillsGoogleDriveBtnMain');
+            if (redBillsGoogleDriveBtnMain) {
+                redBillsGoogleDriveBtnMain.addEventListener('click', processRedBillsGoogleDriveLinkMain);
+            }
+            
+            // Documentation Google Drive button (Main Section)
+            const documentationGoogleDriveBtnMain = document.getElementById('documentationGoogleDriveBtnMain');
+            if (documentationGoogleDriveBtnMain) {
+                documentationGoogleDriveBtnMain.addEventListener('click', processDocumentationGoogleDriveLinkMain);
+            }
+            
+            // Simplified dropdown functionality
+            const documentTypeDropdown = document.getElementById('documentTypeDropdown');
+            if (documentTypeDropdown) {
+                documentTypeDropdown.addEventListener('change', handleDocumentTypeChange);
+            }
+            
+            // Upload mode radio buttons
+            const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
+            uploadModeRadios.forEach(radio => {
+                radio.addEventListener('change', handleUploadModeChange);
+            });
+            
+            // File upload button
+            const uploadFileBtn = document.getElementById('uploadFileBtn');
+            if (uploadFileBtn) {
+                uploadFileBtn.addEventListener('click', handleFileUpload);
+            }
+            
+            // Google Drive processing button
+            const processGoogleDriveBtn = document.getElementById('processGoogleDriveBtn');
+            if (processGoogleDriveBtn) {
+                processGoogleDriveBtn.addEventListener('click', handleGoogleDriveProcessing);
+            }
         });
     </script>
     
