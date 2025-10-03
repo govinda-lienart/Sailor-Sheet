@@ -369,7 +369,7 @@ def process_google_drive_link(google_drive_url, document_type, transaction_numbe
         # Extract file ID from Google Drive URL
         file_id = extract_file_id_from_url(google_drive_url)
         if not file_id:
-            return {'success': False, 'error': 'Invalid Google Drive URL format'}
+            return {'success': False, 'error': 'Invalid Google Drive URL format. Please use a direct file link, not a folder link. Right-click on the specific file in Google Drive and select "Get link" or "Share".'}
         
         print(f"DEBUG: Extracted file ID: {file_id}")
         
@@ -434,19 +434,26 @@ def extract_file_id_from_url(google_drive_url):
     """
     import re
     
+    print(f"DEBUG: Extracting file ID from URL: {google_drive_url}")
+    
     # Common Google Drive URL patterns
     patterns = [
-        r'drive\.google\.com/file/d/([a-zA-Z0-9-_]+)',
-        r'drive\.google\.com/open\?id=([a-zA-Z0-9-_]+)',
-        r'docs\.google\.com/document/d/([a-zA-Z0-9-_]+)',
-        r'docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)',
+        r'drive\.google\.com/file/d/([a-zA-Z0-9-_]+)',  # Standard file URL
+        r'drive\.google\.com/open\?id=([a-zA-Z0-9-_]+)',  # Open with ID
+        r'docs\.google\.com/document/d/([a-zA-Z0-9-_]+)',  # Google Docs
+        r'docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)',  # Google Sheets
+        r'drive\.google\.com/drive/u/\d+/folders/([a-zA-Z0-9-_]+)',  # Folder URL with user
+        r'drive\.google\.com/drive/folders/([a-zA-Z0-9-_]+)',  # Direct folder URL
     ]
     
-    for pattern in patterns:
+    for i, pattern in enumerate(patterns):
         match = re.search(pattern, google_drive_url)
         if match:
-            return match.group(1)
+            file_id = match.group(1)
+            print(f"DEBUG: Pattern {i+1} matched, extracted file ID: {file_id}")
+            return file_id
     
+    print(f"DEBUG: No pattern matched for URL: {google_drive_url}")
     return None
 
 
