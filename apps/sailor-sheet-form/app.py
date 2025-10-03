@@ -110,6 +110,22 @@ def get_accounts_from_json():
         print(f"ERROR: Failed to load accounts from JSON: {e}")
         return []
 
+def get_sub_categories_from_json():
+    """
+    Get sub-categories list from JSON file
+    Returns list of sub-category dictionaries with id, name, active
+    """
+    try:
+        data = load_json_data('sub-categories.json')
+        sub_categories = data.get('sub_categories', [])
+        # Filter only active sub-categories
+        active_sub_categories = [sub for sub in sub_categories if sub.get('active', True)]
+        print(f"DEBUG: Loaded {len(active_sub_categories)} active sub-categories from JSON")
+        return active_sub_categories
+    except Exception as e:
+        print(f"ERROR: Failed to load sub-categories from JSON: {e}")
+        return []
+
 # =============================================================================
 # API ROUTES - AJAX Endpoints
 # =============================================================================
@@ -131,6 +147,7 @@ def api_submit_transaction():
         description = data.get('description')
         fund_id = data.get('fund_id')
         category_id = data.get('category_id')
+        sub_category_id = data.get('sub_category_id')
         transaction_type = data.get('transaction_type', 'external')
         
         # Get account IDs based on transaction type
@@ -200,7 +217,7 @@ def api_submit_transaction():
                 f"Interbanking Transfer - {description}", 
                 fund_id, category_id, master_ledger_a_debit, master_ledger_a_credit, 
                 transaction_type, date_input, transaction_number, file_links, 
-                master_ledger_a_debit, master_ledger_a_credit, transfer_type, interbanking_payment_method, reference_number
+                master_ledger_a_debit, master_ledger_a_credit, transfer_type, interbanking_payment_method, reference_number, sub_category_id
             )
             
             # Create Master Ledger B entry
@@ -209,7 +226,7 @@ def api_submit_transaction():
                 f"Interbanking Transfer - {description}", 
                 fund_id, category_id, master_ledger_b_debit, master_ledger_b_credit, 
                 transaction_type, date_input, transaction_number, file_links, 
-                master_ledger_b_debit, master_ledger_b_credit, transfer_type, interbanking_payment_method, reference_number
+                master_ledger_b_debit, master_ledger_b_credit, transfer_type, interbanking_payment_method, reference_number, sub_category_id
             )
             
             if master_ledger_a_result and master_ledger_b_result:
@@ -238,7 +255,7 @@ def api_submit_transaction():
                 gc, selected_sheet_id, selected_worksheet_title, amount, description, 
                 fund_id, category_id, debit_account_id, credit_account_id, 
                 transaction_type, date_input, transaction_number, file_links, 
-                origin_account, destination_account, transfer_type, payment_method, reference_number
+                origin_account, destination_account, transfer_type, payment_method, reference_number, sub_category_id
             )
             
             if transaction_result:
@@ -264,7 +281,7 @@ def api_submit_transaction():
                             gc, selected_sheet_id, selected_worksheet_title, bank_fee_amount, bank_fee_description, 
                             fund_id, bank_fee_category, debit_account_id, credit_account_id, 
                             transaction_type, date_input, bank_fee_txn_number, file_links, 
-                            origin_account, destination_account, transfer_type, payment_method, reference_number
+                            origin_account, destination_account, transfer_type, payment_method, reference_number, sub_category_id
                         )
                         
                         bank_fee_results.append({
@@ -331,16 +348,17 @@ def index():
     # Get available sheets for dropdown (still from Google Sheets for worksheet selection)
     available_sheets = get_available_sheets(gc)
     
-    # Get available funds, categories, and accounts from JSON files (MUCH FASTER!)
+    # Get available funds, categories, accounts, and sub-categories from JSON files (MUCH FASTER!)
     print("DEBUG: Loading dropdown data from JSON files...")
     funds = get_funds_from_json()
     categories = get_categories_from_json()
     accounts = get_accounts_from_json()
+    sub_categories = get_sub_categories_from_json()
     
-    print(f"DEBUG: JSON data loaded - Funds: {len(funds)}, Categories: {len(categories)}, Accounts: {len(accounts)}")
+    print(f"DEBUG: JSON data loaded - Funds: {len(funds)}, Categories: {len(categories)}, Accounts: {len(accounts)}, Sub-Categories: {len(sub_categories)}")
     
-    # Show the form with sheet selection, funds, categories, and accounts
-    return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts)
+    # Show the form with sheet selection, funds, categories, accounts, and sub-categories
+    return render_template('index.html', sheets=available_sheets, funds=funds, categories=categories, accounts=accounts, sub_categories=sub_categories)
 
 # =============================================================================
 # AJAX ROUTE FOR WORKSHEET SELECTION
@@ -411,11 +429,13 @@ def refresh_form_data():
         accounts = get_accounts_from_json()
         categories = get_categories_from_json()
         funds = get_funds_from_json()
+        sub_categories = get_sub_categories_from_json()
         
         print(f"DEBUG: Retrieved fresh data:")
         print(f"  - Accounts: {len(accounts)} items")
         print(f"  - Categories: {len(categories)} items")
         print(f"  - Funds: {len(funds)} items")
+        print(f"  - Sub-Categories: {len(sub_categories)} items")
         print(f"="*50)
         
         return jsonify({
@@ -423,6 +443,7 @@ def refresh_form_data():
             'accounts': accounts,
             'categories': categories,
             'funds': funds,
+            'sub_categories': sub_categories,
             'transaction_type': transaction_type
         })
         

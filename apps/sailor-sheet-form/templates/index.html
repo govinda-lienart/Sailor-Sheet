@@ -295,6 +295,23 @@ Last Updated: 2025-01-05
                         </select>
                          </div>
                      </div>
+                     
+                     <!-- SUB-CATEGORY SECTION -->
+                <div id="sub-category-section" class="form-section section-sub-category">
+                    <h4 class="section-heading heading-sub-category">👤 Sub-Category</h4>
+                    <div class="form-group">
+                        <label>Sub-Category:</label>
+                        <select name="sub_category_id">
+                            <option value="">Choose a sub-category...</option>
+                            {% for sub_category in sub_categories %}
+                            <option value="{{ sub_category.id }}">
+                                {{ sub_category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Select the person or project this transaction relates to</div>
+                    </div>
+                </div>
                     
                 <!-- =======================================================
                      ACCOUNT SECTIONS (varies by transaction type)

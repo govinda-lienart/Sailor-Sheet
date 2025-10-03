@@ -270,10 +270,12 @@ def update_document_link(gc, sheet_type, transaction_number, document_type, file
         print(f"DEBUG: Headers: {headers}")
         
         # Find the document column index
+        # Correct column mapping based on actual Google Sheet structure:
+        # A=Transaction, B=dd/mm/YY, C=Month, D=Year, E=Funds, F=Account, G=Category, H=Sub-Category, I=Debit, J=Credit, K=Offset, L=Payment, M=Description, N=Bank Transaction, O=Bill, P=Red Bill, Q=Doc
         document_column_map = {
-            'bill': ['Bill'],
-            'redBill': ['Red BIll', 'Red Bill', 'Red Bills'],  # Try different variations
-            'documentation': ['Doc', 'Documentation']
+            'bill': ['Bill', 'bill', 'BILL'],
+            'redBill': ['Red Bill', 'Red BIll', 'Red Bills', 'red bill', 'RED BILL', 'Red Bill '],  # Try different variations
+            'documentation': ['Doc', 'Documentation', 'doc', 'DOC', 'Documentation ']
         }
         
         possible_columns = document_column_map.get(document_type)
@@ -297,7 +299,22 @@ def update_document_link(gc, sheet_type, transaction_number, document_type, file
         if column_index is None:
             print(f"ERROR: None of the columns {possible_columns} found in headers")
             print(f"DEBUG: Available headers: {headers}")
-            return False
+            
+            # Fallback: Use known column positions based on your Google Sheet structure
+            # O=Bill (column 15), P=Red Bill (column 16), Q=Doc (column 17)
+            fallback_columns = {
+                'bill': 14,      # Column O (0-indexed)
+                'redBill': 15,   # Column P (0-indexed) 
+                'documentation': 16  # Column Q (0-indexed)
+            }
+            
+            if document_type in fallback_columns:
+                column_index = fallback_columns[document_type]
+                target_column = f"Column {chr(65 + column_index)}"  # Convert to letter (O, P, Q)
+                print(f"DEBUG: Using fallback column {target_column} (index {column_index}) for {document_type}")
+            else:
+                print(f"ERROR: No fallback available for document type: {document_type}")
+                return False
         
         print(f"DEBUG: Found column '{target_column}' at index {column_index}")
         
@@ -346,11 +363,13 @@ def update_document_link(gc, sheet_type, transaction_number, document_type, file
         hyperlink_formula = f'=HYPERLINK("{file_url}"; "✔")'
         print(f"DEBUG: Created HYPERLINK formula: {hyperlink_formula}")
         
-        # Map document types to column letters (same as main form)
+        # Map document types to column letters based on actual Google Sheet structure
+        # A=Transaction, B=dd/mm/YY, C=Month, D=Year, E=Funds, F=Account, G=Category, H=Sub-Category, 
+        # I=Debit, J=Credit, K=Offset, L=Payment, M=Description, N=Bank Transaction, O=Bill, P=Red Bill, Q=Doc
         column_mapping = {
-            'bill': 'N',      # Bill column
-            'redBill': 'O',   # Red Bill column  
-            'documentation': 'P'  # Doc column
+            'bill': 'O',           # Bill column (was N, now O)
+            'redBill': 'P',        # Red Bill column (was O, now P)
+            'documentation': 'Q'   # Doc column (was P, now Q)
         }
         
         # Get the column letter for this document type
@@ -637,7 +656,7 @@ def generate_offset_text(account_name, counter_account_name):
 
 # Add Transaction To Selected Sheet
 # --------------------------------
-def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links="", origin_account="", destination_account="", transfer_type="external", payment_method="bank", reference_number=""):
+def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, description, fund_id, category_id, debit_account_id, credit_account_id, transaction_type, date_input, transaction_number, file_links="", origin_account="", destination_account="", transfer_type="external", payment_method="bank", reference_number="", sub_category_id=""):
     """
     Add double-entry transaction to a specific selected sheet and worksheet
     Creates TWO entries: one debit entry and one credit entry
@@ -769,6 +788,11 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             category_name = get_category_name_by_code(gc, category_id)
             print(f"DEBUG: Found category name: {category_name}")
         
+        # Get sub-category name from sub-category ID
+        print(f"DEBUG: Looking up sub-category name for sub_category_id: {sub_category_id}")
+        sub_category_name = get_sub_category_name_by_id(gc, sub_category_id)
+        print(f"DEBUG: Found sub-category name: {sub_category_name}")
+        
         # Get account names from account IDs
         print(f"DEBUG: Looking up debit account name for debit_account_id: {debit_account_id}")
         debit_account_name = get_account_name_by_code(gc, debit_account_id)
@@ -828,15 +852,16 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             fund_name,            # E: Funds
             debit_account_name,   # F: Account (the account being debited)
             category_name,        # G: Category
-            numeric_amount,       # H: Debit (VND) - amount goes here
-            "",                   # I: Credit (VND) - empty for debit entry
-            debit_offset,         # J: Offset
-            payment_method,       # K: Payment Method
-            description,          # L: Description
-            reference_number,     # M: Bank Transaction Number
-            file_link_values.get('bills', ''),           # N: Bill
-            file_link_values.get('red_bills', ''),       # O: Red Bill
-            file_link_values.get('documentation', '')    # P: Doc
+            sub_category_name,    # H: Sub-Category
+            numeric_amount,       # I: Debit (VND) - amount goes here
+            "",                   # J: Credit (VND) - empty for debit entry
+            debit_offset,         # K: Offset
+            payment_method,       # L: Payment Method
+            description,          # M: Description
+            reference_number,     # N: Bank Transaction Number
+            file_link_values.get('bills', ''),           # O: Bill
+            file_link_values.get('red_bills', ''),       # P: Red Bill
+            file_link_values.get('documentation', '')    # Q: Doc
         ]
         
         # Entry 2: CREDIT entry (amount goes in Credit column)
@@ -848,15 +873,16 @@ def add_transaction_to_selected_sheet(gc, sheet_id, worksheet_id, amount, descri
             fund_name,            # E: Funds
             credit_account_name,  # F: Account (the account being credited)
             category_name,        # G: Category
-            "",                   # H: Debit (VND) - empty for credit entry
-            numeric_amount,       # I: Credit (VND) - amount goes here
-            credit_offset,        # J: Offset
-            payment_method,       # K: Payment Method
-            description,          # L: Description
-            reference_number,     # M: Bank Transaction Number
-            file_link_values.get('bills', ''),           # N: Bill
-            file_link_values.get('red_bills', ''),       # O: Red Bill
-            file_link_values.get('documentation', '')    # P: Doc
+            sub_category_name,    # H: Sub-Category
+            "",                   # I: Debit (VND) - empty for credit entry
+            numeric_amount,       # J: Credit (VND) - amount goes here
+            credit_offset,        # K: Offset
+            payment_method,       # L: Payment Method
+            description,          # M: Description
+            reference_number,     # N: Bank Transaction Number
+            file_link_values.get('bills', ''),           # O: Bill
+            file_link_values.get('red_bills', ''),       # P: Red Bill
+            file_link_values.get('documentation', '')    # Q: Doc
         ]
         
         print(f"DEBUG: Prepared DEBIT entry:")
@@ -1065,6 +1091,56 @@ def get_category_name_by_code(gc, category_code):
         import traceback
         traceback.print_exc()
         return "Unknown Category"
+
+
+# Get Sub-Category Name By ID
+# ----------------------------
+def get_sub_category_name_by_id(gc, sub_category_id):
+    """
+    Get sub-category name by ID for transaction saving
+    Args:
+        gc: Google Sheets client (kept for compatibility but not used)
+        sub_category_id: ID of the sub-category to look up
+    Returns: Sub-category name or empty string if not found or empty
+    """
+    try:
+        print(f"DEBUG: get_sub_category_name_by_id called with sub_category_id: {sub_category_id}")
+        
+        # If sub_category_id is empty or None, return empty string
+        if not sub_category_id or sub_category_id.strip() == "":
+            print(f"DEBUG: No sub-category selected, returning empty string")
+            return ""
+        
+        # Load sub-categories from JSON file instead of Google Sheets
+        import json
+        import os
+        
+        # Get the directory of the current file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        json_file_path = os.path.join(current_dir, 'data', 'sub-categories.json')
+        
+        with open(json_file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        
+        sub_categories = data.get('sub_categories', [])
+        print(f"DEBUG: Loaded {len(sub_categories)} sub-categories from JSON")
+        
+        # Find the sub-category with matching ID
+        for sub_category in sub_categories:
+            if str(sub_category.get('id', '')) == str(sub_category_id):
+                name = sub_category.get('name', 'Unknown Sub-Category')
+                print(f"DEBUG: Found sub-category name: {name}")
+                return name
+        
+        print(f"WARNING: Sub-Category ID {sub_category_id} not found")
+        print(f"DEBUG: Available sub-category IDs: {[str(sub.get('id', '')) for sub in sub_categories]}")
+        return ""
+        
+    except Exception as e:
+        print(f"ERROR in get_sub_category_name_by_id: {e}")
+        import traceback
+        traceback.print_exc()
+        return ""
 
 
 
