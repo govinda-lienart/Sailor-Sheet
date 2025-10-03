@@ -381,9 +381,27 @@ def process_google_drive_link(google_drive_url, document_type, transaction_numbe
         print(f"DEBUG: Downloaded file: {original_file_name}")
         print(f"DEBUG: File size: {len(file_content)} bytes")
         
-        # Generate unique filename using the same system as main form
-        base = original_file_name.rsplit('.', 1)[0] if '.' in original_file_name else original_file_name
-        ext = original_file_name.rsplit('.', 1)[1].lower() if '.' in original_file_name else 'bin'
+        # Extract file extension from original filename
+        if '.' in original_file_name:
+            base = original_file_name.rsplit('.', 1)[0]
+            ext = original_file_name.rsplit('.', 1)[1].lower()
+        else:
+            # If no extension in original name, try to detect from content
+            base = original_file_name
+            detected_ext = detect_file_type_from_content(file_content)
+            if detected_ext and detected_ext in ALLOWED_EXTENSIONS:
+                ext = detected_ext
+                print(f"DEBUG: Detected extension from content: {ext}")
+            else:
+                ext = 'bin'  # Will be validated later
+        
+        # Validate file extension against allowed types
+        if ext not in ALLOWED_EXTENSIONS:
+            print(f"DEBUG: File extension '{ext}' not in allowed extensions: {ALLOWED_EXTENSIONS}")
+            return {
+                'success': False, 
+                'error': f'File type .{ext} not allowed. Allowed types: {", ".join(ALLOWED_EXTENSIONS)}'
+            }
         
         # Map document_type to file_type for the unique_name function
         document_type_mapping = {
@@ -480,13 +498,43 @@ def download_file_from_google_drive(file_id):
             if match:
                 file_name = match.group(1)
         
-        # If no filename in header, generate one
+        # If no filename in header, try to get file info from Google Drive API
         if not file_name:
-            content_type = response.headers.get('Content-Type', 'application/octet-stream')
-            extension = get_extension_from_content_type(content_type)
-            file_name = f"downloaded_file_{file_id[:8]}{extension}"
+            try:
+                # Get credentials and build service to get file metadata
+                creds = get_service_account_credentials()
+                drive = build_drive_service(creds)
+                
+                # Get file metadata
+                file_metadata = drive.files().get(
+                    fileId=file_id,
+                    fields="name,mimeType",
+                    supportsAllDrives=True
+                ).execute()
+                
+                file_name = file_metadata.get('name', '')
+                mime_type = file_metadata.get('mimeType', '')
+                
+                print(f"DEBUG: Got file metadata - Name: {file_name}, MIME: {mime_type}")
+                
+                # If we have a name, use it; otherwise generate from MIME type
+                if not file_name:
+                    extension = get_extension_from_content_type(mime_type)
+                    file_name = f"downloaded_file_{file_id[:8]}{extension}"
+                elif '.' not in file_name and mime_type:
+                    # If filename has no extension but we have MIME type, add it
+                    extension = get_extension_from_content_type(mime_type)
+                    if extension != '.bin':  # Only add extension if it's not the fallback
+                        file_name = f"{file_name}{extension}"
+                        
+            except Exception as api_error:
+                print(f"DEBUG: Could not get file metadata from API: {api_error}")
+                # Fallback to content type detection
+                content_type = response.headers.get('Content-Type', 'application/octet-stream')
+                extension = get_extension_from_content_type(content_type)
+                file_name = f"downloaded_file_{file_id[:8]}{extension}"
         
-        print(f"DEBUG: File name: {file_name}")
+        print(f"DEBUG: Final file name: {file_name}")
         print(f"DEBUG: Content-Type: {response.headers.get('Content-Type')}")
         
         # Read file content
@@ -515,13 +563,73 @@ def get_extension_from_content_type(content_type):
         'image/jpg': '.jpg',
         'image/png': '.png',
         'image/gif': '.gif',
+        'image/bmp': '.bmp',
+        'image/tiff': '.tiff',
+        'image/webp': '.webp',
         'application/msword': '.doc',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
         'application/vnd.ms-excel': '.xls',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+        'application/vnd.ms-powerpoint': '.ppt',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
         'text/plain': '.txt',
+        'text/csv': '.csv',
+        'application/zip': '.zip',
+        'application/x-rar-compressed': '.rar',
+        'application/x-7z-compressed': '.7z',
+        'application/json': '.json',
+        'application/xml': '.xml',
+        'text/html': '.html',
+        'text/css': '.css',
+        'application/javascript': '.js',
+        'application/octet-stream': '.bin',  # Keep as fallback but try to avoid
     }
     
     return mime_to_extension.get(content_type.lower(), '.bin')
+
+
+def detect_file_type_from_content(file_content):
+    """
+    Detect file type from file content using magic bytes.
+    
+    Args:
+        file_content: Bytes content of the file
+    
+    Returns:
+        str: File extension without dot, or None if not detected
+    """
+    if not file_content:
+        return None
+    
+    # Check magic bytes for common file types
+    magic_signatures = {
+        b'\x25\x50\x44\x46': 'pdf',  # PDF
+        b'\x89\x50\x4E\x47': 'png',  # PNG
+        b'\xFF\xD8\xFF': 'jpg',      # JPEG
+        b'\x47\x49\x46\x38': 'gif',  # GIF
+        b'\x50\x4B\x03\x04': 'docx', # DOCX/XLSX/PPTX (ZIP-based)
+        b'\xD0\xCF\x11\xE0': 'doc',  # DOC/XLS/PPT (OLE2)
+        b'\x50\x4B\x05\x06': 'zip',  # ZIP
+        b'\x52\x61\x72\x21': 'rar',  # RAR
+    }
+    
+    # Check first few bytes
+    for signature, ext in magic_signatures.items():
+        if file_content.startswith(signature):
+            print(f"DEBUG: Detected file type from content: {ext}")
+            return ext
+    
+    # Check for text files
+    try:
+        # Try to decode as text
+        text_content = file_content[:1024].decode('utf-8', errors='ignore')
+        if text_content.isprintable():
+            print(f"DEBUG: Detected text file")
+            return 'txt'
+    except:
+        pass
+    
+    print(f"DEBUG: Could not detect file type from content")
+    return None
 
 
