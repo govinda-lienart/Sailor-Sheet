@@ -511,6 +511,7 @@
                         <option value="">-- Choose document type --</option>
                         <option value="bills">📄 Bills (Receipts, invoices, supporting documents)</option>
                         <option value="redBills">🔴 Red Bills (Urgent payment documents)</option>
+                        <option value="bankStatement">🏦 Bank Statement (Bank transaction records)</option>
                         <option value="documentation">📚 Documentation (Reference materials)</option>
                     </select>
                 </div>
@@ -2785,6 +2786,9 @@
                     
                     // Also update Quick Access visibility on page load
                     updateQuickAccessVisibility('BE');
+                    
+                    // Update document type dropdown on page load
+                    updateDocumentTypeDropdown('BE');
                 }, 2000); // Wait 2 seconds for sheets to load
             }
         }
@@ -2832,6 +2836,9 @@
                     
                     // Update Quick Access panel visibility
                     updateQuickAccessVisibility(countryCode);
+                    
+                    // Update document type dropdown
+                    updateDocumentTypeDropdown(countryCode);
                     
                     // Store country in sessionStorage
                     sessionStorage.setItem('selectedCountry', countryCode);
@@ -2984,6 +2991,37 @@
             console.log(`DEBUG: Updating accounts data with ${accounts.length} accounts`);
             // This will be used when the form is refreshed with country-specific data
             window.currentAccounts = accounts;
+        }
+        
+        // Update document type dropdown based on country
+        function updateDocumentTypeDropdown(countryCode) {
+            console.log(`DEBUG: Updating document type dropdown for country: ${countryCode}`);
+            
+            const documentTypeDropdown = document.getElementById('documentTypeDropdown');
+            if (!documentTypeDropdown) {
+                console.log('DEBUG: Document type dropdown not found');
+                return;
+            }
+            
+            // Get all options
+            const allOptions = documentTypeDropdown.querySelectorAll('option');
+            const redBillsOption = Array.from(allOptions).find(option => 
+                option.value === 'redBills' || option.textContent.includes('Red Bills')
+            );
+            
+            if (redBillsOption) {
+                if (countryCode === 'BE') {
+                    // Belgium doesn't have red bills - hide the option
+                    redBillsOption.style.display = 'none';
+                    console.log('DEBUG: Hidden Red Bills option for Belgium');
+                } else if (countryCode === 'VN') {
+                    // Vietnam has red bills - show the option
+                    redBillsOption.style.display = 'block';
+                    console.log('DEBUG: Shown Red Bills option for Vietnam');
+                }
+            } else {
+                console.log('DEBUG: Red Bills option not found in dropdown');
+            }
         }
         
         // Update Quick Access panel visibility based on country
