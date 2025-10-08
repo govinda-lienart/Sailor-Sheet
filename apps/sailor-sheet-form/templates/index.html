@@ -2773,6 +2773,9 @@
                 setTimeout(() => {
                     console.log('DEBUG: Initializing country selection after sheets are loaded');
                     selectCountry('BE');
+                    
+                    // Also update Quick Access visibility on page load
+                    updateQuickAccessVisibility('BE');
                 }, 2000); // Wait 2 seconds for sheets to load
             }
         }
@@ -2817,6 +2820,9 @@
                     
                     // Update accounts data
                     updateAccountsData(data.accounts);
+                    
+                    // Update Quick Access panel visibility
+                    updateQuickAccessVisibility(countryCode);
                     
                     // Store country in sessionStorage
                     sessionStorage.setItem('selectedCountry', countryCode);
@@ -2969,6 +2975,39 @@
             console.log(`DEBUG: Updating accounts data with ${accounts.length} accounts`);
             // This will be used when the form is refreshed with country-specific data
             window.currentAccounts = accounts;
+        }
+        
+        // Update Quick Access panel visibility based on country
+        function updateQuickAccessVisibility(countryCode) {
+            console.log(`DEBUG: Updating Quick Access visibility for country: ${countryCode}`);
+            
+            // Get the Quick Access panel elements using the correct class names
+            const beMasterLedger = document.querySelector('.access-link-be');
+            const vnMasterLedger = document.querySelector('.access-link-vn');
+            
+            console.log(`DEBUG: Found BE element:`, beMasterLedger);
+            console.log(`DEBUG: Found VN element:`, vnMasterLedger);
+            
+            if (beMasterLedger && vnMasterLedger) {
+                if (countryCode === 'BE') {
+                    // Show Belgium, hide Vietnam
+                    beMasterLedger.style.display = 'block';
+                    vnMasterLedger.style.display = 'none';
+                    console.log('DEBUG: Showing BE - Master Ledger, hiding VN - Master Ledger');
+                } else if (countryCode === 'VN') {
+                    // Show Vietnam, hide Belgium
+                    beMasterLedger.style.display = 'none';
+                    vnMasterLedger.style.display = 'block';
+                    console.log('DEBUG: Showing VN - Master Ledger, hiding BE - Master Ledger');
+                }
+            } else {
+                console.log('DEBUG: Quick Access elements not found');
+                console.log('DEBUG: Available elements with access-link class:');
+                const allAccessLinks = document.querySelectorAll('.access-link');
+                allAccessLinks.forEach((link, index) => {
+                    console.log(`  ${index}: ${link.className} - ${link.textContent.trim()}`);
+                });
+            }
         }
         
         // Add event listeners for Google Drive buttons
