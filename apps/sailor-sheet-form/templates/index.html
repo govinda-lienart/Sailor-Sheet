@@ -46,6 +46,13 @@
             </div>
             <!-- Future: User menu, notifications, etc. will go here -->
             <div class="navbar-menu">
+                <div class="country-selector">
+                    <label for="countrySelect" class="country-label">Country:</label>
+                    <select id="countrySelect" class="country-dropdown">
+                        <option value="BE">🇧🇪 Belgium</option>
+                        <option value="VN">🇻🇳 Vietnam</option>
+                    </select>
+                </div>
                 <div class="powered-by">
                     <span class="powered-by-text">Accounting powered by</span>
                     <span class="google-sheets-badge">Google Sheets</span>
@@ -2751,6 +2758,219 @@
             });
         }
         
+        // =====================================================================
+        // COUNTRY SELECTION FUNCTIONALITY
+        // =====================================================================
+        
+        // Initialize country selection on page load
+        function initializeCountrySelection() {
+            // Set default country to Belgium
+            const countrySelect = document.getElementById('countrySelect');
+            if (countrySelect) {
+                countrySelect.value = 'BE'; // Default to Belgium
+                
+                // Wait for sheets to be loaded before selecting country
+                setTimeout(() => {
+                    console.log('DEBUG: Initializing country selection after sheets are loaded');
+                    selectCountry('BE');
+                }, 2000); // Wait 2 seconds for sheets to load
+            }
+        }
+        
+        // Handle country selection
+        function selectCountry(countryCode) {
+            console.log(`DEBUG: Selecting country: ${countryCode}`);
+            
+            // Check if sheet dropdown is populated
+            const sheetSelect = document.getElementById('sheet_select');
+            if (!sheetSelect || sheetSelect.options.length <= 1) {
+                console.log('DEBUG: Sheet dropdown not ready, waiting...');
+                setTimeout(() => {
+                    selectCountry(countryCode);
+                }, 1000);
+                return;
+            }
+            
+            // Show loading state
+            const countrySelect = document.getElementById('countrySelect');
+            if (countrySelect) {
+                countrySelect.disabled = true;
+            }
+            
+            // Call API to select country
+            fetch('/api/select_country', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    country_code: countryCode
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`DEBUG: Country switched to ${data.country.name}`);
+                    
+                    // Update sheet and worksheet dropdowns
+                    updateSheetSelection(data.country);
+                    
+                    // Update accounts data
+                    updateAccountsData(data.accounts);
+                    
+                    // Store country in sessionStorage
+                    sessionStorage.setItem('selectedCountry', countryCode);
+                    
+                    console.log('DEBUG: Country selection completed successfully');
+                } else {
+                    console.error('Error selecting country:', data.error);
+                    alert(`Error switching country: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error selecting country:', error);
+                alert(`Error switching country: ${error.message}`);
+            })
+            .finally(() => {
+                // Re-enable country selector
+                if (countrySelect) {
+                    countrySelect.disabled = false;
+                }
+            });
+        }
+        
+        // Update sheet and worksheet selection based on country
+        function updateSheetSelection(countryInfo) {
+            console.log(`DEBUG: Updating sheet selection for ${countryInfo.name}`);
+            console.log(`DEBUG: Looking for sheet: ${countryInfo.sheet_name}`);
+            console.log(`DEBUG: Looking for worksheet: ${countryInfo.worksheet_name}`);
+            
+            const sheetSelect = document.getElementById('sheet_select');
+            const worksheetSelect = document.getElementById('worksheet_select');
+            
+            if (sheetSelect) {
+                console.log(`DEBUG: Available sheet options:`);
+                for (let option of sheetSelect.options) {
+                    console.log(`  - ${option.value}: ${option.textContent}`);
+                }
+                
+                // Find and select the country-specific sheet
+                let foundSheet = false;
+                
+                // First try exact match
+                for (let option of sheetSelect.options) {
+                    if (option.textContent.trim() === countryInfo.sheet_name.trim()) {
+                        console.log(`DEBUG: Found exact match: ${option.textContent}`);
+                        sheetSelect.value = option.value;
+                        foundSheet = true;
+                        break;
+                    }
+                }
+                
+                // If no exact match, try partial match
+                if (!foundSheet) {
+                    console.log(`DEBUG: No exact match found, trying partial match`);
+                    for (let option of sheetSelect.options) {
+                        if (option.textContent.includes(countryInfo.sheet_name) || 
+                            countryInfo.sheet_name.includes(option.textContent)) {
+                            console.log(`DEBUG: Found partial match: ${option.textContent}`);
+                            sheetSelect.value = option.value;
+                            foundSheet = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // If still no match, try case-insensitive match
+                if (!foundSheet) {
+                    console.log(`DEBUG: No partial match found, trying case-insensitive match`);
+                    const searchName = countryInfo.sheet_name.toLowerCase();
+                    for (let option of sheetSelect.options) {
+                        if (option.textContent.toLowerCase().includes(searchName) || 
+                            searchName.includes(option.textContent.toLowerCase())) {
+                            console.log(`DEBUG: Found case-insensitive match: ${option.textContent}`);
+                            sheetSelect.value = option.value;
+                            foundSheet = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (foundSheet) {
+                    console.log(`DEBUG: Sheet selected: ${sheetSelect.value}`);
+                    
+                    // Trigger sheet change to load worksheets
+                    const event = new Event('change');
+                    sheetSelect.dispatchEvent(event);
+                    
+                    // After worksheets are loaded, select the country-specific worksheet
+                    setTimeout(() => {
+                        console.log(`DEBUG: Looking for worksheet: ${countryInfo.worksheet_name}`);
+                        if (worksheetSelect) {
+                            console.log(`DEBUG: Available worksheet options:`);
+                            for (let option of worksheetSelect.options) {
+                                console.log(`  - ${option.value}: ${option.textContent}`);
+                            }
+                            
+                            let foundWorksheet = false;
+                            
+                            // First try exact match
+                            for (let option of worksheetSelect.options) {
+                                if (option.textContent.trim() === countryInfo.worksheet_name.trim()) {
+                                    console.log(`DEBUG: Found exact worksheet match: ${option.textContent}`);
+                                    worksheetSelect.value = option.value;
+                                    foundWorksheet = true;
+                                    break;
+                                }
+                            }
+                            
+                            // If no exact match, try partial match
+                            if (!foundWorksheet) {
+                                console.log(`DEBUG: No exact worksheet match, trying partial match`);
+                                for (let option of worksheetSelect.options) {
+                                    if (option.textContent.includes(countryInfo.worksheet_name) || 
+                                        countryInfo.worksheet_name.includes(option.textContent)) {
+                                        console.log(`DEBUG: Found partial worksheet match: ${option.textContent}`);
+                                        worksheetSelect.value = option.value;
+                                        foundWorksheet = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            // If still no match, try case-insensitive match
+                            if (!foundWorksheet) {
+                                console.log(`DEBUG: No partial worksheet match, trying case-insensitive match`);
+                                const searchWorksheet = countryInfo.worksheet_name.toLowerCase();
+                                for (let option of worksheetSelect.options) {
+                                    if (option.textContent.toLowerCase().includes(searchWorksheet) || 
+                                        searchWorksheet.includes(option.textContent.toLowerCase())) {
+                                        console.log(`DEBUG: Found case-insensitive worksheet match: ${option.textContent}`);
+                                        worksheetSelect.value = option.value;
+                                        foundWorksheet = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (!foundWorksheet) {
+                                console.log(`DEBUG: No worksheet match found for: ${countryInfo.worksheet_name}`);
+                            }
+                        }
+                    }, 1000); // Increased timeout to ensure worksheets are loaded
+                } else {
+                    console.log(`DEBUG: No sheet match found for: ${countryInfo.sheet_name}`);
+                }
+            }
+        }
+        
+        // Update accounts data based on country
+        function updateAccountsData(accounts) {
+            console.log(`DEBUG: Updating accounts data with ${accounts.length} accounts`);
+            // This will be used when the form is refreshed with country-specific data
+            window.currentAccounts = accounts;
+        }
+        
         // Add event listeners for Google Drive buttons
         document.addEventListener('DOMContentLoaded', function() {
             // Bills Google Drive button (Original)
@@ -2812,6 +3032,19 @@
             if (processGoogleDriveBtn) {
                 processGoogleDriveBtn.addEventListener('click', handleGoogleDriveProcessing);
             }
+            
+            // Country selection functionality
+            const countrySelect = document.getElementById('countrySelect');
+            if (countrySelect) {
+                countrySelect.addEventListener('change', function() {
+                    const selectedCountry = this.value;
+                    console.log(`DEBUG: Country changed to: ${selectedCountry}`);
+                    selectCountry(selectedCountry);
+                });
+            }
+            
+            // Initialize country selection on page load
+            initializeCountrySelection();
         });
     </script>
     

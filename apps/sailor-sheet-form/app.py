@@ -3,7 +3,7 @@
 # =============================================================================
 
 # Import required libraries
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify  # Web framework
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session  # Web framework
 import os
 import json
 
@@ -14,6 +14,9 @@ import file_upload_manager
 
 # Create Flask web application
 app = Flask(__name__)
+
+# Set secret key for session management
+app.secret_key = 'sailor-sheet-secret-key-2025'
 
 # =============================================================================
 # ENVIRONMENT CONFIGURATION
@@ -576,6 +579,79 @@ def api_update_document():
         return jsonify({
             'success': False,
             'error': f'Document update failed: {str(e)}'
+        }), 500
+
+# =============================================================================
+# COUNTRY SELECTION API
+# =============================================================================
+
+@app.route('/api/countries', methods=['GET'])
+def api_get_countries():
+    """
+    API endpoint to get available countries
+    """
+    try:
+        countries_data = load_json_data('countries.json')
+        return jsonify({
+            'success': True,
+            'countries': countries_data.get('countries', {})
+        })
+    except Exception as e:
+        print(f"ERROR in api_get_countries: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to load countries: {str(e)}'
+        }), 500
+
+@app.route('/api/select_country', methods=['POST'])
+def api_select_country():
+    """
+    API endpoint to select a country and get country-specific data
+    """
+    try:
+        data = request.get_json()
+        country_code = data.get('country_code')
+        
+        if not country_code:
+            return jsonify({
+                'success': False,
+                'error': 'Country code is required'
+            }), 400
+        
+        # Load countries configuration
+        countries_data = load_json_data('countries.json')
+        countries = countries_data.get('countries', {})
+        
+        if country_code not in countries:
+            return jsonify({
+                'success': False,
+                'error': f'Invalid country code: {country_code}'
+            }), 400
+        
+        country_info = countries[country_code]
+        
+        # Store selected country in session
+        session['selected_country'] = country_code
+        
+        # Load country-specific accounts
+        accounts_data = load_json_data(country_info['accounts_file'])
+        
+        print(f"DEBUG: Country selected: {country_code}")
+        print(f"DEBUG: Sheet: {country_info['sheet_name']}")
+        print(f"DEBUG: Worksheet: {country_info['worksheet_name']}")
+        
+        return jsonify({
+            'success': True,
+            'country': country_info,
+            'accounts': accounts_data.get('accounts', []),
+            'message': f'Country switched to {country_info["name"]}'
+        })
+        
+    except Exception as e:
+        print(f"ERROR in api_select_country: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to select country: {str(e)}'
         }), 500
 
 # =============================================================================

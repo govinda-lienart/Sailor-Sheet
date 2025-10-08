@@ -94,6 +94,44 @@ body {
     gap: 20px;
 }
 
+.country-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+}
+
+.country-label {
+    color: rgba(255,255,255,0.9);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    margin: 0;
+}
+
+.country-dropdown {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    outline: none;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.country-dropdown option {
+    background: #2d3748;
+    color: white;
+    padding: 8px 12px;
+}
+
 .powered-by {
     display: flex;
     align-items: center;
