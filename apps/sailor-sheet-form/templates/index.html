@@ -87,14 +87,23 @@
                 <div class="access-section">
                 <h6 class="access-heading-main">📁 Files Access</h6>
                     <div class="access-links">
+                    <!-- Vietnam Files (VN) -->
                     <a href="https://drive.google.com/drive/u/1/folders/1UH-mqbvJ6k6Y0wDD4x7DcDRzsEjf0Rz0" 
-                       target="_blank" class="access-link access-link-bills">📄 Bills</a>
+                       target="_blank" class="access-link access-link-bills-vn">📄 Bills (VN)</a>
                     <a href="https://drive.google.com/drive/u/1/folders/10gGkRi9P9417FjZ9vFeQTnpLA-ExbBVO" 
-                       target="_blank" class="access-link access-link-red-bills">🔴 Red Bills</a>
+                       target="_blank" class="access-link access-link-red-bills-vn">🔴 Red Bills (VN)</a>
                     <a href="https://drive.google.com/drive/u/1/folders/1QDiSNjqzT2x99AGelRdQceg9l4q9iIrW" 
-                       target="_blank" class="access-link access-link-bank-statement">🏦 Bank Statement</a>
+                       target="_blank" class="access-link access-link-bank-statement-vn">🏦 Bank Statement (VN)</a>
                     <a href="https://drive.google.com/drive/u/1/folders/1ylG5_VDP020HaBXxy-o_A4QYuYiK9y8y" 
-                       target="_blank" class="access-link access-link-documentation">📚 Documentation</a>
+                       target="_blank" class="access-link access-link-documentation-vn">📚 Documentation (VN)</a>
+                    
+                    <!-- Belgium Files (BE) -->
+                    <a href="https://drive.google.com/drive/folders/1xV-NfDVHTV_wsJU8siduISqUUkNL27yB?usp=drive_link" 
+                       target="_blank" class="access-link access-link-bills-be">📄 Bills (BE)</a>
+                    <a href="https://drive.google.com/drive/folders/1DAjkM8mKhFmmYGvewu5AEXmy89K_gD7p?usp=drive_link" 
+                       target="_blank" class="access-link access-link-bank-statement-be">🏦 Bank Statement (BE)</a>
+                    <a href="https://drive.google.com/drive/folders/1qBS9V8n2Z8eM_gLOP7tKOG3_YaImBVWP?usp=drive_link" 
+                       target="_blank" class="access-link access-link-documentation-be">📚 Documentation (BE)</a>
                     </div>
                 </div>
                 
@@ -2981,32 +2990,53 @@
         function updateQuickAccessVisibility(countryCode) {
             console.log(`DEBUG: Updating Quick Access visibility for country: ${countryCode}`);
             
-            // Get the Quick Access panel elements using the correct class names
+            // Get the Sheet Access elements
             const beMasterLedger = document.querySelector('.access-link-be');
             const vnMasterLedger = document.querySelector('.access-link-vn');
             
-            console.log(`DEBUG: Found BE element:`, beMasterLedger);
-            console.log(`DEBUG: Found VN element:`, vnMasterLedger);
+            // Get the Files Access elements
+            const beFiles = document.querySelectorAll('.access-link-bills-be, .access-link-bank-statement-be, .access-link-documentation-be');
+            const vnFiles = document.querySelectorAll('.access-link-bills-vn, .access-link-red-bills-vn, .access-link-bank-statement-vn, .access-link-documentation-vn');
             
-            if (beMasterLedger && vnMasterLedger) {
-                if (countryCode === 'BE') {
-                    // Show Belgium, hide Vietnam
-                    beMasterLedger.style.display = 'block';
-                    vnMasterLedger.style.display = 'none';
-                    console.log('DEBUG: Showing BE - Master Ledger, hiding VN - Master Ledger');
-                } else if (countryCode === 'VN') {
-                    // Show Vietnam, hide Belgium
-                    beMasterLedger.style.display = 'none';
-                    vnMasterLedger.style.display = 'block';
-                    console.log('DEBUG: Showing VN - Master Ledger, hiding BE - Master Ledger');
+            // Get the Update form search sheet dropdown
+            const searchSheetDropdown = document.getElementById('searchSheet');
+            
+            console.log(`DEBUG: Found BE Master Ledger:`, beMasterLedger);
+            console.log(`DEBUG: Found VN Master Ledger:`, vnMasterLedger);
+            console.log(`DEBUG: Found BE Files:`, beFiles.length);
+            console.log(`DEBUG: Found VN Files:`, vnFiles.length);
+            console.log(`DEBUG: Found Search Sheet Dropdown:`, searchSheetDropdown);
+            
+            if (countryCode === 'BE') {
+                // Show Belgium elements, hide Vietnam elements
+                if (beMasterLedger) beMasterLedger.style.display = 'block';
+                if (vnMasterLedger) vnMasterLedger.style.display = 'none';
+                
+                beFiles.forEach(file => file.style.display = 'block');
+                vnFiles.forEach(file => file.style.display = 'none');
+                
+                // Update the search sheet dropdown to Belgium
+                if (searchSheetDropdown) {
+                    searchSheetDropdown.value = 'be';
+                    console.log('DEBUG: Updated search sheet dropdown to Belgium');
                 }
-            } else {
-                console.log('DEBUG: Quick Access elements not found');
-                console.log('DEBUG: Available elements with access-link class:');
-                const allAccessLinks = document.querySelectorAll('.access-link');
-                allAccessLinks.forEach((link, index) => {
-                    console.log(`  ${index}: ${link.className} - ${link.textContent.trim()}`);
-                });
+                
+                console.log('DEBUG: Showing Belgium elements, hiding Vietnam elements');
+            } else if (countryCode === 'VN') {
+                // Show Vietnam elements, hide Belgium elements
+                if (beMasterLedger) beMasterLedger.style.display = 'none';
+                if (vnMasterLedger) vnMasterLedger.style.display = 'block';
+                
+                beFiles.forEach(file => file.style.display = 'none');
+                vnFiles.forEach(file => file.style.display = 'block');
+                
+                // Update the search sheet dropdown to Vietnam
+                if (searchSheetDropdown) {
+                    searchSheetDropdown.value = 'vn';
+                    console.log('DEBUG: Updated search sheet dropdown to Vietnam');
+                }
+                
+                console.log('DEBUG: Showing Vietnam elements, hiding Belgium elements');
             }
         }
         
