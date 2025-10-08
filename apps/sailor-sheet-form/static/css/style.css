@@ -29,8 +29,8 @@ body {
 
 .navbar-container {
     max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+    margin: 0;
+    padding: 0; /* No padding - logo goes to extreme left corner */
     height: 100%;
     display: flex;
     align-items: center;
@@ -40,29 +40,84 @@ body {
 .navbar-brand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px; /* Reduced gap to make logo and title closer */
+    margin-left: 5px; /* Tiny margin from absolute edge */
 }
 
 .navbar-logo {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    object-fit: cover;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 2px solid rgba(255,255,255,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 8px;
+}
+
+.logo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.navbar-title-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .navbar-title {
     color: white;
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 700;
     letter-spacing: 0.5px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    line-height: 1;
+}
+
+.navbar-subtitle {
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    line-height: 1;
 }
 
 .navbar-menu {
     display: flex;
     align-items: center;
     gap: 20px;
+}
+
+.powered-by {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+}
+
+.powered-by-text {
+    color: rgba(255,255,255,0.8);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.google-sheets-badge {
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 /* Responsive navbar */
@@ -72,12 +127,29 @@ body {
     }
     
     .navbar-title {
-        font-size: 18px;
+        font-size: 20px;
+    }
+    
+    .navbar-subtitle {
+        font-size: 11px;
     }
     
     .navbar-logo {
-        width: 35px;
-        height: 35px;
+        width: 50px;
+        height: 50px;
+        padding: 6px;
+    }
+    
+    .powered-by {
+        padding: 4px 8px;
+    }
+    
+    .powered-by-text {
+        font-size: 10px;
+    }
+    
+    .google-sheets-badge {
+        font-size: 11px;
     }
 }
 

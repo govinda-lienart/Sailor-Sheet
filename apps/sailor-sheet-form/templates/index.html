@@ -36,12 +36,20 @@
     <nav class="top-navbar">
         <div class="navbar-container">
             <div class="navbar-brand">
-                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="navbar-logo">
-                <span class="navbar-title">Accounting System</span>
+                <div class="navbar-logo">
+                    <img src="{{ url_for('static', filename='images/logo2.png') }}" alt="Sailor Sheet Logo" class="logo-image">
+                </div>
+                <div class="navbar-title-container">
+                    <span class="navbar-title">Sailor Sheet</span>
+                    <span class="navbar-subtitle">Accounting System</span>
+                </div>
             </div>
             <!-- Future: User menu, notifications, etc. will go here -->
             <div class="navbar-menu">
-                <!-- Reserved for future menu items -->
+                <div class="powered-by">
+                    <span class="powered-by-text">Accounting powered by</span>
+                    <span class="google-sheets-badge">Google Sheets</span>
+                </div>
             </div>
         </div>
     </nav>
