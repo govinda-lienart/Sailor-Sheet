@@ -167,7 +167,6 @@
                              <select name="transaction_category" id="transaction_category" required onchange="handleTransactionTypeChange()">
                                 <option value="payment" selected>Payment</option>
                                 <option value="internal_transfer">Internal Transfer</option>
-                                <option value="interbanking_transfer">Interbanking Transfer</option>
                                 <option value="donation">Donation</option>
                                 <option value="grant">Grant</option>
                              </select>
@@ -200,53 +199,6 @@
                              </div>
                          </div>
                          
-                    <!-- Master Ledger Sheets (for interbanking transfers only) -->
-                         <div id="master-ledger-sheet-worksheet" class="sheet-worksheet-content" style="display: none;">
-                        
-                        <!-- Master Ledger A (typically Belgium) -->
-                        <div class="master-ledger-subsection">
-                            <h5>🏦 Master Ledger A Sheet & Worksheet</h5>
-                                 <div class="form-group">
-                                     <label>Master Ledger A Sheet:</label>
-                                     <select name="master_ledger_a_sheet_id" id="masterLedgerASheetSelect">
-                                         <option value="">Choose sheet for Master Ledger A...</option>
-                                         {% for sheet in sheets %}
-                                         <option value="{{ sheet.id }}" {% if 'TMWC Belgium Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
-                                         {% endfor %}
-                                     </select>
-                                     <div class="form-text">Select the sheet for Master Ledger A</div>
-                                 </div>
-                                 <div class="form-group">
-                                     <label>Master Ledger A Worksheet:</label>
-                                     <select name="master_ledger_a_worksheet_id" id="masterLedgerAWorksheetSelect">
-                                         <option value="">Choose worksheet for Master Ledger A...</option>
-                                     </select>
-                                     <div class="form-text">Select the worksheet for Master Ledger A</div>
-                                 </div>
-                             </div>
-                             
-                        <!-- Master Ledger B (typically Vietnam) -->
-                        <div class="master-ledger-subsection">
-                            <h5>🎯 Master Ledger B Sheet & Worksheet</h5>
-                                 <div class="form-group">
-                                     <label>Master Ledger B Sheet:</label>
-                                     <select name="master_ledger_b_sheet_id" id="masterLedgerBSheetSelect">
-                                         <option value="">Choose sheet for Master Ledger B...</option>
-                                         {% for sheet in sheets %}
-                                         <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
-                                         {% endfor %}
-                                     </select>
-                                     <div class="form-text">Select the sheet for Master Ledger B</div>
-                                 </div>
-                                 <div class="form-group">
-                                     <label>Master Ledger B Worksheet:</label>
-                                     <select name="master_ledger_b_worksheet_id" id="masterLedgerBWorksheetSelect">
-                                         <option value="">Choose worksheet for Master Ledger B...</option>
-                                     </select>
-                                     <div class="form-text">Select the worksheet for Master Ledger B</div>
-                                 </div>
-                             </div>
-                         </div>
                     </div>
      
                      <!-- DATE SECTION -->
@@ -331,90 +283,6 @@
                      ACCOUNT SECTIONS (varies by transaction type)
                      ======================================================= -->
                 
-                <!-- INTERBANKING TRANSFER SECTIONS (only visible for interbanking transfers) -->
-                    <div id="interbankingSections" style="display: none;">
-                        
-                    <!-- Master Ledger A Debit Account -->
-                    <div id="master-ledger-a-debit-section" class="form-section section-debit-account">
-                        <h4 class="section-heading heading-debit-account">💳 Master Ledger A Debit Account</h4>
-                            <div class="form-group">
-                                <label>Master Ledger A Debit:</label>
-                                <select name="master_ledger_a_debit_account_id">
-                                    <option value="">Choose debit account for Master Ledger A...</option>
-                                    {% for account in accounts %}
-                                    <option value="{{ account.code }}">
-                                        {{ account.name }} ({{ account.type }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">Select the account to be debited in Master Ledger A</div>
-                            </div>
-                        </div>
-                        
-                    <!-- Master Ledger A Credit Account -->
-                    <div id="master-ledger-a-credit-section" class="form-section section-credit-account">
-                        <h4 class="section-heading heading-credit-account">💰 Master Ledger A Credit Account</h4>
-                            <div class="form-group">
-                                <label>Master Ledger A Credit:</label>
-                                <select name="master_ledger_a_credit_account_id">
-                                    <option value="">Choose credit account for Master Ledger A...</option>
-                                    {% for account in accounts %}
-                                    <option value="{{ account.code }}">
-                                        {{ account.name }} ({{ account.type }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">Select the account to be credited in Master Ledger A</div>
-                            </div>
-                        </div>
-                        
-                    <!-- Master Ledger B Debit Account -->
-                    <div id="master-ledger-b-debit-section" class="form-section section-debit-account">
-                        <h4 class="section-heading heading-debit-account">💳 Master Ledger B Debit Account</h4>
-                            <div class="form-group">
-                                <label>Master Ledger B Debit:</label>
-                                <select name="master_ledger_b_debit_account_id">
-                                    <option value="">Choose debit account for Master Ledger B...</option>
-                                    {% for account in accounts %}
-                                    <option value="{{ account.code }}">
-                                        {{ account.name }} ({{ account.type }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">Select the account to be debited in Master Ledger B</div>
-                            </div>
-                        </div>
-                        
-                    <!-- Master Ledger B Credit Account -->
-                    <div id="master-ledger-b-credit-section" class="form-section section-credit-account">
-                        <h4 class="section-heading heading-credit-account">💰 Master Ledger B Credit Account</h4>
-                            <div class="form-group">
-                                <label>Master Ledger B Credit:</label>
-                                <select name="master_ledger_b_credit_account_id">
-                                    <option value="">Choose credit account for Master Ledger B...</option>
-                                    {% for account in accounts %}
-                                    <option value="{{ account.code }}">
-                                        {{ account.name }} ({{ account.type }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">Select the account to be credited in Master Ledger B</div>
-                            </div>
-                        </div>
-                        
-                    <!-- Interbanking Payment Method -->
-                    <div id="interbanking-payment-method-section" class="form-section section-payment-method">
-                        <h4 class="section-heading heading-payment-method">💳 Payment Method</h4>
-                            <div class="form-group">
-                                <label>Payment Method:</label>
-                                <select name="interbanking_payment_method" id="interbanking_payment_method" required>
-                                    <option value="bank" selected>Bank</option>
-                                    <option value="cash">Cash</option>
-                                </select>
-                                <div class="form-text">Select how the payment was made</div>
-                            </div>
-                        </div>
-                    </div>
                     
                 <!-- REGULAR ACCOUNT SECTIONS (for non-interbanking transfers) -->
                     <div id="regularAccountSections">
@@ -744,13 +612,6 @@
                 <!-- Submit Button -->
                 <a href="#" class="nav-link nav-submit-btn" id="submitNavBtn">🚀 Submit to Google Sheets</a>
                 
-                <!-- Interbanking Account Links (shown only for interbanking transfers) -->
-                <a href="#sheet-worksheet-section" class="nav-link interbanking-account nav-link-base nav-border-orange" style="display: none;">📊 Ledger Sheets</a>
-                <a href="#master-ledger-a-debit-section" class="nav-link interbanking-account nav-link-base nav-border-blue" style="display: none;">💳 A Debit</a>
-                <a href="#master-ledger-a-credit-section" class="nav-link interbanking-account nav-link-base nav-border-purple" style="display: none;">💰 A Credit</a>
-                <a href="#master-ledger-b-debit-section" class="nav-link interbanking-account nav-link-base nav-border-blue" style="display: none;">💳 B Debit</a>
-                <a href="#master-ledger-b-credit-section" class="nav-link interbanking-account nav-link-base nav-border-purple" style="display: none;">💰 B Credit</a>
-                <a href="#interbanking-payment-method-section" class="nav-link interbanking-account nav-link-base nav-border-cyan" style="display: none;">💳 Payment Method</a>
             </div>
         </div>
         
@@ -2813,6 +2674,15 @@
                     
                     // Update document type dropdown on page load
                     updateDocumentTypeDropdown('BE');
+                    
+                    // Apply transaction defaults on page load
+                    setTimeout(() => {
+                        const transactionSelect = document.getElementById('transaction_category');
+                        if (transactionSelect && transactionSelect.value) {
+                            console.log('🔄 Applying initial transaction defaults for BE...');
+                            applyTransactionDefaults(transactionSelect.value);
+                        }
+                    }, 1000);
                 }, 2000); // Wait 2 seconds for sheets to load
             }
         }
@@ -2866,6 +2736,15 @@
                     
                     // Store country in sessionStorage
                     sessionStorage.setItem('selectedCountry', countryCode);
+                    
+                    // Re-apply transaction defaults for the new country
+                    setTimeout(() => {
+                        const transactionSelect = document.getElementById('transaction_category');
+                        if (transactionSelect && transactionSelect.value) {
+                            console.log(`🔄 Re-applying transaction defaults for ${countryCode}...`);
+                            applyTransactionDefaults(transactionSelect.value);
+                        }
+                    }, 500);
                     
                     console.log('DEBUG: Country selection completed successfully');
                 } else {

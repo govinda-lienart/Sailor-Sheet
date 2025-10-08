@@ -165,13 +165,9 @@ def api_submit_transaction():
         sub_category_id = data.get('sub_category_id')
         transaction_type = data.get('transaction_type', 'external')
         
-        # Get account IDs based on transaction type
-        if transaction_type == 'interbanking_transfer':
-            debit_account_id = data.get('debit_account_id')
-            credit_account_id = data.get('credit_account_id')
-        else:
-            debit_account_id = data.get('regular_debit_account_id')
-            credit_account_id = data.get('regular_credit_account_id')
+        # Get account IDs for regular transactions
+        debit_account_id = data.get('regular_debit_account_id')
+        credit_account_id = data.get('regular_credit_account_id')
         
         date_input = data.get('date_input', '')
         transaction_number = data.get('transaction_number', '')
@@ -204,79 +200,22 @@ def api_submit_transaction():
                 'error': 'Missing required fields'
             }), 400
         
-        # Handle interbanking transfers (dual-entry)
-        if transaction_type == 'interbanking_transfer':
-            # Get Master Ledger data
-            master_ledger_a_sheet_id = data.get('master_ledger_a_sheet_id')
-            master_ledger_a_worksheet_id = data.get('master_ledger_a_worksheet_id')
-            master_ledger_a_debit = data.get('master_ledger_a_debit_account_id')
-            master_ledger_a_credit = data.get('master_ledger_a_credit_account_id')
-            master_ledger_b_sheet_id = data.get('master_ledger_b_sheet_id')
-            master_ledger_b_worksheet_id = data.get('master_ledger_b_worksheet_id')
-            master_ledger_b_debit = data.get('master_ledger_b_debit_account_id')
-            master_ledger_b_credit = data.get('master_ledger_b_credit_account_id')
-            transfer_type = data.get('transfer_type', 'internal')
-            interbanking_payment_method = data.get('interbanking_payment_method', 'bank')
-            
-            # Validate Master Ledger fields
-            if not all([master_ledger_a_sheet_id, master_ledger_a_worksheet_id, master_ledger_a_debit, master_ledger_a_credit,
-                       master_ledger_b_sheet_id, master_ledger_b_worksheet_id, master_ledger_b_debit, master_ledger_b_credit]):
-                return jsonify({
-                    'success': False,
-                    'error': 'Please fill in all Master Ledger A and B fields for interbanking transfer!'
-                }), 400
-            
-            # Create Master Ledger A entry
-            master_ledger_a_result = add_transaction_to_selected_sheet(
-                gc, master_ledger_a_sheet_id, master_ledger_a_worksheet_id, amount, 
-                f"Interbanking Transfer - {description}", 
-                fund_id, category_id, master_ledger_a_debit, master_ledger_a_credit, 
-                transaction_type, date_input, transaction_number, file_links, 
-                master_ledger_a_debit, master_ledger_a_credit, transfer_type, interbanking_payment_method, reference_number, sub_category_id
-            )
-            
-            # Create Master Ledger B entry
-            master_ledger_b_result = add_transaction_to_selected_sheet(
-                gc, master_ledger_b_sheet_id, master_ledger_b_worksheet_id, amount, 
-                f"Interbanking Transfer - {description}", 
-                fund_id, category_id, master_ledger_b_debit, master_ledger_b_credit, 
-                transaction_type, date_input, transaction_number, file_links, 
-                master_ledger_b_debit, master_ledger_b_credit, transfer_type, interbanking_payment_method, reference_number, sub_category_id
-            )
-            
-            if master_ledger_a_result and master_ledger_b_result:
-                return jsonify({
-                    'success': True,
-                    'message': 'Interbanking transfer recorded in both Master Ledger A and B accounting systems!',
-                    'data': {
-                        'transaction_number': transaction_number,
-                        'amount': amount,
-                        'type': 'interbanking_transfer'
-                    }
-                })
-            else:
-                return jsonify({
-                    'success': False,
-                    'error': 'Error creating dual-entry transaction! Please check both Master Ledger systems.'
-                }), 500
+        # Regular single-entry transaction
+        transfer_type = data.get('transfer_type', 'external')
+        origin_account = data.get('origin_account', '')
+        destination_account = data.get('destination_account', '')
         
-        else:
-            # Regular single-entry transaction
-            transfer_type = data.get('transfer_type', 'external')
-            origin_account = data.get('origin_account', '')
-            destination_account = data.get('destination_account', '')
-            
-            transaction_result = add_transaction_to_selected_sheet(
-                gc, selected_sheet_id, selected_worksheet_title, amount, description, 
-                fund_id, category_id, debit_account_id, credit_account_id, 
-                transaction_type, date_input, transaction_number, file_links, 
-                origin_account, destination_account, transfer_type, payment_method, reference_number, sub_category_id
-            )
-            
-            if transaction_result:
-                # Handle bank fee transactions if checkbox is checked
-                bank_fee_results = []
-                if include_bank_fees:
+        transaction_result = add_transaction_to_selected_sheet(
+            gc, selected_sheet_id, selected_worksheet_title, amount, description, 
+            fund_id, category_id, debit_account_id, credit_account_id, 
+            transaction_type, date_input, transaction_number, file_links, 
+            origin_account, destination_account, transfer_type, payment_method, reference_number, sub_category_id
+        )
+        
+        if transaction_result:
+            # Handle bank fee transactions if checkbox is checked
+            bank_fee_results = []
+            if include_bank_fees:
                     print(f"🏦 Creating bank fee transactions for main transaction: {transaction_number}")
                     
                     # Bank fee amounts
@@ -310,30 +249,30 @@ def api_submit_transaction():
                         else:
                             print(f"❌ Failed to create bank fee transaction {i}: {bank_fee_amount} VND")
                 
-                # Prepare response message
-                if include_bank_fees:
-                    successful_bank_fees = [r for r in bank_fee_results if r['success']]
-                    message = f'Transaction submitted successfully! Main transaction: {transaction_number}'
-                    if successful_bank_fees:
-                        message += f', Bank fees: {len(successful_bank_fees)} transactions created'
-                else:
-                    message = 'Transaction submitted successfully!'
-                
-                return jsonify({
-                    'success': True,
-                    'message': message,
-                    'data': {
-                        'transaction_number': transaction_number,
-                        'amount': amount,
-                        'type': transaction_type,
-                        'bank_fees_created': len([r for r in bank_fee_results if r['success']]) if include_bank_fees else 0
-                    }
-                })
+            # Prepare response message
+            if include_bank_fees:
+                successful_bank_fees = [r for r in bank_fee_results if r['success']]
+                message = f'Transaction submitted successfully! Main transaction: {transaction_number}'
+                if successful_bank_fees:
+                    message += f', Bank fees: {len(successful_bank_fees)} transactions created'
             else:
-                return jsonify({
-                    'success': False,
-                    'error': 'Error adding transaction!'
-                }), 500
+                message = 'Transaction submitted successfully!'
+            
+            return jsonify({
+                'success': True,
+                'message': message,
+                'data': {
+                    'transaction_number': transaction_number,
+                    'amount': amount,
+                    'type': transaction_type,
+                    'bank_fees_created': len([r for r in bank_fee_results if r['success']]) if include_bank_fees else 0
+                }
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Error adding transaction!'
+            }), 500
                 
     except Exception as e:
         print(f"❌ ERROR in API submit_transaction: {e}")

@@ -66,23 +66,6 @@ function initializeNavigation() {
     });
 }
 
-/**
- * Update navigation panel based on transaction type (regular vs interbanking)
- */
-function updateNavigationForInterbanking(isInterbanking) {
-    const regularAccountLinks = document.querySelectorAll('.regular-account');
-    const interbankingAccountLinks = document.querySelectorAll('.interbanking-account');
-    
-    if (isInterbanking) {
-        // Hide regular account links, show interbanking account links
-        regularAccountLinks.forEach(link => link.style.display = 'none');
-        interbankingAccountLinks.forEach(link => link.style.display = 'block');
-    } else {
-        // Show regular account links, hide interbanking account links
-        regularAccountLinks.forEach(link => link.style.display = 'block');
-        interbankingAccountLinks.forEach(link => link.style.display = 'none');
-    }
-}
 
 /**
  * Update navigation button visual state based on completion
@@ -177,9 +160,7 @@ function updateNavigationProgress() {
             navSelector: 'a[href="#payment-method-section"]',
             validator: () => {
                 const paymentMethod = document.querySelector('select[name="payment_method"]');
-                const interbankingPayment = document.querySelector('select[name="interbanking_payment_method"]');
                 if (paymentMethod && paymentMethod.hasAttribute('required')) return paymentMethod.value !== '';
-                if (interbankingPayment && interbankingPayment.hasAttribute('required')) return interbankingPayment.value !== '';
                 return true;
             }
         },
@@ -234,124 +215,34 @@ function handleTransactionTypeChange() {
     const selectedType = document.getElementById('transaction_category').value;
     console.log('🚀 Transaction type changed to:', selectedType, '(using JSON data - no API calls!)');
     
-    // Get all account field elements
-    const interbankingSections = document.getElementById('interbankingSections');
+    // Get regular account sections
     const regularAccountSections = document.getElementById('regularAccountSections');
     
-    // Get all required fields in both sections
+    // Get all required fields for regular transactions
     const regularDebitField = document.querySelector('select[name="regular_debit_account_id"]');
     const regularCreditField = document.querySelector('select[name="regular_credit_account_id"]');
     const regularPaymentMethodField = document.querySelector('select[name="payment_method"]');
-    const interbankingPaymentMethodField = document.querySelector('select[name="interbanking_payment_method"]');
-    
-    // Master Ledger A fields
-    const masterLedgerADebitField = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
-    const masterLedgerACreditField = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
-    const masterLedgerASheetField = document.querySelector('select[name="master_ledger_a_sheet_id"]');
-    const masterLedgerAWorksheetField = document.querySelector('select[name="master_ledger_a_worksheet_id"]');
-    
-    // Master Ledger B fields
-    const masterLedgerBDebitField = document.querySelector('select[name="master_ledger_b_debit_account_id"]');
-    const masterLedgerBCreditField = document.querySelector('select[name="master_ledger_b_credit_account_id"]');
-    const masterLedgerBSheetField = document.querySelector('select[name="master_ledger_b_sheet_id"]');
-    const masterLedgerBWorksheetField = document.querySelector('select[name="master_ledger_b_worksheet_id"]');
     
     // Get sheet & worksheet content elements
     const regularSheetWorksheet = document.getElementById('regular-sheet-worksheet');
-    const masterLedgerSheetWorksheet = document.getElementById('master-ledger-sheet-worksheet');
     const regularSheetField = document.querySelector('select[name="sheet_id"]');
     const regularWorksheetField = document.querySelector('select[name="worksheet_name"]');
     
-    if (selectedType === 'interbanking_transfer') {
-        // Show interbanking sections, hide regular sections
-        if (interbankingSections) interbankingSections.style.display = 'block';
-        if (regularAccountSections) regularAccountSections.style.display = 'none';
-        
-        // Show Master Ledger sheet/worksheet content, hide regular sheet/worksheet content
-        if (regularSheetWorksheet) regularSheetWorksheet.style.display = 'none';
-        if (masterLedgerSheetWorksheet) masterLedgerSheetWorksheet.style.display = 'block';
-        
-        // Remove required from hidden regular fields, add required to visible Master Ledger fields
-        if (regularDebitField) regularDebitField.removeAttribute('required');
-        if (regularCreditField) regularCreditField.removeAttribute('required');
-        if (regularPaymentMethodField) regularPaymentMethodField.removeAttribute('required');
-        if (regularSheetField) regularSheetField.removeAttribute('required');
-        if (regularWorksheetField) regularWorksheetField.removeAttribute('required');
-        
-        // Set required for Master Ledger A fields
-        if (masterLedgerADebitField) masterLedgerADebitField.setAttribute('required', 'required');
-        if (masterLedgerACreditField) masterLedgerACreditField.setAttribute('required', 'required');
-        if (masterLedgerASheetField) masterLedgerASheetField.setAttribute('required', 'required');
-        if (masterLedgerAWorksheetField) masterLedgerAWorksheetField.setAttribute('required', 'required');
-        
-        // Set required for Master Ledger B fields
-        if (masterLedgerBDebitField) masterLedgerBDebitField.setAttribute('required', 'required');
-        if (masterLedgerBCreditField) masterLedgerBCreditField.setAttribute('required', 'required');
-        if (masterLedgerBSheetField) masterLedgerBSheetField.setAttribute('required', 'required');
-        if (masterLedgerBWorksheetField) masterLedgerBWorksheetField.setAttribute('required', 'required');
-        
-        // Set required for interbanking payment method
-        if (interbankingPaymentMethodField) interbankingPaymentMethodField.setAttribute('required', 'required');
-        
-        // Update navigation panel for interbanking transfer
-        updateNavigationForInterbanking(true);
-        
-        console.log('✅ Showing interbanking transfer sections (Master Ledger A & B)');
-        console.log('✅ Required attributes updated for interbanking transfer');
-        
-        // Set up sheet selection handlers for Master Ledgers
-        setupMasterLedgerSheetHandlers();
-        
-        // Auto-load worksheets for default selected sheets
-        setTimeout(() => {
-            const masterLedgerASheetSelect = document.getElementById('masterLedgerASheetSelect');
-            const masterLedgerBSheetSelect = document.getElementById('masterLedgerBSheetSelect');
-            
-            if (masterLedgerASheetSelect && masterLedgerASheetSelect.value) {
-                loadWorksheetsForMasterLedger('A', masterLedgerASheetSelect.value);
-            }
-            
-            if (masterLedgerBSheetSelect && masterLedgerBSheetSelect.value) {
-                loadWorksheetsForMasterLedger('B', masterLedgerBSheetSelect.value);
-            }
-        }, 100);
-    } else {
-        // Show regular sections, hide interbanking sections
-        if (interbankingSections) interbankingSections.style.display = 'none';
-        if (regularAccountSections) regularAccountSections.style.display = 'block';
-        
-        // Show regular sheet/worksheet content, hide Master Ledger sheet/worksheet content
-        if (regularSheetWorksheet) regularSheetWorksheet.style.display = 'block';
-        if (masterLedgerSheetWorksheet) masterLedgerSheetWorksheet.style.display = 'none';
-        
-        // Add required to visible regular fields, remove required from hidden Master Ledger fields
-        if (regularDebitField) regularDebitField.setAttribute('required', 'required');
-        if (regularCreditField) regularCreditField.setAttribute('required', 'required');
-        if (regularPaymentMethodField) regularPaymentMethodField.setAttribute('required', 'required');
-        if (regularSheetField) regularSheetField.setAttribute('required', 'required');
-        if (regularWorksheetField) regularWorksheetField.setAttribute('required', 'required');
-        
-        // Remove required from Master Ledger A fields
-        if (masterLedgerADebitField) masterLedgerADebitField.removeAttribute('required');
-        if (masterLedgerACreditField) masterLedgerACreditField.removeAttribute('required');
-        if (masterLedgerASheetField) masterLedgerASheetField.removeAttribute('required');
-        if (masterLedgerAWorksheetField) masterLedgerAWorksheetField.removeAttribute('required');
-        
-        // Remove required from Master Ledger B fields
-        if (masterLedgerBDebitField) masterLedgerBDebitField.removeAttribute('required');
-        if (masterLedgerBCreditField) masterLedgerBCreditField.removeAttribute('required');
-        if (masterLedgerBSheetField) masterLedgerBSheetField.removeAttribute('required');
-        if (masterLedgerBWorksheetField) masterLedgerBWorksheetField.removeAttribute('required');
-        
-        // Remove required from interbanking payment method
-        if (interbankingPaymentMethodField) interbankingPaymentMethodField.removeAttribute('required');
-        
-        // Update navigation panel for regular transactions
-        updateNavigationForInterbanking(false);
-        
-        console.log('✅ Showing regular account sections');
-        console.log('✅ Required attributes updated for regular transactions');
-    }
+    // Show regular sections (always visible now)
+    if (regularAccountSections) regularAccountSections.style.display = 'block';
+    
+    // Show regular sheet/worksheet content
+    if (regularSheetWorksheet) regularSheetWorksheet.style.display = 'block';
+    
+    // Add required to regular fields
+    if (regularDebitField) regularDebitField.setAttribute('required', 'required');
+    if (regularCreditField) regularCreditField.setAttribute('required', 'required');
+    if (regularPaymentMethodField) regularPaymentMethodField.setAttribute('required', 'required');
+    if (regularSheetField) regularSheetField.setAttribute('required', 'required');
+    if (regularWorksheetField) regularWorksheetField.setAttribute('required', 'required');
+    
+    console.log('✅ Showing regular account sections');
+    console.log('✅ Required attributes updated for regular transactions');
     
     // Apply transaction type specific defaults immediately
     applyTransactionDefaults(selectedType);
@@ -361,89 +252,7 @@ function handleTransactionTypeChange() {
 // WORKSHEET AND SHEET MANAGEMENT
 // ============================================================================
 
-/**
- * Setup sheet selection handlers for Master Ledger A and B
- */
-function setupMasterLedgerSheetHandlers() {
-    // Master Ledger A sheet handler
-    const masterLedgerASheetSelect = document.getElementById('masterLedgerASheetSelect');
-    if (masterLedgerASheetSelect) {
-        masterLedgerASheetSelect.addEventListener('change', function() {
-            loadWorksheetsForMasterLedger('A', this.value);
-        });
-    }
-    
-    // Master Ledger B sheet handler
-    const masterLedgerBSheetSelect = document.getElementById('masterLedgerBSheetSelect');
-    if (masterLedgerBSheetSelect) {
-        masterLedgerBSheetSelect.addEventListener('change', function() {
-            loadWorksheetsForMasterLedger('B', this.value);
-        });
-    }
-}
 
-/**
- * Load worksheets for specific Master Ledger (A or B)
- */
-function loadWorksheetsForMasterLedger(ledgerType, sheetId) {
-    const worksheetSelectId = `masterLedger${ledgerType}WorksheetSelect`;
-    const worksheetSelect = document.getElementById(worksheetSelectId);
-    
-    if (!worksheetSelect || !sheetId) {
-        return;
-    }
-    
-    console.log(`Loading worksheets for Master Ledger ${ledgerType}, Sheet ID: ${sheetId}`);
-    
-    // Clear existing options
-    worksheetSelect.innerHTML = '<option value="">Loading worksheets...</option>';
-    
-    // Fetch worksheets
-    fetch(`/get_worksheets/${sheetId}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log(`Worksheets data received for Master Ledger ${ledgerType}:`, data);
-            worksheetSelect.innerHTML = '<option value="">Choose worksheet...</option>';
-            
-            if (data && data.length > 0) {
-                data.forEach(worksheet => {
-                    const option = document.createElement('option');
-                    option.value = worksheet.title;
-                    option.textContent = worksheet.title;
-                    worksheetSelect.appendChild(option);
-                });
-                
-                // Auto-select default worksheet based on ledger type
-                let defaultWorksheet = '';
-                if (ledgerType === 'A') {
-                    // Master Ledger A default: look for "Expense" or "Belfius" or "Master Ledger"
-                    defaultWorksheet = Array.from(worksheetSelect.options).find(option => 
-                        option.textContent.toLowerCase().includes('expense') || 
-                        option.textContent.toLowerCase().includes('belfius') ||
-                        option.textContent.toLowerCase().includes('master ledger')
-                    );
-                } else if (ledgerType === 'B') {
-                    // Master Ledger B default: look for "Revenue" or "Indovina" or "Master Ledger"
-                    defaultWorksheet = Array.from(worksheetSelect.options).find(option => 
-                        option.textContent.toLowerCase().includes('revenue') || 
-                        option.textContent.toLowerCase().includes('indovina') ||
-                        option.textContent.toLowerCase().includes('master ledger')
-                    );
-                }
-                
-                if (defaultWorksheet) {
-                    worksheetSelect.value = defaultWorksheet.value;
-                    console.log(`Auto-selected default worksheet for Master Ledger ${ledgerType}: ${defaultWorksheet.textContent}`);
-                }
-            } else {
-                worksheetSelect.innerHTML = '<option value="">No worksheets found</option>';
-            }
-        })
-        .catch(error => {
-            console.error(`Error loading worksheets for Master Ledger ${ledgerType}:`, error);
-            worksheetSelect.innerHTML = '<option value="">Error loading worksheets</option>';
-        });
-}
 
 /**
  * Load worksheets for regular transactions
@@ -520,15 +329,9 @@ function applyTransactionDefaults(selectedType) {
     // Get the correct selectors based on transaction type
     let debitAccountSelect, creditAccountSelect;
     
-    if (selectedType === 'interbanking_transfer') {
-        // For interbanking transfers, use the Master Ledger A fields
-        debitAccountSelect = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
-        creditAccountSelect = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
-    } else {
-        // For regular transactions, use the regular account fields
-        debitAccountSelect = document.querySelector('select[name="regular_debit_account_id"]');
-        creditAccountSelect = document.querySelector('select[name="regular_credit_account_id"]');
-    }
+    // For regular transactions, use the regular account fields
+    debitAccountSelect = document.querySelector('select[name="regular_debit_account_id"]');
+    creditAccountSelect = document.querySelector('select[name="regular_credit_account_id"]');
     
     const categorySelect = document.querySelector('select[name="category_id"]');
     const fundSelect = document.querySelector('select[name="fund_id"]');
@@ -557,24 +360,86 @@ function applyTransactionDefaults(selectedType) {
     
     // Set default accounts and category based on transaction type
     if (selectedType === 'donation') {
-        // For donations: Debit Indovina Bank (asset increases), Credit Revenue (income)
-        if (debitAccountSelect) {
-            const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                option.textContent.toLowerCase().includes('indovina bank')
-            );
-            if (bankOption) {
-                debitAccountSelect.value = bankOption.value;
-                console.log('Auto-selected Indovina Bank for debit (donation received)');
-            }
-        }
+        console.log('🔄 Applying donation defaults...');
         
-        if (creditAccountSelect) {
-            const revenueOption = Array.from(creditAccountSelect.options).find(option => 
-                option.textContent.toLowerCase().includes('revenue')
-            );
-            if (revenueOption) {
-                creditAccountSelect.value = revenueOption.value;
-                console.log('Auto-selected Revenue account for credit (donation):', revenueOption.textContent);
+        // Get current country from sessionStorage
+        const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+        console.log(`🌍 Current country for donation: ${selectedCountry}`);
+        
+        if (selectedCountry === 'BE') {
+            // For Belgium donations: Debit BE - Wallet Govinda Lienart (receiver), Credit BE - Revenues (source)
+            if (debitAccountSelect) {
+                let walletOption = Array.from(debitAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'BE - Wallet Govinda Lienart (Real Accounts)'
+                );
+                
+                if (!walletOption) {
+                    walletOption = Array.from(debitAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('be') && 
+                        option.textContent.toLowerCase().includes('wallet') &&
+                        option.textContent.toLowerCase().includes('govinda')
+                    );
+                }
+                
+                if (walletOption) {
+                    debitAccountSelect.value = walletOption.value;
+                    console.log('✅ Auto-selected BE - Wallet Govinda Lienart for donation debit (receiver):', walletOption.textContent);
+                }
+            }
+            
+            if (creditAccountSelect) {
+                let revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'BE - Revenues (Nominal Accounts)'
+                );
+                
+                if (!revenueOption) {
+                    revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('be') && 
+                        option.textContent.toLowerCase().includes('revenues')
+                    );
+                }
+                
+                if (revenueOption) {
+                    creditAccountSelect.value = revenueOption.value;
+                    console.log('✅ Auto-selected BE - Revenues for donation credit (source):', revenueOption.textContent);
+                }
+            }
+        } else if (selectedCountry === 'VN') {
+            // For Vietnam donations: Debit VN - Indovina Bank (receiver), Credit VN - Revenues (source)
+            if (debitAccountSelect) {
+                let bankOption = Array.from(debitAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'VN - Indovina Bank (Real Accounts)'
+                );
+                
+                if (!bankOption) {
+                    bankOption = Array.from(debitAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('vn') && 
+                        option.textContent.toLowerCase().includes('indovina')
+                    );
+                }
+                
+                if (bankOption) {
+                    debitAccountSelect.value = bankOption.value;
+                    console.log('✅ Auto-selected VN - Indovina Bank for donation debit (receiver):', bankOption.textContent);
+                }
+            }
+            
+            if (creditAccountSelect) {
+                let revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'VN - Revenues (Nominal Accounts)'
+                );
+                
+                if (!revenueOption) {
+                    revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('vn') && 
+                        option.textContent.toLowerCase().includes('revenues')
+                    );
+                }
+                
+                if (revenueOption) {
+                    creditAccountSelect.value = revenueOption.value;
+                    console.log('✅ Auto-selected VN - Revenues for donation credit (source):', revenueOption.textContent);
+                }
             }
         }
         
@@ -602,40 +467,84 @@ function applyTransactionDefaults(selectedType) {
     } else if (selectedType === 'payment') {
         console.log('🔄 Applying payment defaults...');
         
-        // For payments: Debit VN - Expenses, Credit VN - Indovina Bank
-        if (debitAccountSelect) {
-            // Try exact match first, then partial matches
-            let expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                option.textContent.trim() === 'VN - Expenses (Nominal Accounts)'
-            );
-            
-            if (!expenseOption) {
-                expenseOption = Array.from(debitAccountSelect.options).find(option => 
-                    option.textContent.toLowerCase().includes('expenses (nominal accounts)')
-                );
-            }
-            
-            if (expenseOption) {
-                debitAccountSelect.value = expenseOption.value;
-                console.log('✅ Auto-selected VN - Expenses account for payment debit:', expenseOption.textContent);
-            }
-        }
+        // Get current country from sessionStorage
+        const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+        console.log(`🌍 Current country: ${selectedCountry}`);
         
-        if (creditAccountSelect) {
-            // Try exact match first, then partial matches
-            let bankOption = Array.from(creditAccountSelect.options).find(option => 
-                option.textContent.trim() === 'VN - Indovina Bank (Real Accounts)'
-            );
-            
-            if (!bankOption) {
-                bankOption = Array.from(creditAccountSelect.options).find(option => 
-                    option.textContent.toLowerCase().includes('indovina bank (real accounts)')
+        if (selectedCountry === 'BE') {
+            // For Belgium payments: Debit BE - Expenses, Credit BE - Wallet Govinda Lienart
+            if (debitAccountSelect) {
+                let expenseOption = Array.from(debitAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'BE - Expenses (Nominal Accounts)'
                 );
+                
+                if (!expenseOption) {
+                    expenseOption = Array.from(debitAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('be') && 
+                        option.textContent.toLowerCase().includes('expenses')
+                    );
+                }
+                
+                if (expenseOption) {
+                    debitAccountSelect.value = expenseOption.value;
+                    console.log('✅ Auto-selected BE - Expenses account for payment debit:', expenseOption.textContent);
+                }
             }
             
-            if (bankOption) {
-                creditAccountSelect.value = bankOption.value;
-                console.log('✅ Auto-selected VN - Indovina Bank for payment credit:', bankOption.textContent);
+            if (creditAccountSelect) {
+                let walletOption = Array.from(creditAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'BE - Wallet Govinda Lienart (Real Accounts)'
+                );
+                
+                if (!walletOption) {
+                    walletOption = Array.from(creditAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('be') && 
+                        option.textContent.toLowerCase().includes('wallet') &&
+                        option.textContent.toLowerCase().includes('govinda')
+                    );
+                }
+                
+                if (walletOption) {
+                    creditAccountSelect.value = walletOption.value;
+                    console.log('✅ Auto-selected BE - Wallet Govinda Lienart for payment credit:', walletOption.textContent);
+                }
+            }
+        } else if (selectedCountry === 'VN') {
+            // For Vietnam payments: Debit VN - Expenses, Credit VN - Indovina Bank
+            if (debitAccountSelect) {
+                let expenseOption = Array.from(debitAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'VN - Expenses (Nominal Accounts)'
+                );
+                
+                if (!expenseOption) {
+                    expenseOption = Array.from(debitAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('vn') && 
+                        option.textContent.toLowerCase().includes('expenses')
+                    );
+                }
+                
+                if (expenseOption) {
+                    debitAccountSelect.value = expenseOption.value;
+                    console.log('✅ Auto-selected VN - Expenses account for payment debit:', expenseOption.textContent);
+                }
+            }
+            
+            if (creditAccountSelect) {
+                let bankOption = Array.from(creditAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'VN - Indovina Bank (Real Accounts)'
+                );
+                
+                if (!bankOption) {
+                    bankOption = Array.from(creditAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('vn') && 
+                        option.textContent.toLowerCase().includes('indovina')
+                    );
+                }
+                
+                if (bankOption) {
+                    creditAccountSelect.value = bankOption.value;
+                    console.log('✅ Auto-selected VN - Indovina Bank for payment credit:', bankOption.textContent);
+                }
             }
         }
         
@@ -695,88 +604,87 @@ function applyTransactionDefaults(selectedType) {
                 console.log('✅ Auto-selected Internal Bank Transfer category:', internalBankTransferCategory.textContent);
             }
         }
-    } else if (selectedType === 'interbanking_transfer') {
-        console.log('🔄 Applying interbanking transfer defaults for Master Ledger A and B...');
-        
-        // Set defaults for Master Ledger A (typically Belgium)
-        const masterLedgerADebitSelect = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
-        const masterLedgerACreditSelect = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
-        
-        if (masterLedgerADebitSelect) {
-            const expensesOption = Array.from(masterLedgerADebitSelect.options).find(option => 
-                option.textContent.toLowerCase().includes('be') && 
-                option.textContent.toLowerCase().includes('expenses')
-            );
-            if (expensesOption) {
-                masterLedgerADebitSelect.value = expensesOption.value;
-                console.log('✅ Auto-selected BE-Expenses for Master Ledger A debit:', expensesOption.textContent);
-            }
-        }
-        
-        if (masterLedgerACreditSelect) {
-            const belfiusOption = Array.from(masterLedgerACreditSelect.options).find(option => 
-                option.textContent.toLowerCase().includes('belfius')
-            );
-            if (belfiusOption) {
-                masterLedgerACreditSelect.value = belfiusOption.value;
-                console.log('✅ Auto-selected BE-Belfius for Master Ledger A credit:', belfiusOption.textContent);
-            }
-        }
-        
-        // Set defaults for Master Ledger B (typically Vietnam)
-        const masterLedgerBDebitSelect = document.querySelector('select[name="master_ledger_b_debit_account_id"]');
-        const masterLedgerBCreditSelect = document.querySelector('select[name="master_ledger_b_credit_account_id"]');
-        
-        if (masterLedgerBDebitSelect) {
-            const indovinaOption = Array.from(masterLedgerBDebitSelect.options).find(option => 
-                option.textContent.toLowerCase().includes('indovina')
-            );
-            if (indovinaOption) {
-                masterLedgerBDebitSelect.value = indovinaOption.value;
-                console.log('✅ Auto-selected VN-Indovina Bank for Master Ledger B debit:', indovinaOption.textContent);
-            }
-        }
-        
-        if (masterLedgerBCreditSelect) {
-            const revenuesOption = Array.from(masterLedgerBCreditSelect.options).find(option => 
-                option.textContent.toLowerCase().includes('vn') && 
-                option.textContent.toLowerCase().includes('revenues')
-            );
-            if (revenuesOption) {
-                masterLedgerBCreditSelect.value = revenuesOption.value;
-                console.log('✅ Auto-selected VN-Revenues for Master Ledger B credit:', revenuesOption.textContent);
-            }
-        }
-        
-        // Auto-select Internal Bank Transfer for Category
-        if (categorySelect) {
-            const internalBankTransferCategory = Array.from(categorySelect.options).find(option => 
-                option.textContent.toLowerCase().includes('internal bank transfer')
-            );
-            if (internalBankTransferCategory) {
-                categorySelect.value = internalBankTransferCategory.value;
-                console.log('✅ Auto-selected Internal Bank Transfer category:', internalBankTransferCategory.textContent);
-            }
-        }
     } else if (selectedType === 'grant') {
-        // For grants: Debit Bank account (asset increases), Credit Revenue account
-        if (debitAccountSelect) {
-            const bankOption = Array.from(debitAccountSelect.options).find(option => 
-                option.textContent.toLowerCase().includes('bank')
-            );
-            if (bankOption) {
-                debitAccountSelect.value = bankOption.value;
-                console.log('Auto-selected Bank account for grant debit');
-            }
-        }
+        console.log('🔄 Applying grant defaults...');
         
-        if (creditAccountSelect) {
-            const revenueOption = Array.from(creditAccountSelect.options).find(option => 
-                option.textContent.toLowerCase().includes('revenue')
-            );
-            if (revenueOption) {
-                creditAccountSelect.value = revenueOption.value;
-                console.log('Auto-selected Revenue account for grant credit');
+        // Get current country from sessionStorage
+        const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+        console.log(`🌍 Current country for grant: ${selectedCountry}`);
+        
+        if (selectedCountry === 'BE') {
+            // For Belgium grants: Debit BE - Wallet Govinda Lienart (receiver), Credit BE - Revenues (source)
+            if (debitAccountSelect) {
+                let walletOption = Array.from(debitAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'BE - Wallet Govinda Lienart (Real Accounts)'
+                );
+                
+                if (!walletOption) {
+                    walletOption = Array.from(debitAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('be') && 
+                        option.textContent.toLowerCase().includes('wallet') &&
+                        option.textContent.toLowerCase().includes('govinda')
+                    );
+                }
+                
+                if (walletOption) {
+                    debitAccountSelect.value = walletOption.value;
+                    console.log('✅ Auto-selected BE - Wallet Govinda Lienart for grant debit (receiver):', walletOption.textContent);
+                }
+            }
+            
+            if (creditAccountSelect) {
+                let revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'BE - Revenues (Nominal Accounts)'
+                );
+                
+                if (!revenueOption) {
+                    revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('be') && 
+                        option.textContent.toLowerCase().includes('revenues')
+                    );
+                }
+                
+                if (revenueOption) {
+                    creditAccountSelect.value = revenueOption.value;
+                    console.log('✅ Auto-selected BE - Revenues for grant credit (source):', revenueOption.textContent);
+                }
+            }
+        } else if (selectedCountry === 'VN') {
+            // For Vietnam grants: Debit VN - Indovina Bank (receiver), Credit VN - Revenues (source)
+            if (debitAccountSelect) {
+                let bankOption = Array.from(debitAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'VN - Indovina Bank (Real Accounts)'
+                );
+                
+                if (!bankOption) {
+                    bankOption = Array.from(debitAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('vn') && 
+                        option.textContent.toLowerCase().includes('indovina')
+                    );
+                }
+                
+                if (bankOption) {
+                    debitAccountSelect.value = bankOption.value;
+                    console.log('✅ Auto-selected VN - Indovina Bank for grant debit (receiver):', bankOption.textContent);
+                }
+            }
+            
+            if (creditAccountSelect) {
+                let revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                    option.textContent.trim() === 'VN - Revenues (Nominal Accounts)'
+                );
+                
+                if (!revenueOption) {
+                    revenueOption = Array.from(creditAccountSelect.options).find(option => 
+                        option.textContent.toLowerCase().includes('vn') && 
+                        option.textContent.toLowerCase().includes('revenues')
+                    );
+                }
+                
+                if (revenueOption) {
+                    creditAccountSelect.value = revenueOption.value;
+                    console.log('✅ Auto-selected VN - Revenues for grant credit (source):', revenueOption.textContent);
+                }
             }
         }
         
