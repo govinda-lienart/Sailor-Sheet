@@ -97,20 +97,32 @@ def get_categories_from_json():
         print(f"ERROR: Failed to load categories from JSON: {e}")
         return []
 
-def get_accounts_from_json():
+def get_accounts_from_json(country_code='BE'):
     """
-    Get accounts list from JSON file instead of Google Sheets
+    Get accounts list from country-specific JSON file
     Returns list of account dictionaries with code, name, type, active
     """
     try:
-        data = load_json_data('accounts.json')
+        # Use country-specific account file
+        account_file = f'accounts_{country_code.lower()}.json'
+        data = load_json_data(account_file)
         accounts = data.get('accounts', [])
         # Filter only active accounts
         active_accounts = [acc for acc in accounts if acc.get('active', True)]
-        print(f"DEBUG: Loaded {len(active_accounts)} active accounts from JSON")
+        print(f"DEBUG: Loaded {len(active_accounts)} active accounts from {account_file}")
         return active_accounts
     except Exception as e:
-        print(f"ERROR: Failed to load accounts from JSON: {e}")
+        print(f"ERROR: Failed to load accounts from {account_file}: {e}")
+        # Fallback to Belgium accounts if country-specific file fails
+        if country_code != 'BE':
+            try:
+                data = load_json_data('accounts_be.json')
+                accounts = data.get('accounts', [])
+                active_accounts = [acc for acc in accounts if acc.get('active', True)]
+                print(f"DEBUG: Fallback to Belgium accounts: {len(active_accounts)} accounts")
+                return active_accounts
+            except Exception as fallback_e:
+                print(f"ERROR: Fallback also failed: {fallback_e}")
         return []
 
 def get_sub_categories_from_json():
@@ -355,7 +367,8 @@ def index():
     print("DEBUG: Loading dropdown data from JSON files...")
     funds = get_funds_from_json()
     categories = get_categories_from_json()
-    accounts = get_accounts_from_json()
+    # Default to Belgium accounts for initial page load
+    accounts = get_accounts_from_json('BE')
     sub_categories = get_sub_categories_from_json()
     
     print(f"DEBUG: JSON data loaded - Funds: {len(funds)}, Categories: {len(categories)}, Accounts: {len(accounts)}, Sub-Categories: {len(sub_categories)}")

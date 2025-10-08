@@ -1370,7 +1370,7 @@
                             </div>
                             
                             <!-- File Upload Section -->
-                            <div id="fileUploadSection" style="margin-bottom: 15px;">
+                            <div id="updateFileUploadSection" style="margin-bottom: 15px;">
                                 <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Select File:</label>
                                 <input type="file" id="documentFile" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.txt" 
                                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
@@ -1440,7 +1440,7 @@
             
             // Upload mode toggle elements
             const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
-            const fileUploadSection = document.getElementById('fileUploadSection');
+            const fileUploadSection = document.getElementById('updateFileUploadSection');
             const linkInputSection = document.getElementById('linkInputSection');
             const uploadBtn = document.getElementById('uploadBtn');
             
@@ -2538,6 +2538,22 @@
             if (dropdown.value) {
                 uploadModeToggle.style.display = 'block';
                 uploadStatus.style.display = 'none';
+                
+                // Set up event listeners for upload mode radios when they become visible
+                const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
+                console.log('DEBUG: Setting up upload mode radios when toggle becomes visible:', uploadModeRadios.length);
+                uploadModeRadios.forEach((radio, index) => {
+                    console.log(`DEBUG: Adding event listener to radio ${index}:`, radio.value);
+                    radio.addEventListener('change', handleUploadModeChange);
+                });
+                
+                // Force show file upload section if "Upload File" is selected
+                const fileUploadSection = document.getElementById('fileUploadSection');
+                const uploadFileRadio = document.querySelector('input[name="uploadMode"][value="file"]');
+                if (uploadFileRadio && uploadFileRadio.checked && fileUploadSection) {
+                    console.log('DEBUG: Upload File is selected, showing file upload section');
+                    fileUploadSection.style.display = 'block';
+                }
             } else {
                 uploadModeToggle.style.display = 'none';
                 fileUploadSection.style.display = 'none';
@@ -2548,14 +2564,22 @@
         
         // Handle upload mode change
         function handleUploadModeChange() {
+            console.log('DEBUG: handleUploadModeChange called');
+            
             const fileUploadSection = document.getElementById('fileUploadSection');
             const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
             const uploadMode = document.querySelector('input[name="uploadMode"]:checked').value;
             
+            console.log('DEBUG: Upload mode selected:', uploadMode);
+            console.log('DEBUG: File upload section found:', fileUploadSection);
+            console.log('DEBUG: Google Drive link section found:', googleDriveLinkSection);
+            
             if (uploadMode === 'file') {
+                console.log('DEBUG: Showing file upload section');
                 fileUploadSection.style.display = 'block';
                 googleDriveLinkSection.style.display = 'none';
             } else if (uploadMode === 'link') {
+                console.log('DEBUG: Showing Google Drive link section');
                 fileUploadSection.style.display = 'none';
                 googleDriveLinkSection.style.display = 'block';
             }
@@ -2989,8 +3013,54 @@
         // Update accounts data based on country
         function updateAccountsData(accounts) {
             console.log(`DEBUG: Updating accounts data with ${accounts.length} accounts`);
-            // This will be used when the form is refreshed with country-specific data
+            // Store accounts for later use
             window.currentAccounts = accounts;
+            
+            // Update all account dropdowns
+            updateAccountDropdowns(accounts);
+        }
+        
+        // Update all account dropdowns with new account data
+        function updateAccountDropdowns(accounts) {
+            console.log(`DEBUG: Updating account dropdowns with ${accounts.length} accounts`);
+            
+            // List of all account dropdown selectors
+            const accountSelectors = [
+                'select[name="regular_debit_account_id"]',
+                'select[name="regular_credit_account_id"]',
+                'select[name="master_ledger_a_debit_account_id"]',
+                'select[name="master_ledger_a_credit_account_id"]',
+                'select[name="master_ledger_b_debit_account_id"]',
+                'select[name="master_ledger_b_credit_account_id"]'
+            ];
+            
+            accountSelectors.forEach(selector => {
+                const dropdown = document.querySelector(selector);
+                if (dropdown) {
+                    console.log(`DEBUG: Updating dropdown: ${selector}`);
+                    
+                    // Clear existing options (except the first placeholder)
+                    const placeholder = dropdown.querySelector('option[value=""]');
+                    dropdown.innerHTML = '';
+                    if (placeholder) {
+                        dropdown.appendChild(placeholder);
+                    }
+                    
+                    // Add new account options
+                    accounts.forEach(account => {
+                        if (account.active !== false) { // Only add active accounts
+                            const option = document.createElement('option');
+                            option.value = account.code;
+                            option.textContent = `${account.name} (${account.type})`;
+                            dropdown.appendChild(option);
+                        }
+                    });
+                    
+                    console.log(`DEBUG: Added ${accounts.length} options to ${selector}`);
+                } else {
+                    console.log(`DEBUG: Dropdown not found: ${selector}`);
+                }
+            });
         }
         
         // Update document type dropdown based on country
@@ -3124,7 +3194,10 @@
             
             // Upload mode radio buttons
             const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
-            uploadModeRadios.forEach(radio => {
+            console.log('DEBUG: Found upload mode radios:', uploadModeRadios.length);
+            
+            uploadModeRadios.forEach((radio, index) => {
+                console.log(`DEBUG: Adding event listener to radio ${index}:`, radio.value);
                 radio.addEventListener('change', handleUploadModeChange);
             });
             
