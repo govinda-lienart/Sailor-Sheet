@@ -2047,8 +2047,12 @@
                 return;
             }
             
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
             console.log(`DEBUG: Processing Bills Google Drive link: ${googleDriveLink}`);
             console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
             
             // Show processing state
             processBtn.disabled = true;
@@ -2063,7 +2067,8 @@
                 body: JSON.stringify({
                     google_drive_url: googleDriveLink,
                     document_type: 'bill',
-                    transaction_number: transactionNumber
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
                 })
             })
             .then(response => response.json())
@@ -2116,8 +2121,12 @@
                 return;
             }
             
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
             console.log(`DEBUG: Processing Red Bills Google Drive link: ${googleDriveLink}`);
             console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
             
             // Show processing state
             processBtn.disabled = true;
@@ -2132,7 +2141,8 @@
                 body: JSON.stringify({
                     google_drive_url: googleDriveLink,
                     document_type: 'redBill',
-                    transaction_number: transactionNumber
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
                 })
             })
             .then(response => response.json())
@@ -2185,8 +2195,12 @@
                 return;
             }
             
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
             console.log(`DEBUG: Processing Documentation Google Drive link: ${googleDriveLink}`);
             console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
             
             // Show processing state
             processBtn.disabled = true;
@@ -2201,7 +2215,8 @@
                 body: JSON.stringify({
                     google_drive_url: googleDriveLink,
                     document_type: 'documentation',
-                    transaction_number: transactionNumber
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
                 })
             })
             .then(response => response.json())
@@ -2272,8 +2287,12 @@
                 return;
             }
             
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
             console.log(`DEBUG: Processing Bills Google Drive link (Main): ${googleDriveLink}`);
             console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
             
             // Show processing state
             processBtn.disabled = true;
@@ -2288,7 +2307,8 @@
                 body: JSON.stringify({
                     google_drive_url: googleDriveLink,
                     document_type: 'bill',
-                    transaction_number: transactionNumber
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
                 })
             })
             .then(response => response.json())
@@ -2341,8 +2361,12 @@
                 return;
             }
             
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
             console.log(`DEBUG: Processing Red Bills Google Drive link (Main): ${googleDriveLink}`);
             console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
             
             // Show processing state
             processBtn.disabled = true;
@@ -2357,7 +2381,8 @@
                 body: JSON.stringify({
                     google_drive_url: googleDriveLink,
                     document_type: 'redBill',
-                    transaction_number: transactionNumber
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
                 })
             })
             .then(response => response.json())
@@ -2410,8 +2435,12 @@
                 return;
             }
             
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
             console.log(`DEBUG: Processing Documentation Google Drive link (Main): ${googleDriveLink}`);
             console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
             
             // Show processing state
             processBtn.disabled = true;
@@ -2426,7 +2455,8 @@
                 body: JSON.stringify({
                     google_drive_url: googleDriveLink,
                     document_type: 'documentation',
-                    transaction_number: transactionNumber
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
                 })
             })
             .then(response => response.json())
