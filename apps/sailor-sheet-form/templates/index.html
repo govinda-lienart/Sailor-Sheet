@@ -983,6 +983,19 @@
                         console.log('Number of fields:', Object.keys(data.data).length);
                         console.log('Field names:', Object.keys(data.data));
                         console.log('Field values:', Object.values(data.data));
+                        
+                        // Store the transaction number for later use in file uploads
+                        const transactionNumberFromData = data.data['Transaction Number'];
+                        if (transactionNumberFromData) {
+                            console.log(`DEBUG: Storing transaction number for uploads: "${transactionNumberFromData}"`);
+                            // Store in a data attribute on the search results container
+                            if (searchResults) {
+                                searchResults.setAttribute('data-transaction-number', transactionNumberFromData);
+                            }
+                            // Also store in sessionStorage for backup
+                            sessionStorage.setItem('currentTransactionNumber', transactionNumberFromData);
+                        }
+                        
                         displayTransactionDetails(data.data);
                     } else {
                         console.log('Search failed or no data:', data);
@@ -1662,23 +1675,82 @@
             
             // Try to get transaction number from the displayed table
             if (transactionTable) {
-                const transactionRow = Array.from(transactionTable.querySelectorAll('tr')).find(row => 
+                console.log('DEBUG: Looking for Transaction Number row in table...');
+                const allRows = Array.from(transactionTable.querySelectorAll('tr'));
+                console.log(`DEBUG: Found ${allRows.length} rows in table`);
+                
+                allRows.forEach((row, index) => {
+                    if (row.cells && row.cells.length >= 2) {
+                        const firstCell = row.cells[0].textContent.trim();
+                        const secondCell = row.cells[1].textContent.trim();
+                        console.log(`DEBUG: Row ${index}: "${firstCell}" -> "${secondCell}"`);
+                    }
+                });
+                
+                const transactionRow = allRows.find(row => 
                     row.cells[0] && row.cells[0].textContent.trim() === 'Transaction Number'
                 );
                 if (transactionRow && transactionRow.cells[1]) {
                     transactionNumber = transactionRow.cells[1].textContent.trim();
+                    console.log(`DEBUG: Found transaction number in table: "${transactionNumber}"`);
+                } else {
+                    console.log('DEBUG: No Transaction Number row found in table');
+                }
+            } else {
+                console.log('DEBUG: No transaction table found');
+            }
+            
+            // Fallback to search input field if table method fails or returns em dash
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
+                const searchInput = document.getElementById('searchTransactionNumber');
+                if (searchInput && searchInput.value.trim()) {
+                    transactionNumber = searchInput.value.trim();
+                    console.log(`DEBUG: Using transaction number from search input: "${transactionNumber}"`);
                 }
             }
             
-            // Fallback to input field if table method fails
-            if (!transactionNumber) {
-                transactionNumber = document.getElementById('transactionNumberInput').value;
+            // Fallback to stored transaction number from search results
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
+                if (searchResults) {
+                    const storedTransactionNumber = searchResults.getAttribute('data-transaction-number');
+                    if (storedTransactionNumber && storedTransactionNumber !== '—' && storedTransactionNumber !== '-') {
+                        transactionNumber = storedTransactionNumber;
+                        console.log(`DEBUG: Using stored transaction number from search results: "${transactionNumber}"`);
+                    }
+                }
             }
             
-            console.log(`DEBUG: Transaction number from search results: "${transactionNumber}"`);
+            // Fallback to sessionStorage
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
+                const sessionTransactionNumber = sessionStorage.getItem('currentTransactionNumber');
+                if (sessionTransactionNumber && sessionTransactionNumber !== '—' && sessionTransactionNumber !== '-') {
+                    transactionNumber = sessionTransactionNumber;
+                    console.log(`DEBUG: Using transaction number from sessionStorage: "${transactionNumber}"`);
+                }
+            }
+            
+            // Final fallback to hidden input field
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
+                const hiddenInput = document.getElementById('transactionNumberInput');
+                if (hiddenInput && hiddenInput.value.trim()) {
+                    transactionNumber = hiddenInput.value.trim();
+                    console.log(`DEBUG: Using transaction number from hidden input: "${transactionNumber}"`);
+                }
+            }
+            
+            console.log(`DEBUG: Final transaction number to be used: "${transactionNumber}"`);
             console.log(`DEBUG: Transaction number from input field: "${document.getElementById('transactionNumberInput').value}"`);
             
-            if (!transactionNumber) {
+            // Debug: Check all possible sources
+            console.log('DEBUG: === TRANSACTION NUMBER DEBUG ===');
+            console.log('1. Search input field:', document.getElementById('searchTransactionNumber')?.value);
+            console.log('2. Hidden input field:', document.getElementById('transactionNumberInput')?.value);
+            console.log('3. Search results data attribute:', searchResults?.getAttribute('data-transaction-number'));
+            console.log('4. SessionStorage:', sessionStorage.getItem('currentTransactionNumber'));
+            console.log('5. Final transaction number:', transactionNumber);
+            console.log('=== END DEBUG ===');
+            
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
                 showUploadResult('Transaction number not found. Please search for a transaction first.', 'error');
                 return;
             }
@@ -1690,9 +1762,11 @@
             progressText.textContent = 'Preparing upload...';
             
             // Create form data
+            console.log(`DEBUG: Creating FormData with transaction_number: "${transactionNumber}"`);
             const formData = new FormData();
             formData.append('file', file);
             formData.append('transaction_number', transactionNumber);
+            console.log(`DEBUG: FormData created, transaction_number set to: "${transactionNumber}"`);
             
             // Map document types to file types that match Python FOLDER_IDS keys
             const fileTypeMapping = {
@@ -2604,8 +2678,10 @@
                 
                 // Force show file upload section if "Upload File" is selected
                 const fileUploadSection = document.getElementById('fileUploadSection');
-                const uploadFileRadio = document.querySelector('input[name="updateUploadMode"][value="file"]');
-                if (uploadFileRadio && uploadFileRadio.checked && fileUploadSection) {
+                // Check both main form and update form radio buttons
+                const uploadFileRadio = document.querySelector('input[name="uploadMode"][value="file"]:checked') || 
+                                       document.querySelector('input[name="updateUploadMode"][value="file"]:checked');
+                if (uploadFileRadio && fileUploadSection) {
                     console.log('DEBUG: Upload File is selected, showing file upload section');
                     fileUploadSection.style.display = 'block';
                 }
@@ -2617,26 +2693,48 @@
             }
         }
         
-        // Handle upload mode change
+        // Handle upload mode change (works for both main form and update form)
         function handleUploadModeChange() {
             console.log('DEBUG: handleUploadModeChange called');
             
+            // Main form elements
             const fileUploadSection = document.getElementById('fileUploadSection');
             const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
-            const uploadMode = document.querySelector('input[name="updateUploadMode"]:checked').value;
+            
+            // Update form elements
+            const updateFileUploadSection = document.getElementById('updateFileUploadSection');
+            const linkInputSection = document.getElementById('linkInputSection');
+            
+            // Check for both main form (uploadMode) and update form (updateUploadMode) radio buttons
+            const mainFormRadio = document.querySelector('input[name="uploadMode"]:checked');
+            const updateFormRadio = document.querySelector('input[name="updateUploadMode"]:checked');
+            const uploadMode = mainFormRadio ? mainFormRadio.value : (updateFormRadio ? updateFormRadio.value : null);
             
             console.log('DEBUG: Upload mode selected:', uploadMode);
-            console.log('DEBUG: File upload section found:', fileUploadSection);
-            console.log('DEBUG: Google Drive link section found:', googleDriveLinkSection);
+            console.log('DEBUG: Main form radio:', mainFormRadio);
+            console.log('DEBUG: Update form radio:', updateFormRadio);
+            
+            if (!uploadMode) {
+                console.log('ERROR: No upload mode radio button found');
+                return;
+            }
             
             if (uploadMode === 'file') {
                 console.log('DEBUG: Showing file upload section');
-                fileUploadSection.style.display = 'block';
-                googleDriveLinkSection.style.display = 'none';
+                // Main form
+                if (fileUploadSection) fileUploadSection.style.display = 'block';
+                if (googleDriveLinkSection) googleDriveLinkSection.style.display = 'none';
+                // Update form
+                if (updateFileUploadSection) updateFileUploadSection.style.display = 'block';
+                if (linkInputSection) linkInputSection.style.display = 'none';
             } else if (uploadMode === 'link') {
                 console.log('DEBUG: Showing Google Drive link section');
-                fileUploadSection.style.display = 'none';
-                googleDriveLinkSection.style.display = 'block';
+                // Main form
+                if (fileUploadSection) fileUploadSection.style.display = 'none';
+                if (googleDriveLinkSection) googleDriveLinkSection.style.display = 'block';
+                // Update form
+                if (updateFileUploadSection) updateFileUploadSection.style.display = 'none';
+                if (linkInputSection) linkInputSection.style.display = 'block';
             }
         }
         

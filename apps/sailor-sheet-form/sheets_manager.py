@@ -1045,22 +1045,35 @@ def get_account_name_by_code(gc, account_code):
         
         # Get the directory of the current script
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        json_file_path = os.path.join(current_dir, 'data', 'accounts.json')
         
-        with open(json_file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        # Try to determine the country from the account code or try multiple files
+        # First try Vietnam accounts (VNINDO, ACC03, etc.)
+        json_files_to_try = ['accounts_vn.json', 'accounts_be.json', 'accounts.json']
         
-        accounts = data.get('accounts', [])
-        print(f"DEBUG: Retrieved {len(accounts)} account records from JSON")
+        for json_file in json_files_to_try:
+            json_file_path = os.path.join(current_dir, 'data', json_file)
+            
+            try:
+                with open(json_file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                accounts = data.get('accounts', [])
+                print(f"DEBUG: Checking {json_file} - Retrieved {len(accounts)} account records")
+                
+                for i, acc in enumerate(accounts):
+                    print(f"DEBUG: Account {i}: Code='{acc.get('code')}', Name='{acc.get('name')}'")
+                    if str(acc.get('code', '')) == str(account_code):
+                        print(f"DEBUG: Found matching account in {json_file}: {acc.get('name')}")
+                        return acc.get('name', '')
+                        
+            except FileNotFoundError:
+                print(f"DEBUG: {json_file} not found, trying next file")
+                continue
+            except Exception as file_error:
+                print(f"DEBUG: Error reading {json_file}: {file_error}")
+                continue
         
-        for i, acc in enumerate(accounts):
-            print(f"DEBUG: Account {i}: Code='{acc.get('code')}', Name='{acc.get('name')}'")
-            if str(acc.get('code', '')) == str(account_code):
-                print(f"DEBUG: Found matching account: {acc.get('name')}")
-                return acc.get('name', '')
-        
-        print(f"WARNING: Account Code {account_code} not found")
-        print(f"DEBUG: Available account codes: {[str(acc.get('code', '')) for acc in accounts]}")
+        print(f"WARNING: Account Code {account_code} not found in any account file")
         return "Unknown Account"
         
     except Exception as e:
