@@ -107,20 +107,6 @@
                     </div>
                 </div>
                 
-            <!-- Analytics Section -->
-                <div class="access-section">
-                <h6 class="access-heading-main">📊 Analytics</h6>
-                    <div class="access-links">
-                    <!-- Vietnam Analytics (VN) -->
-                    <a href="https://lookerstudio.google.com/reporting/5ff83091-be1e-43c7-a746-4158015da0bd" 
-                       target="_blank" class="access-link access-link-analytics-vn">📈 Looker Studio (VN)</a>
-                    
-                    <!-- Belgium Analytics (BE) -->
-                    <a href="https://lookerstudio.google.com/reporting/323a553e-802f-429f-927e-c335e44d6f75/preview/" 
-                       target="_blank" class="access-link access-link-analytics-be">📈 Looker Studio (BE)</a>
-                    </div>
-                </div>
-                
             <!-- Tools Section -->
                 <div class="access-section">
                 <h6 class="access-heading-main">🔧 Tools</h6>
@@ -3208,10 +3194,6 @@
             const beFiles = document.querySelectorAll('.access-link-bills-be, .access-link-bank-statement-be, .access-link-documentation-be');
             const vnFiles = document.querySelectorAll('.access-link-bills-vn, .access-link-red-bills-vn, .access-link-bank-statement-vn, .access-link-documentation-vn');
             
-            // Get the Analytics elements
-            const beAnalytics = document.querySelector('.access-link-analytics-be');
-            const vnAnalytics = document.querySelector('.access-link-analytics-vn');
-            
             // Get the Update form search sheet dropdown
             const searchSheetDropdown = document.getElementById('searchSheet');
             
@@ -3219,8 +3201,6 @@
             console.log(`DEBUG: Found VN Master Ledger:`, vnMasterLedger);
             console.log(`DEBUG: Found BE Files:`, beFiles.length);
             console.log(`DEBUG: Found VN Files:`, vnFiles.length);
-            console.log(`DEBUG: Found BE Analytics:`, beAnalytics);
-            console.log(`DEBUG: Found VN Analytics:`, vnAnalytics);
             console.log(`DEBUG: Found Search Sheet Dropdown:`, searchSheetDropdown);
             
             if (countryCode === 'BE') {
@@ -3230,10 +3210,6 @@
                 
                 beFiles.forEach(file => file.style.display = 'block');
                 vnFiles.forEach(file => file.style.display = 'none');
-                
-                // Show Belgium Analytics, hide Vietnam Analytics
-                if (beAnalytics) beAnalytics.style.display = 'block';
-                if (vnAnalytics) vnAnalytics.style.display = 'none';
                 
                 // Update the search sheet dropdown to Belgium
                 if (searchSheetDropdown) {
@@ -3249,10 +3225,6 @@
                 
                 beFiles.forEach(file => file.style.display = 'none');
                 vnFiles.forEach(file => file.style.display = 'block');
-                
-                // Show Vietnam Analytics, hide Belgium Analytics
-                if (beAnalytics) beAnalytics.style.display = 'none';
-                if (vnAnalytics) vnAnalytics.style.display = 'block';
                 
                 // Update the search sheet dropdown to Vietnam
                 if (searchSheetDropdown) {
