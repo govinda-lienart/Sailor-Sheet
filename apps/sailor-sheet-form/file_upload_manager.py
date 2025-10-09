@@ -414,7 +414,7 @@ def process_google_drive_link(google_drive_url, document_type, transaction_numbe
         # Download file from Google Drive
         file_content, original_file_name = download_file_from_google_drive(file_id)
         if not file_content:
-            return {'success': False, 'error': 'Failed to download file from Google Drive'}
+            return {'success': False, 'error': 'Failed to download file from Google Drive. The file may not exist, be private, or the link may be invalid. Please check the Google Drive link and ensure the file is set to "Anyone with the link can view".'}
         
         print(f"DEBUG: Downloaded file: {original_file_name}")
         print(f"DEBUG: File size: {len(file_content)} bytes")
@@ -574,7 +574,13 @@ def download_file_from_google_drive(file_id):
                         
             except Exception as api_error:
                 print(f"DEBUG: Could not get file metadata from API: {api_error}")
-                # Fallback to content type detection
+                
+                # Check if this is a 404 error (file not found)
+                if "404" in str(api_error) or "not found" in str(api_error).lower():
+                    print(f"DEBUG: File not found in Google Drive - returning error")
+                    return None, None
+                
+                # Fallback to content type detection for other errors
                 content_type = response.headers.get('Content-Type', 'application/octet-stream')
                 extension = get_extension_from_content_type(content_type)
                 file_name = f"downloaded_file_{file_id[:8]}{extension}"
