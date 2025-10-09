@@ -223,9 +223,11 @@ def api_submit_transaction():
                     bank_fee_category = "8001"  # Bank Fee category code
                     
                     for i, bank_fee_amount in enumerate(bank_fee_amounts, 1):
-                        # Generate new transaction number for bank fee
+                        # Generate new transaction number for bank fee with country prefix
                         from datetime import datetime
-                        bank_fee_txn_number = f"{datetime.now().strftime('%d%m%y')}-{datetime.now().strftime('%H%M%S')}{i}"
+                        # Get country prefix from the main transaction number
+                        country_prefix = transaction_number.split('-')[0] if '-' in transaction_number else 'BE'
+                        bank_fee_txn_number = f"{country_prefix}-{datetime.now().strftime('%d%m%y')}-{datetime.now().strftime('%H%M%S')}{i}"
                         
                         # Bank fee description (same as main transaction)
                         bank_fee_description = description

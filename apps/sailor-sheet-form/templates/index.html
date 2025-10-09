@@ -1203,6 +1203,7 @@
                             <option value="">Choose document type...</option>
                             <option value="bill">📄 Bill (Normal Invoice)</option>
                             <option value="redBill">🔴 Red Bill (Special Invoice)</option>
+                            <option value="bankStatement">🏦 Bank Statement (Bank transaction records)</option>
                             <option value="documentation">📋 Supporting Documentation</option>
                         </select>
                     </div>
@@ -1299,6 +1300,26 @@
             const documentUploadForm = document.getElementById('documentUploadForm');
             const cancelUploadBtn = document.getElementById('cancelUploadBtn');
             
+            // Apply country filtering to update form dropdown when it becomes visible
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const target = mutation.target;
+                        if (target.id === 'updateOptions' && target.style.display !== 'none') {
+                            console.log('DEBUG: Update form became visible, applying country filtering');
+                            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+                            updateDocumentTypeDropdown(selectedCountry);
+                        }
+                    }
+                });
+            });
+            
+            // Observe the update form container for visibility changes
+            const updateOptions = document.getElementById('updateOptions');
+            if (updateOptions) {
+                observer.observe(updateOptions, { attributes: true, attributeFilter: ['style'] });
+            }
+            
             // Upload mode toggle elements
             const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
             const fileUploadSection = document.getElementById('updateFileUploadSection');
@@ -1343,7 +1364,8 @@
                     // Update form title based on selection
                     const typeNames = {
                         'bill': '📄 Bill (Normal Invoice)',
-                        'redBill': '🔴 Red Bill (Special Invoice)', 
+                        'redBill': '🔴 Red Bill (Special Invoice)',
+                        'bankStatement': '🏦 Bank Statement (Bank transaction records)',
                         'documentation': '📋 Supporting Documentation'
                     };
                     uploadFormTitle.textContent = `Upload ${typeNames[selectedType]}`;
@@ -1351,6 +1373,17 @@
                     // Hide upload form
                     uploadFormContainer.style.display = 'none';
                 }
+            });
+            
+            // Apply country filtering when dropdown is clicked/focused
+            documentTypeSelect.addEventListener('focus', function() {
+                console.log('DEBUG: Update form dropdown focused, applying country filtering');
+                forceUpdateDocumentTypeDropdowns();
+            });
+            
+            documentTypeSelect.addEventListener('click', function() {
+                console.log('DEBUG: Update form dropdown clicked, applying country filtering');
+                forceUpdateDocumentTypeDropdowns();
             });
             
             // Cancel upload
@@ -2478,15 +2511,21 @@
             uploadStatus.style.display = 'block';
             uploadStatusMessage.textContent = 'Uploading file...';
             
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log(`DEBUG: Uploading file for country: ${selectedCountry}`);
+            
             // Create form data
             const formData = new FormData();
             formData.append('file', file);
             formData.append('transaction_number', transactionNumber);
+            formData.append('country_code', selectedCountry);
             
             // Map document types to file types
             const fileTypeMapping = {
                 'bills': 'bills',
                 'redBills': 'redBills',
+                'bankStatement': 'bankStatement',
                 'documentation': 'documentation'
             };
             const fileType = fileTypeMapping[selectedType];
@@ -2574,6 +2613,9 @@
                 return;
             }
             
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log(`DEBUG: Processing Google Drive link for country: ${selectedCountry}`);
             console.log(`DEBUG: Processing Google Drive link for ${selectedType}: ${googleDriveLink}`);
             console.log(`DEBUG: Transaction number: ${transactionNumber}`);
             
@@ -2587,6 +2629,7 @@
             const documentTypeMapping = {
                 'bills': 'bill',
                 'redBills': 'redBill',
+                'bankStatement': 'bankStatement',
                 'documentation': 'documentation'
             };
             const documentType = documentTypeMapping[selectedType];
@@ -2600,7 +2643,8 @@
                 body: JSON.stringify({
                     google_drive_url: googleDriveLink,
                     document_type: documentType,
-                    transaction_number: transactionNumber
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
                 })
             })
             .then(response => response.json())
@@ -2736,6 +2780,9 @@
                     
                     // Store country in sessionStorage
                     sessionStorage.setItem('selectedCountry', countryCode);
+                    
+                    // Regenerate transaction number with new country prefix
+                    regenerateTransactionNumberForCountry();
                     
                     // Re-apply transaction defaults for the new country
                     setTimeout(() => {
@@ -2946,31 +2993,71 @@
         function updateDocumentTypeDropdown(countryCode) {
             console.log(`DEBUG: Updating document type dropdown for country: ${countryCode}`);
             
+            // Update both dropdowns: main form and update form
             const documentTypeDropdown = document.getElementById('documentTypeDropdown');
-            if (!documentTypeDropdown) {
-                console.log('DEBUG: Document type dropdown not found');
-                return;
+            const documentTypeSelect = document.getElementById('documentTypeSelect');
+            
+            // Update main form dropdown
+            if (documentTypeDropdown) {
+                updateDropdownOptions(documentTypeDropdown, countryCode, 'redBills');
             }
             
+            // Update update form dropdown
+            if (documentTypeSelect) {
+                updateDropdownOptions(documentTypeSelect, countryCode, 'redBill');
+            }
+        }
+        
+        // Force update of document type dropdowns (can be called manually)
+        function forceUpdateDocumentTypeDropdowns() {
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log(`DEBUG: Force updating document type dropdowns for country: ${selectedCountry}`);
+            updateDocumentTypeDropdown(selectedCountry);
+        }
+        
+        // Helper function to update dropdown options
+        function updateDropdownOptions(dropdown, countryCode, redBillsValue) {
+            console.log(`DEBUG: Updating dropdown ${dropdown.id} for country: ${countryCode}`);
+            console.log(`DEBUG: Looking for redBillsValue: ${redBillsValue}`);
+            
             // Get all options
-            const allOptions = documentTypeDropdown.querySelectorAll('option');
+            const allOptions = dropdown.querySelectorAll('option');
+            console.log(`DEBUG: Found ${allOptions.length} options in ${dropdown.id}`);
+            
+            // Log all options for debugging
+            allOptions.forEach((option, index) => {
+                console.log(`DEBUG: Option ${index}: value="${option.value}", text="${option.textContent.trim()}"`);
+            });
+            
             const redBillsOption = Array.from(allOptions).find(option => 
-                option.value === 'redBills' || option.textContent.includes('Red Bills')
+                option.value === redBillsValue || 
+                option.textContent.includes('Red Bill') || 
+                option.textContent.includes('Red Bill (Special Invoice)')
             );
             
             if (redBillsOption) {
+                console.log(`DEBUG: Found Red Bills option: value="${redBillsOption.value}", text="${redBillsOption.textContent.trim()}"`);
                 if (countryCode === 'BE') {
                     // Belgium doesn't have red bills - hide the option
                     redBillsOption.style.display = 'none';
-                    console.log('DEBUG: Hidden Red Bills option for Belgium');
+                    console.log(`DEBUG: Hidden Red Bills option for Belgium in ${dropdown.id}`);
                 } else if (countryCode === 'VN') {
                     // Vietnam has red bills - show the option
                     redBillsOption.style.display = 'block';
-                    console.log('DEBUG: Shown Red Bills option for Vietnam');
+                    console.log(`DEBUG: Shown Red Bills option for Vietnam in ${dropdown.id}`);
                 }
             } else {
-                console.log('DEBUG: Red Bills option not found in dropdown');
+                console.log(`DEBUG: Red Bills option not found in dropdown ${dropdown.id}`);
+                console.log(`DEBUG: Searched for value="${redBillsValue}" and text containing "Red Bill"`);
             }
+            
+            // Update the dropdown to reflect country-specific document types
+            console.log(`DEBUG: Dropdown ${dropdown.id} updated for ${countryCode}`);
+            console.log(`DEBUG: Available document types for ${countryCode}:`, 
+                Array.from(allOptions)
+                    .filter(option => option.style.display !== 'none' && option.value !== '')
+                    .map(option => option.textContent.trim())
+            );
         }
         
         // Update Quick Access panel visibility based on country
@@ -3029,6 +3116,10 @@
         
         // Add event listeners for Google Drive buttons
         document.addEventListener('DOMContentLoaded', function() {
+            // Apply country filtering immediately on page load
+            console.log('DEBUG: DOMContentLoaded - applying initial country filtering');
+            forceUpdateDocumentTypeDropdowns();
+            
             // Bills Google Drive button (Original)
             const billsGoogleDriveBtn = document.getElementById('billsGoogleDriveBtn');
             if (billsGoogleDriveBtn) {
