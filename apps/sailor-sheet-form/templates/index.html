@@ -1507,6 +1507,7 @@
             
             // Get current country
             const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log('DEBUG: Selected country from sessionStorage:', selectedCountry);
             
             // Show progress
             uploadBtn.disabled = true;
@@ -1520,17 +1521,20 @@
                 progressText.textContent = 'Downloading file...';
                 
                 // Call API to process Google Drive link
+                const requestData = {
+                    google_drive_url: googleDriveLink,
+                    document_type: selectedType,
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                };
+                console.log('DEBUG: Sending API request with data:', requestData);
+                
                 const response = await fetch('/api/process_google_drive_link', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        google_drive_url: googleDriveLink,
-                        document_type: selectedType,
-                        transaction_number: transactionNumber,
-                        country_code: selectedCountry
-                    })
+                    body: JSON.stringify(requestData)
                 });
                 
                 progressBar.style.width = '70%';
@@ -1738,117 +1742,6 @@
             }
         }
         
-        // Handle Google Drive link processing
-        async function handleGoogleDriveLink() {
-            const googleDriveLink = document.getElementById('googleDriveLink').value.trim();
-            const documentTypeSelect = document.getElementById('documentTypeSelect');
-            const uploadBtn = document.getElementById('uploadBtn');
-            const uploadProgress = document.getElementById('uploadProgress');
-            const progressBar = document.getElementById('progressBar');
-            
-            if (!googleDriveLink) {
-                showUploadResult('Please enter a Google Drive URL.', 'error');
-                return;
-            }
-            
-            const selectedType = documentTypeSelect.value;
-            if (!selectedType) {
-                showUploadResult('Please select a document type.', 'error');
-                return;
-            }
-            
-            // Validate Google Drive URL
-            if (!googleDriveLink.includes('drive.google.com')) {
-                showUploadResult('Please enter a valid Google Drive URL.', 'error');
-                return;
-            }
-            
-            // Get transaction number from search results (same as file upload)
-            const searchResults = document.getElementById('searchResults');
-            const transactionTable = searchResults ? searchResults.querySelector('table') : null;
-            let transactionNumber = '';
-            
-            if (transactionTable) {
-                const transactionRow = Array.from(transactionTable.querySelectorAll('tr')).find(row => 
-                    row.cells[0] && row.cells[0].textContent.trim() === 'Transaction Number'
-                );
-                if (transactionRow && transactionRow.cells[1]) {
-                    transactionNumber = transactionRow.cells[1].textContent.trim();
-                }
-            }
-            
-            console.log(`DEBUG: Processing Google Drive link: ${googleDriveLink}`);
-            console.log(`DEBUG: Document type: ${selectedType}`);
-            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
-            
-            // Show progress
-            uploadBtn.disabled = true;
-            uploadBtn.textContent = '🔄 Processing Link...';
-            uploadProgress.style.display = 'flex';
-            progressBar.style.width = '25%';
-            
-            try {
-                // Call backend to process the Google Drive link
-                const response = await fetch('/api/process_google_drive_link', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        google_drive_url: googleDriveLink,
-                        document_type: selectedType,
-                        transaction_number: transactionNumber
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    progressBar.style.width = '75%';
-                    
-                    // Store the processed file data for Google Sheets update
-                    window.uploadedFileData = {
-                        transactionNumber: null, // Will be set from search results
-                        documentType: selectedType,
-                        fileUrl: data.file_url,
-                        fileName: data.file_name
-                    };
-                    
-                    console.log('DEBUG: Google Drive link processed successfully');
-                    console.log('DEBUG: File URL:', data.file_url);
-                    console.log('DEBUG: File Name:', data.file_name);
-                    
-                    // Show success and enable Google Sheets update button
-                    progressBar.style.width = '100%';
-                    setTimeout(() => {
-                        uploadProgress.style.display = 'none';
-                        uploadBtn.disabled = false;
-                        uploadBtn.textContent = '✅ Link Processed Successfully!';
-                        uploadBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-                        
-                        // Show Google Sheets update button
-                        const updateSheetsBtn = document.getElementById('updateSheetsBtn');
-                        if (updateSheetsBtn) {
-                            updateSheetsBtn.style.display = 'inline-block';
-                        }
-                        
-                        showUploadResult(`✅ Google Drive link processed successfully!<br>File: ${data.file_name}<br>Ready to update Google Sheets.`, 'success');
-                    }, 500);
-                    
-                } else {
-                    throw new Error(data.error || 'Failed to process Google Drive link');
-                }
-                
-            } catch (error) {
-                console.error('Error processing Google Drive link:', error);
-                uploadProgress.style.display = 'none';
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = '🔗 Process Google Drive Link';
-                uploadBtn.style.background = 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)';
-                
-                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error');
-            }
-        }
         
         // Handle Google Sheets update (Step 2)
         function handleGoogleSheetsUpdate() {
