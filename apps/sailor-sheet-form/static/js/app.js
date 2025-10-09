@@ -1122,22 +1122,36 @@ document.addEventListener('DOMContentLoaded', function() {
     setupFormMonitoring();
     console.log('Form progress monitoring initialized');
     
-    // Add event listeners for all upload buttons
-    document.getElementById('billsUploadBtn').addEventListener('click', uploadBills);
-    document.getElementById('redBillsUploadBtn').addEventListener('click', uploadRedBills);
-    document.getElementById('documentationUploadBtn').addEventListener('click', uploadDocumentation);
+    // Add event listeners for all upload buttons (only if they exist)
+    const billsUploadBtn = document.getElementById('billsUploadBtn');
+    if (billsUploadBtn) {
+        billsUploadBtn.addEventListener('click', uploadBills);
+    }
     
-    // Add event listener for submit button in navigation
-    document.getElementById('submitNavBtn').addEventListener('click', function(e) {
-        e.preventDefault();
-        // Trigger the form submission using the same handler
-        const form = document.getElementById('mainForm');
-        if (form) {
-            // Create a synthetic submit event
-            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-            form.dispatchEvent(submitEvent);
-        }
-    });
+    const redBillsUploadBtn = document.getElementById('redBillsUploadBtn');
+    if (redBillsUploadBtn) {
+        redBillsUploadBtn.addEventListener('click', uploadRedBills);
+    }
+    
+    const documentationUploadBtn = document.getElementById('documentationUploadBtn');
+    if (documentationUploadBtn) {
+        documentationUploadBtn.addEventListener('click', uploadDocumentation);
+    }
+    
+    // Add event listener for submit button in navigation (only if it exists)
+    const submitNavBtn = document.getElementById('submitNavBtn');
+    if (submitNavBtn) {
+        submitNavBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Trigger the form submission using the same handler
+            const form = document.getElementById('mainForm');
+            if (form) {
+                // Create a synthetic submit event
+                const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                form.dispatchEvent(submitEvent);
+            }
+        });
+    }
     
     // =============================================================================
     // FUND COLOR HANDLING - Apply colors from data attributes

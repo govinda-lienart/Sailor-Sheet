@@ -1218,11 +1218,11 @@
                                 <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📎 Upload Method:</label>
                                 <div style="display: flex; gap: 20px; margin-bottom: 10px;">
                                     <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #e3f2fd; border: 1px solid #2196f3;">
-                                        <input type="radio" name="uploadMode" value="file" checked style="margin-right: 8px;">
+                                        <input type="radio" name="updateUploadMode" value="file" checked style="margin-right: 8px;">
                                         <span style="font-weight: 500;">📁 Upload New File</span>
                                     </label>
                                     <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #f3e5f5; border: 1px solid #9c27b0;">
-                                        <input type="radio" name="uploadMode" value="link" style="margin-right: 8px;">
+                                        <input type="radio" name="updateUploadMode" value="link" style="margin-right: 8px;">
                                         <span style="font-weight: 500;">🔗 Link Existing File</span>
                                     </label>
                                 </div>
@@ -1320,8 +1320,8 @@
                 observer.observe(updateOptions, { attributes: true, attributeFilter: ['style'] });
             }
             
-            // Upload mode toggle elements
-            const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
+            // Upload mode toggle elements (for update form)
+            const uploadModeRadios = document.querySelectorAll('input[name="updateUploadMode"]');
             const fileUploadSection = document.getElementById('updateFileUploadSection');
             const linkInputSection = document.getElementById('linkInputSection');
             const uploadBtn = document.getElementById('uploadBtn');
@@ -1413,13 +1413,34 @@
                 documentUploadForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
-                    // Check which mode is selected
-                    const selectedMode = document.querySelector('input[name="uploadMode"]:checked').value;
+                    // Check which mode is selected (for update form)
+                    const allUploadModeElements = document.querySelectorAll('input[name="updateUploadMode"]');
+                    console.log('DEBUG: All update upload mode elements found:', allUploadModeElements.length);
+                    allUploadModeElements.forEach((el, index) => {
+                        console.log(`DEBUG: Update upload mode ${index}:`, el.value, 'checked:', el.checked);
+                    });
+                    
+                    const selectedModeElement = document.querySelector('input[name="updateUploadMode"]:checked');
+                    console.log('DEBUG: Selected update mode element:', selectedModeElement);
+                    
+                    if (!selectedModeElement) {
+                        console.error('ERROR: No upload mode selected');
+                        showUploadResult('Please select an upload method.', 'error');
+                        return;
+                    }
+                    
+                    const selectedMode = selectedModeElement.value;
+                    console.log('DEBUG: Selected mode value:', selectedMode);
                     
                     if (selectedMode === 'file') {
+                        console.log('DEBUG: Calling handleDocumentUpload()');
                         handleDocumentUpload();
                     } else if (selectedMode === 'link') {
+                        console.log('DEBUG: Calling handleGoogleDriveLink()');
                         handleGoogleDriveLink();
+                    } else {
+                        console.error('ERROR: Unknown upload mode:', selectedMode);
+                        showUploadResult('Unknown upload method selected.', 'error');
                     }
                 });
             }
@@ -1430,6 +1451,132 @@
                 updateSheetsBtn.addEventListener('click', function() {
                     handleGoogleSheetsUpdate();
                 });
+            }
+        }
+        
+        // Handle Google Drive link processing for update form
+        async function handleGoogleDriveLink() {
+            console.log('DEBUG: handleGoogleDriveLink() called');
+            
+            const documentTypeSelect = document.getElementById('documentTypeSelect');
+            const googleDriveLinkInput = document.getElementById('googleDriveLink');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            const selectedType = documentTypeSelect ? documentTypeSelect.value : '';
+            const googleDriveLink = googleDriveLinkInput ? googleDriveLinkInput.value.trim() : '';
+            
+            console.log('DEBUG: Selected type:', selectedType);
+            console.log('DEBUG: Google Drive link:', googleDriveLink);
+            
+            if (!selectedType || !googleDriveLink) {
+                console.error('DEBUG: Validation failed - selectedType:', selectedType, 'googleDriveLink:', googleDriveLink);
+                showUploadResult('Please select a document type and enter a Google Drive URL.', 'error');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error');
+                return;
+            }
+            
+            // Get current transaction number from the search results
+            const searchResults = document.getElementById('searchResults');
+            const transactionTable = searchResults ? searchResults.querySelector('table') : null;
+            let transactionNumber = '';
+            
+            if (transactionTable) {
+                const transactionRow = Array.from(transactionTable.querySelectorAll('tr')).find(row => 
+                    row.cells[0] && row.cells[0].textContent.trim() === 'Transaction Number'
+                );
+                if (transactionRow && transactionRow.cells[1]) {
+                    transactionNumber = transactionRow.cells[1].textContent.trim();
+                }
+            }
+            
+            if (!transactionNumber) {
+                transactionNumber = document.getElementById('transactionNumberInput').value;
+            }
+            
+            if (!transactionNumber) {
+                showUploadResult('Transaction number not found. Please search for a transaction first.', 'error');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            // Show progress
+            uploadBtn.disabled = true;
+            uploadProgress.style.display = 'flex';
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Processing Google Drive link...';
+            
+            try {
+                // Simulate progress
+                progressBar.style.width = '30%';
+                progressText.textContent = 'Downloading file...';
+                
+                // Call API to process Google Drive link
+                const response = await fetch('/api/process_google_drive_link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        google_drive_url: googleDriveLink,
+                        document_type: selectedType,
+                        transaction_number: transactionNumber,
+                        country_code: selectedCountry
+                    })
+                });
+                
+                progressBar.style.width = '70%';
+                progressText.textContent = 'Uploading to correct folder...';
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Store the uploaded file data for later use
+                    window.uploadedFileData = {
+                        transactionNumber: transactionNumber,
+                        documentType: selectedType,
+                        fileUrl: data.file_url,
+                        fileName: data.file_name
+                    };
+                    
+                    progressBar.style.width = '100%';
+                    progressText.textContent = 'Complete!';
+                    
+                    // Update button states
+                    setTimeout(() => {
+                        uploadBtn.disabled = true;
+                        uploadBtn.textContent = '✅ Link Processed Successfully!';
+                        uploadBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                        
+                        // Show Google Sheets update button
+                        const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                        if (updateSheetsBtn) {
+                            updateSheetsBtn.style.display = 'inline-block';
+                        }
+                        
+                        showUploadResult(`✅ Google Drive link processed successfully!<br>File: ${data.file_name}<br>Ready to update Google Sheets.`, 'success');
+                    }, 500);
+                    
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+                
+            } catch (error) {
+                console.error('Error processing Google Drive link:', error);
+                uploadProgress.style.display = 'none';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '🔗 Process Google Drive Link';
+                uploadBtn.style.background = 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)';
+                
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error');
             }
         }
         
@@ -2434,7 +2581,7 @@
                 uploadStatus.style.display = 'none';
                 
                 // Set up event listeners for upload mode radios when they become visible
-                const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
+                const uploadModeRadios = document.querySelectorAll('input[name="updateUploadMode"]');
                 console.log('DEBUG: Setting up upload mode radios when toggle becomes visible:', uploadModeRadios.length);
                 uploadModeRadios.forEach((radio, index) => {
                     console.log(`DEBUG: Adding event listener to radio ${index}:`, radio.value);
@@ -2443,7 +2590,7 @@
                 
                 // Force show file upload section if "Upload File" is selected
                 const fileUploadSection = document.getElementById('fileUploadSection');
-                const uploadFileRadio = document.querySelector('input[name="uploadMode"][value="file"]');
+                const uploadFileRadio = document.querySelector('input[name="updateUploadMode"][value="file"]');
                 if (uploadFileRadio && uploadFileRadio.checked && fileUploadSection) {
                     console.log('DEBUG: Upload File is selected, showing file upload section');
                     fileUploadSection.style.display = 'block';
@@ -2462,7 +2609,7 @@
             
             const fileUploadSection = document.getElementById('fileUploadSection');
             const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
-            const uploadMode = document.querySelector('input[name="uploadMode"]:checked').value;
+            const uploadMode = document.querySelector('input[name="updateUploadMode"]:checked').value;
             
             console.log('DEBUG: Upload mode selected:', uploadMode);
             console.log('DEBUG: File upload section found:', fileUploadSection);
@@ -2780,9 +2927,22 @@
                     
                     // Store country in sessionStorage
                     sessionStorage.setItem('selectedCountry', countryCode);
+                    console.log(`DEBUG: Stored country ${countryCode} in sessionStorage`);
                     
                     // Regenerate transaction number with new country prefix
-                    regenerateTransactionNumberForCountry();
+                    console.log(`DEBUG: About to regenerate transaction number for country: ${countryCode}`);
+                    
+                    // Use setTimeout to ensure sessionStorage is properly set
+                    setTimeout(() => {
+                        if (typeof regenerateTransactionNumberForCountry === 'function') {
+                            regenerateTransactionNumberForCountry();
+                            console.log(`DEBUG: Transaction number regeneration called for ${countryCode}`);
+                        } else {
+                            console.error('DEBUG: regenerateTransactionNumberForCountry function not found');
+                            // Fallback: call generateTransactionNumber directly
+                            generateTransactionNumber();
+                        }
+                    }, 100);
                     
                     // Re-apply transaction defaults for the new country
                     setTimeout(() => {
@@ -3015,6 +3175,45 @@
             updateDocumentTypeDropdown(selectedCountry);
         }
         
+        // Regenerate transaction number when country changes (inline version)
+        function regenerateTransactionNumberForCountry() {
+            console.log('🔄 Regenerating transaction number for new country...');
+            generateTransactionNumber();
+        }
+        
+        // Generate transaction number with country prefix (inline version)
+        function generateTransactionNumber() {
+            const now = new Date();
+            
+            // Get current country from sessionStorage, default to BE
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            const countryPrefix = selectedCountry.toUpperCase();
+            
+            // Generate timestamp part: DDMMYY-HHMMSS
+            const timestamp = now.getDate().toString().padStart(2, '0') +
+                             (now.getMonth() + 1).toString().padStart(2, '0') +
+                             now.getFullYear().toString().slice(-2) + '-' +
+                             now.getHours().toString().padStart(2, '0') +
+                             now.getMinutes().toString().padStart(2, '0') +
+                             now.getSeconds().toString().padStart(2, '0');
+            
+            // Combine country prefix with timestamp
+            const transactionNumber = `${countryPrefix}-${timestamp}`;
+            
+            const displayField = document.getElementById('transactionNumberDisplay');
+            const inputField = document.getElementById('transactionNumberInput');
+            
+            if (displayField) {
+                displayField.value = transactionNumber;
+            }
+            if (inputField) {
+                inputField.value = transactionNumber;
+            }
+            
+            console.log(`Generated ${countryPrefix} transaction number:`, transactionNumber);
+            return transactionNumber;
+        }
+        
         // Helper function to update dropdown options
         function updateDropdownOptions(dropdown, countryCode, redBillsValue) {
             console.log(`DEBUG: Updating dropdown ${dropdown.id} for country: ${countryCode}`);
@@ -3189,6 +3388,17 @@
                 countrySelect.addEventListener('change', function() {
                     const selectedCountry = this.value;
                     console.log(`DEBUG: Country changed to: ${selectedCountry}`);
+                    
+                    // Immediately update sessionStorage and regenerate transaction number
+                    sessionStorage.setItem('selectedCountry', selectedCountry);
+                    console.log(`DEBUG: Immediately regenerating transaction number for ${selectedCountry}`);
+                    
+                    // Call the transaction number generation directly
+                    setTimeout(() => {
+                        generateTransactionNumber();
+                    }, 50);
+                    
+                    // Then call the full country selection process
                     selectCountry(selectedCountry);
                 });
             }

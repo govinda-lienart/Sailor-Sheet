@@ -129,13 +129,14 @@ def build_drive_service(creds):
 
 # Upload File To Drive
 # ---------------------
-def upload_file_to_drive(file, transaction_number=None, file_type='bills'):
+def upload_file_to_drive(file, transaction_number=None, file_type='bills', country_code=None):
     """
     Upload a file to Google Drive shared folder
     Args:
         file: File object to upload
         transaction_number: Optional transaction number to use in filename
         file_type: Type of file (bills, redBills, bankStatement, documentation)
+        country_code: Country code ('BE' or 'VN') for folder selection
     Returns: dict with success status, file_url, and file_name
     """
     try:
@@ -154,8 +155,24 @@ def upload_file_to_drive(file, transaction_number=None, file_type='bills'):
         ext = filename.rsplit('.', 1)[1].lower()
         unique_filename = unique_name(base, ext, transaction_number, file_type)
         
-        # Get the correct folder ID for this file type
-        folder_id = FOLDER_IDS.get(file_type, FOLDER_ID)
+        # Get the correct folder ID for this file type and country
+        if country_code:
+            # Load country-specific folder IDs
+            try:
+                import json
+                with open('data/countries.json', 'r') as f:
+                    countries_data = json.load(f)
+                
+                country_folders = countries_data['countries'].get(country_code, {}).get('folders', {})
+                folder_id = country_folders.get(file_type, FOLDER_IDS.get(file_type, FOLDER_ID))
+                print(f"DEBUG: Using country-specific folder for {country_code}: {folder_id}")
+            except Exception as e:
+                print(f"DEBUG: Error loading country folders, using default: {e}")
+                folder_id = FOLDER_IDS.get(file_type, FOLDER_ID)
+        else:
+            # Use default folder IDs
+            folder_id = FOLDER_IDS.get(file_type, FOLDER_ID)
+            print(f"DEBUG: No country code provided, using default folder: {folder_id}")
         
         print(f"DEBUG: File upload - Original filename: {filename}")
         print(f"DEBUG: File upload - Transaction number: {transaction_number}")
@@ -218,12 +235,14 @@ def upload_file_to_drive(file, transaction_number=None, file_type='bills'):
 
 # Handle Web Upload Request
 # -------------------------
-def handle_web_upload(file, transaction_number=None, file_type='bills'):
+def handle_web_upload(file, transaction_number=None, file_type='bills', country_code=None):
     """
     Handle web upload request from Flask route
     Args:
         file: File object from Flask request
         transaction_number: Optional transaction number from form
+        file_type: Type of file (bills, redBills, bankStatement, documentation)
+        country_code: Country code ('BE' or 'VN') for folder selection
     Returns: JSON response for web interface
     """
     try:
@@ -239,7 +258,7 @@ def handle_web_upload(file, transaction_number=None, file_type='bills'):
         print(f"DEBUG: Transaction number: {transaction_number}")
         
         # Upload file to Drive
-        result = upload_file_to_drive(file, transaction_number, file_type)
+        result = upload_file_to_drive(file, transaction_number, file_type, country_code)
         
         if result['success']:
             print(f"DEBUG: File uploaded successfully: {result}")
@@ -262,13 +281,14 @@ def handle_web_upload(file, transaction_number=None, file_type='bills'):
 
 # Upload File Content To Drive
 # ----------------------------
-def upload_file_content_to_drive(file_content, filename, document_type):
+def upload_file_content_to_drive(file_content, filename, document_type, country_code=None):
     """
     Upload file content (BytesIO) to Google Drive shared folder
     Args:
         file_content: BytesIO object with file content
         filename: Name for the uploaded file
-        document_type: Type of document ('bill', 'redBill', 'documentation')
+        document_type: Type of document ('bill', 'redBill', 'documentation', 'bankStatement')
+        country_code: Country code ('BE' or 'VN') for folder selection
     Returns: dict with success status, file_url, and file_name
     """
     try:
@@ -276,12 +296,29 @@ def upload_file_content_to_drive(file_content, filename, document_type):
         document_type_mapping = {
             'bill': 'bills',
             'redBill': 'redBills',
+            'bankStatement': 'bankStatement',
             'documentation': 'documentation'
         }
         file_type = document_type_mapping.get(document_type, 'bills')
         
-        # Get the correct folder ID for this file type
-        folder_id = FOLDER_IDS.get(file_type, FOLDER_ID)
+        # Get the correct folder ID for this file type and country
+        if country_code:
+            # Load country-specific folder IDs
+            try:
+                import json
+                with open('data/countries.json', 'r') as f:
+                    countries_data = json.load(f)
+                
+                country_folders = countries_data['countries'].get(country_code, {}).get('folders', {})
+                folder_id = country_folders.get(file_type, FOLDER_IDS.get(file_type, FOLDER_ID))
+                print(f"DEBUG: Using country-specific folder for {country_code}: {folder_id}")
+            except Exception as e:
+                print(f"DEBUG: Error loading country folders, using default: {e}")
+                folder_id = FOLDER_IDS.get(file_type, FOLDER_ID)
+        else:
+            # Use default folder IDs
+            folder_id = FOLDER_IDS.get(file_type, FOLDER_ID)
+            print(f"DEBUG: No country code provided, using default folder: {folder_id}")
         
         print(f"DEBUG: Content upload - Filename: {filename}")
         print(f"DEBUG: Content upload - Document type: {document_type}")
@@ -348,15 +385,16 @@ def upload_file_content_to_drive(file_content, filename, document_type):
 # GOOGLE DRIVE LINK PROCESSING
 # =============================================================================
 
-def process_google_drive_link(google_drive_url, document_type, transaction_number=None):
+def process_google_drive_link(google_drive_url, document_type, transaction_number=None, country_code=None):
     """
     Process a Google Drive link by downloading the file and re-uploading it to the correct folder.
     Uses the same naming system as the main form.
     
     Args:
         google_drive_url: The Google Drive share URL
-        document_type: The type of document ('bill', 'redBill', 'documentation')
+        document_type: The type of document ('bill', 'redBill', 'bankStatement', 'documentation')
         transaction_number: Optional transaction number for naming (from search results)
+        country_code: Country code for folder selection (BE or VN)
     
     Returns:
         dict: {'success': True/False, 'file_url': str, 'file_name': str, 'error': str}
@@ -407,6 +445,7 @@ def process_google_drive_link(google_drive_url, document_type, transaction_numbe
         document_type_mapping = {
             'bill': 'bills',
             'redBill': 'redBills',
+            'bankStatement': 'bankStatement',
             'documentation': 'documentation'
         }
         file_type = document_type_mapping.get(document_type, 'bills')
@@ -414,13 +453,14 @@ def process_google_drive_link(google_drive_url, document_type, transaction_numbe
         # Generate unique filename using the same naming system as main form
         unique_filename = unique_name(base, ext, transaction_number, file_type)
         print(f"DEBUG: Generated unique filename: {unique_filename}")
+        print(f"DEBUG: Country code for upload: {country_code}")
         
         # Create a file-like object from the downloaded content
         import io
         file_obj = io.BytesIO(file_content)
         
-        # Upload to the correct folder using the existing upload function
-        result = upload_file_content_to_drive(file_obj, unique_filename, document_type)
+        # Upload to the correct folder using the existing upload function with country code
+        result = upload_file_content_to_drive(file_obj, unique_filename, document_type, country_code)
         
         if result['success']:
             print(f"DEBUG: File successfully uploaded to {document_type} folder with name: {unique_filename}")
@@ -517,15 +557,20 @@ def download_file_from_google_drive(file_id):
                 
                 print(f"DEBUG: Got file metadata - Name: {file_name}, MIME: {mime_type}")
                 
-                # If we have a name, use it; otherwise generate from MIME type
-                if not file_name:
-                    extension = get_extension_from_content_type(mime_type)
-                    file_name = f"downloaded_file_{file_id[:8]}{extension}"
-                elif '.' not in file_name and mime_type:
+                # If we have a name with extension, use it as-is
+                if file_name and '.' in file_name:
+                    print(f"DEBUG: Using filename from metadata with extension: {file_name}")
+                elif file_name and mime_type:
                     # If filename has no extension but we have MIME type, add it
                     extension = get_extension_from_content_type(mime_type)
                     if extension != '.bin':  # Only add extension if it's not the fallback
                         file_name = f"{file_name}{extension}"
+                        print(f"DEBUG: Added extension from MIME type: {file_name}")
+                elif not file_name:
+                    # No filename at all, generate from MIME type
+                    extension = get_extension_from_content_type(mime_type)
+                    file_name = f"downloaded_file_{file_id[:8]}{extension}"
+                    print(f"DEBUG: Generated filename from MIME: {file_name}")
                         
             except Exception as api_error:
                 print(f"DEBUG: Could not get file metadata from API: {api_error}")

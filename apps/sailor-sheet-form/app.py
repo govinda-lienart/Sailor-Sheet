@@ -34,6 +34,9 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # Add secret key for flash messages and sessions
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
+# Set debug mode in Flask config
+app.config['DEBUG'] = DEBUG_MODE
+
 # =============================================================================
 # INITIALIZE GOOGLE SHEETS
 # =============================================================================
@@ -356,9 +359,10 @@ def upload_file():
         file = request.files.get('file')
         transaction_number = request.form.get('transaction_number', '')
         file_type = request.form.get('file_type', 'bills')
+        country_code = request.form.get('country_code')
         
         # Use the file upload manager to handle the upload
-        result = file_upload_manager.handle_web_upload(file, transaction_number, file_type)
+        result = file_upload_manager.handle_web_upload(file, transaction_number, file_type, country_code)
         
         return jsonify(result)
             
@@ -633,6 +637,7 @@ def api_process_google_drive_link():
         google_drive_url = data.get('google_drive_url')
         document_type = data.get('document_type')
         transaction_number = data.get('transaction_number')
+        country_code = data.get('country_code')
         
         # Validate required fields
         if not all([google_drive_url, document_type]):
@@ -646,11 +651,12 @@ def api_process_google_drive_link():
         print(f"  - Google Drive URL: {google_drive_url}")
         print(f"  - Document Type: {document_type}")
         print(f"  - Transaction Number: {transaction_number}")
+        print(f"  - Country Code: {country_code}")
         print(f"="*50)
         
-        # Call the processing function with transaction number for proper naming
+        # Call the processing function with transaction number and country code for proper naming and folder selection
         from file_upload_manager import process_google_drive_link
-        result = process_google_drive_link(google_drive_url, document_type, transaction_number)
+        result = process_google_drive_link(google_drive_url, document_type, transaction_number, country_code)
         
         if result and result.get('success'):
             print(f"DEBUG: Google Drive link processed successfully")
@@ -681,4 +687,9 @@ def api_process_google_drive_link():
 if __name__ == '__main__':
     # Run the Flask app with environment-based debug mode
     # Bind to 0.0.0.0 to make it accessible from the internet
+    print(f"🚀 Starting Sailor Sheet application...")
+    print(f"🔧 Debug mode: {'ON' if app.config['DEBUG'] else 'OFF'}")
+    print(f"🌍 Environment: {FLASK_ENV}")
+    print(f"🌐 Server will be available at: http://0.0.0.0:{os.environ.get('PORT', 8000)}")
+    
     app.run(debug=app.config['DEBUG'], host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))
