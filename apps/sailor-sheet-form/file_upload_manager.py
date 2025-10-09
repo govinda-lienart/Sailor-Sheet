@@ -510,7 +510,8 @@ def extract_file_id_from_url(google_drive_url):
 
 def download_file_from_google_drive(file_id):
     """
-    Download file content from Google Drive using the file ID.
+    Download file content from Google Drive using the Google Drive API.
+    This is the RELIABLE method that uses authenticated API calls.
     
     Args:
         file_id: Google Drive file ID
@@ -519,76 +520,79 @@ def download_file_from_google_drive(file_id):
         tuple: (file_content, file_name) or (None, None) if failed
     """
     try:
-        import requests
+        print(f"DEBUG: Downloading file using Google Drive API for file ID: {file_id}")
         
-        # Google Drive direct download URL
-        download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+        # Get credentials and build service
+        creds = get_service_account_credentials()
+        drive = build_drive_service(creds)
         
-        print(f"DEBUG: Downloading from URL: {download_url}")
+        # First, get file metadata to get the filename and MIME type
+        print("DEBUG: Getting file metadata...")
+        file_metadata = drive.files().get(
+            fileId=file_id,
+            fields="name,mimeType",
+            supportsAllDrives=True
+        ).execute()
         
-        # Make request to download file
-        response = requests.get(download_url, stream=True)
-        response.raise_for_status()
+        file_name = file_metadata.get('name', 'unknown_file')
+        mime_type = file_metadata.get('mimeType', 'unknown')
         
-        # Get file name from Content-Disposition header
-        file_name = None
-        if 'Content-Disposition' in response.headers:
-            import re
-            match = re.search(r'filename="([^"]+)"', response.headers['Content-Disposition'])
-            if match:
-                file_name = match.group(1)
+        print(f"DEBUG: File metadata - Name: {file_name}, MIME: {mime_type}")
         
-        # If no filename in header, try to get file info from Google Drive API
-        if not file_name:
-            try:
-                # Get credentials and build service to get file metadata
-                creds = get_service_account_credentials()
-                drive = build_drive_service(creds)
+        # Method 1: Try get_media (for regular files)
+        try:
+            print("DEBUG: Trying get_media method...")
+            request = drive.files().get_media(
+                fileId=file_id,
+                supportsAllDrives=True
+            )
+            file_content = request.execute()
+            
+            print(f"DEBUG: API download successful! Content length: {len(file_content)} bytes")
+            
+            # Check if it's binary data or HTML (error page)
+            if file_content.startswith(b'<html') or file_content.startswith(b'<!DOCTYPE'):
+                print("DEBUG: WARNING - API returned HTML content, trying export method...")
+                raise Exception("HTML content returned")
+            else:
+                print("DEBUG: API returned binary data (good!)")
+                return file_content, file_name
                 
-                # Get file metadata
-                file_metadata = drive.files().get(
-                    fileId=file_id,
-                    fields="name,mimeType",
-                    supportsAllDrives=True
-                ).execute()
-                
-                file_name = file_metadata.get('name', '')
-                mime_type = file_metadata.get('mimeType', '')
-                
-                print(f"DEBUG: Got file metadata - Name: {file_name}, MIME: {mime_type}")
-                
-                # If we have a name with extension, use it as-is
-                if file_name and '.' in file_name:
-                    print(f"DEBUG: Using filename from metadata with extension: {file_name}")
-                elif file_name and mime_type:
-                    # If filename has no extension but we have MIME type, add it
-                    extension = get_extension_from_content_type(mime_type)
-                    if extension != '.bin':  # Only add extension if it's not the fallback
-                        file_name = f"{file_name}{extension}"
-                        print(f"DEBUG: Added extension from MIME type: {file_name}")
-                elif not file_name:
-                    # No filename at all, generate from MIME type
-                    extension = get_extension_from_content_type(mime_type)
-                    file_name = f"downloaded_file_{file_id[:8]}{extension}"
-                    print(f"DEBUG: Generated filename from MIME: {file_name}")
-                        
-            except Exception as api_error:
-                print(f"DEBUG: Could not get file metadata from API: {api_error}")
-                # Fallback to content type detection
-                content_type = response.headers.get('Content-Type', 'application/octet-stream')
-                extension = get_extension_from_content_type(content_type)
-                file_name = f"downloaded_file_{file_id[:8]}{extension}"
-        
-        print(f"DEBUG: Final file name: {file_name}")
-        print(f"DEBUG: Content-Type: {response.headers.get('Content-Type')}")
-        
-        # Read file content
-        file_content = response.content
-        
-        return file_content, file_name
+        except Exception as get_media_error:
+            print(f"DEBUG: get_media failed: {get_media_error}")
+            
+            # Method 2: Try export (for Google Docs/Sheets/Slides)
+            if 'google-apps' in mime_type:
+                print("DEBUG: Trying export method for Google Workspace file...")
+                try:
+                    # Export as PDF for Google Docs/Sheets
+                    export_mime = 'application/pdf'
+                    request = drive.files().export_media(
+                        fileId=file_id,
+                        mimeType=export_mime
+                    )
+                    file_content = request.execute()
+                    
+                    print(f"DEBUG: Export successful! Content length: {len(file_content)} bytes")
+                    
+                    # Update filename to have .pdf extension
+                    if not file_name.endswith('.pdf'):
+                        file_name = f"{file_name}.pdf"
+                    
+                    print(f"DEBUG: Export filename: {file_name}")
+                    return file_content, file_name
+                    
+                except Exception as export_error:
+                    print(f"DEBUG: Export also failed: {export_error}")
+                    return None, None
+            else:
+                print(f"DEBUG: Not a Google Workspace file, cannot use export")
+                return None, None
         
     except Exception as e:
-        print(f"DEBUG: Error downloading file: {e}")
+        print(f"DEBUG: Error downloading file from Google Drive API: {e}")
+        import traceback
+        traceback.print_exc()
         return None, None
 
 

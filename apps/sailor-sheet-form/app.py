@@ -53,13 +53,15 @@ def load_json_data(filename):
     Load data from JSON file in the data directory
     """
     try:
-        file_path = os.path.join('data', filename)
+        # Get the directory of the current script
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(current_dir, 'data', filename)
         with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
             print(f"DEBUG: Successfully loaded {filename}")
             return data
     except FileNotFoundError:
-        print(f"ERROR: JSON file {filename} not found")
+        print(f"ERROR: JSON file {filename} not found at {file_path}")
         return {}
     except json.JSONDecodeError as e:
         print(f"ERROR: Invalid JSON in {filename}: {e}")
