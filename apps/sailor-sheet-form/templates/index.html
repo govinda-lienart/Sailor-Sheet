@@ -1487,18 +1487,71 @@
             const transactionTable = searchResults ? searchResults.querySelector('table') : null;
             let transactionNumber = '';
             
-            if (transactionTable) {
-                const transactionRow = Array.from(transactionTable.querySelectorAll('tr')).find(row => 
-                    row.cells[0] && row.cells[0].textContent.trim() === 'Transaction Number'
-                );
+            console.log('DEBUG: searchResults element:', searchResults);
+            console.log('DEBUG: transactionTable element:', transactionTable);
+            
+            // First, try to get transaction number from the search input field (most reliable)
+            const searchInput = document.getElementById('searchTransactionNumber');
+            console.log('DEBUG: searchInput element:', searchInput);
+            console.log('DEBUG: searchInput value:', searchInput ? searchInput.value : 'NOT FOUND');
+            
+            if (searchInput && searchInput.value.trim()) {
+                transactionNumber = searchInput.value.trim();
+                console.log('DEBUG: Transaction number from search input:', transactionNumber);
+            } else {
+                console.log('DEBUG: Search input is empty or not found');
+            }
+            
+            // If not found in search input, try to get from the table
+            if (!transactionNumber && transactionTable) {
+                const allRows = Array.from(transactionTable.querySelectorAll('tr'));
+                console.log('DEBUG: Found', allRows.length, 'table rows');
+                
+                allRows.forEach((row, index) => {
+                    if (row.cells && row.cells[0]) {
+                        const headerText = row.cells[0].textContent.trim();
+                        console.log(`DEBUG: Row ${index}: "${headerText}"`);
+                        if (row.cells[1]) {
+                            console.log(`DEBUG: Row ${index} value: "${row.cells[1].textContent.trim()}"`);
+                        }
+                        
+                        // Check if this looks like a transaction number header
+                        if (headerText.includes('Transaction Number')) {
+                            console.log(`DEBUG: FOUND TRANSACTION NUMBER HEADER: "${headerText}"`);
+                        }
+                    }
+                });
+                
+                const transactionRow = allRows.find(row => {
+                    if (!row.cells[0]) return false;
+                    const headerText = row.cells[0].textContent.trim();
+                    return headerText === 'Transaction Number' || 
+                           headerText === 'BE-Transaction Number' || 
+                           headerText === 'VN-Transaction Number';
+                });
+                
+                console.log('DEBUG: transactionRow found:', transactionRow);
+                
                 if (transactionRow && transactionRow.cells[1]) {
-                    transactionNumber = transactionRow.cells[1].textContent.trim();
+                    const tableTransactionNumber = transactionRow.cells[1].textContent.trim();
+                    // Only use table value if it's not the em dash placeholder
+                    if (tableTransactionNumber && tableTransactionNumber !== '—') {
+                        transactionNumber = tableTransactionNumber;
+                        console.log('DEBUG: Transaction number from table:', transactionNumber);
+                    } else {
+                        console.log('DEBUG: Table has em dash placeholder, ignoring');
+                    }
                 }
             }
             
+            // Final fallback
             if (!transactionNumber) {
-                transactionNumber = document.getElementById('transactionNumberInput').value;
+                const fallbackInput = document.getElementById('transactionNumberInput');
+                transactionNumber = fallbackInput ? fallbackInput.value : '';
+                console.log('DEBUG: Fallback transaction number from input:', transactionNumber);
             }
+            
+            console.log('DEBUG: Final transaction number:', transactionNumber);
             
             if (!transactionNumber) {
                 showUploadResult('Transaction number not found. Please search for a transaction first.', 'error');
@@ -1756,19 +1809,57 @@
             const searchResults = document.getElementById('searchResults');
             const transactionTable = searchResults ? searchResults.querySelector('table') : null;
             
+            console.log('DEBUG: handleGoogleSheetsUpdate - searchResults:', searchResults);
+            console.log('DEBUG: handleGoogleSheetsUpdate - transactionTable:', transactionTable);
+            console.log('DEBUG: handleGoogleSheetsUpdate - initial transactionNumber:', transactionNumber);
+            
+            // First, try to get transaction number from the search input field (most reliable)
+            const searchInput = document.getElementById('searchTransactionNumber');
+            if (searchInput && searchInput.value.trim()) {
+                const searchInputTransactionNumber = searchInput.value.trim();
+                console.log('DEBUG: handleGoogleSheetsUpdate - Transaction number from search input:', searchInputTransactionNumber);
+                // Only use search input if current transaction number is empty or is the em dash
+                if (!transactionNumber || transactionNumber === '—') {
+                    transactionNumber = searchInputTransactionNumber;
+                    console.log('DEBUG: handleGoogleSheetsUpdate - Using transaction number from search input:', transactionNumber);
+                }
+            }
+            
             if (transactionTable) {
-                const transactionRow = Array.from(transactionTable.querySelectorAll('tr')).find(row => 
-                    row.cells[0] && row.cells[0].textContent.trim() === 'Transaction Number'
-                );
+                const allRows = Array.from(transactionTable.querySelectorAll('tr'));
+                console.log('DEBUG: handleGoogleSheetsUpdate - Found', allRows.length, 'table rows');
+                
+                allRows.forEach((row, index) => {
+                    if (row.cells && row.cells[0]) {
+                        console.log(`DEBUG: handleGoogleSheetsUpdate - Row ${index}: "${row.cells[0].textContent.trim()}"`);
+                        if (row.cells[1]) {
+                            console.log(`DEBUG: handleGoogleSheetsUpdate - Row ${index} value: "${row.cells[1].textContent.trim()}"`);
+                        }
+                    }
+                });
+                
+                const transactionRow = allRows.find(row => {
+                    if (!row.cells[0]) return false;
+                    const headerText = row.cells[0].textContent.trim();
+                    return headerText === 'Transaction Number' || 
+                           headerText === 'BE-Transaction Number' || 
+                           headerText === 'VN-Transaction Number';
+                });
+                
+                console.log('DEBUG: handleGoogleSheetsUpdate - transactionRow found:', transactionRow);
+                
                 if (transactionRow && transactionRow.cells[1]) {
                     const tableTransactionNumber = transactionRow.cells[1].textContent.trim();
                     console.log(`DEBUG: Transaction number from uploaded data: "${transactionNumber}"`);
                     console.log(`DEBUG: Transaction number from search results table: "${tableTransactionNumber}"`);
                     
                     // Use the transaction number from the search results table (most reliable)
-                    if (tableTransactionNumber) {
+                    // Only use table value if it's not the em dash placeholder
+                    if (tableTransactionNumber && tableTransactionNumber !== '—') {
                         transactionNumber = tableTransactionNumber;
                         console.log(`DEBUG: Using transaction number from search results: "${transactionNumber}"`);
+                    } else {
+                        console.log('DEBUG: handleGoogleSheetsUpdate - Table has em dash placeholder, keeping current value');
                     }
                 }
             }
