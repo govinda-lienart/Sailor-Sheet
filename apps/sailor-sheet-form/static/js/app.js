@@ -892,6 +892,103 @@ function setupDragAndDrop() {
 // ============================================================================
 
 /**
+ * Reset all upload-related UI state
+ */
+function resetUploadState() {
+    console.log('🧹 Resetting upload state...');
+    
+    // ===== MAIN FORM UPLOAD STATE =====
+    
+    // Reset document type dropdown
+    const documentTypeDropdown = document.getElementById('documentTypeDropdown');
+    if (documentTypeDropdown) {
+        documentTypeDropdown.value = '';
+    }
+    
+    // Clear document file input
+    const documentFileInput = document.getElementById('documentFileInput');
+    if (documentFileInput) {
+        documentFileInput.value = '';
+    }
+    
+    // Clear Google Drive link input
+    const googleDriveLinkInput = document.getElementById('googleDriveLinkInput');
+    if (googleDriveLinkInput) {
+        googleDriveLinkInput.value = '';
+    }
+    
+    // Hide upload mode toggle section
+    const uploadModeToggle = document.getElementById('uploadModeToggle');
+    if (uploadModeToggle) {
+        uploadModeToggle.style.display = 'none';
+    }
+    
+    // Hide file upload section
+    const fileUploadSection = document.getElementById('fileUploadSection');
+    if (fileUploadSection) {
+        fileUploadSection.style.display = 'none';
+    }
+    
+    // Hide Google Drive link section
+    const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
+    if (googleDriveLinkSection) {
+        googleDriveLinkSection.style.display = 'none';
+    }
+    
+    // Hide and clear upload status
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadStatusMessage = document.getElementById('uploadStatusMessage');
+    if (uploadStatus) {
+        uploadStatus.style.display = 'none';
+    }
+    if (uploadStatusMessage) {
+        uploadStatusMessage.textContent = '';
+    }
+    
+    // Clear all hidden file link and name inputs
+    const hiddenInputs = [
+        'billsFileLinkInput', 'billsFileNameInput',
+        'redBillsFileLinkInput', 'redBillsFileNameInput',
+        'documentationFileLinkInput', 'documentationFileNameInput'
+    ];
+    
+    hiddenInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.value = '';
+        }
+    });
+    
+    // ===== UPDATE FORM UPLOAD STATE =====
+    
+    // Reset update form file inputs and labels
+    const updateFileInputs = [
+        { inputId: 'billsFile', icon: '📄', text: 'Choose Bills File' },
+        { inputId: 'redBillsFile', icon: '🔴', text: 'Choose Red Bills File' },
+        { inputId: 'documentationFile', icon: '📚', text: 'Choose Documentation File' }
+    ];
+    
+    updateFileInputs.forEach(item => {
+        const fileInput = document.getElementById(item.inputId);
+        if (fileInput) {
+            fileInput.value = '';
+            
+            // Find and reset the corresponding label
+            const label = document.querySelector(`label[for="${item.inputId}"]`);
+            if (label) {
+                label.innerHTML = `
+                    <span class="file-icon">${item.icon}</span>
+                    <span class="file-text">${item.text}</span>
+                    <span class="file-hint">Click to select or drag & drop</span>
+                `;
+            }
+        }
+    });
+    
+    console.log('✅ Upload state reset complete');
+}
+
+/**
  * Handle form submission
  */
 let isSubmitting = false; // Flag to prevent duplicate submissions
@@ -966,6 +1063,8 @@ function submitToGoogleSheets(formData) {
             showSuccessMessage('Successfully submitted to Google Sheet!');
             // Reset form
             document.getElementById('mainForm').reset();
+            // Reset upload state (clear file inputs, labels, and hidden fields)
+            resetUploadState();
             // Generate new transaction number
             generateTransactionNumber();
             // Re-apply transaction type defaults after reset
