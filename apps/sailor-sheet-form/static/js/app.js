@@ -1167,6 +1167,222 @@ function showErrorMessage(message) {
 // ============================================================================
 
 /**
+ * Professional Section Navigation System
+ */
+let currentSection = 'transaction-number-section';
+let completedSections = new Set();
+
+function initializeSectionNavigation() {
+    console.log('🎯 Initializing professional section navigation...');
+    
+    // Define which sections are part of the main navigation flow
+    const mainFormSections = [
+        'transaction-number-section',
+        'transaction-type-section', 
+        'sheet-worksheet-section',
+        'date-section',
+        'amount-section',
+        'fund-section',
+        'category-section',
+        'sub-category-section',
+        'debit-account-section',
+        'credit-account-section',
+        'payment-method-section',
+        'description-section',
+        'document-upload-section'
+    ];
+    
+    // Hide only the main form sections except the first one
+    mainFormSections.forEach(sectionId => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.classList.remove('active');
+        }
+    });
+    
+    // Show the first section
+    const firstSection = document.getElementById('transaction-number-section');
+    if (firstSection) {
+        firstSection.classList.add('active');
+    }
+    
+    // Ensure non-main sections (like upload, search) remain visible
+    const nonMainSections = document.querySelectorAll('.form-section:not(#transaction-number-section):not(#transaction-type-section):not(#sheet-worksheet-section):not(#date-section):not(#amount-section):not(#fund-section):not(#category-section):not(#sub-category-section):not(#debit-account-section):not(#credit-account-section):not(#payment-method-section):not(#description-section):not(#document-upload-section)');
+    nonMainSections.forEach(section => {
+        section.style.display = 'block';
+        section.style.opacity = '1';
+        section.style.transform = 'translateY(0)';
+    });
+    
+    // Set initial navigation state
+    updateNavigationState();
+    
+    // Add click handlers to navigation links
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = this.getAttribute('href');
+            const sectionId = href.substring(1); // Remove the # symbol
+            
+            // Check if we can navigate to this section
+            if (canNavigateToSection(sectionId)) {
+                navigateToSection(sectionId);
+            }
+        });
+    });
+    
+    console.log('✅ Section navigation initialized');
+}
+
+function navigateToSection(sectionId) {
+    console.log(`🎯 Navigating to section: ${sectionId}`);
+    
+    // Auto-validate and mark current section as completed if it has valid data
+    if (currentSection && currentSection !== sectionId) {
+        checkAndMarkSectionCompleted(currentSection);
+    }
+    
+    // Hide current section
+    const currentActiveSection = document.querySelector('.form-section.active');
+    if (currentActiveSection) {
+        currentActiveSection.classList.remove('active');
+    }
+    
+    // Show target section
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.add('active');
+        currentSection = sectionId;
+        
+        // Scroll to top of form for better UX
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    // Update navigation state
+    updateNavigationState();
+}
+
+function updateNavigationState() {
+    // Remove all state classes from navigation
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.classList.remove('current', 'completed');
+    });
+    
+    // Set current section
+    const currentNavLink = document.querySelector(`a[href="#${currentSection}"]`);
+    if (currentNavLink) {
+        currentNavLink.classList.add('current');
+    }
+    
+    // Set completed sections
+    completedSections.forEach(sectionId => {
+        const completedNavLink = document.querySelector(`a[href="#${sectionId}"]`);
+        if (completedNavLink) {
+            completedNavLink.classList.add('completed');
+        }
+    });
+}
+
+function markSectionCompleted(sectionId) {
+    completedSections.add(sectionId);
+    updateNavigationState();
+    console.log(`✅ Section completed: ${sectionId}`);
+}
+
+function checkAndMarkSectionCompleted(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (!section) return false;
+    
+    // Get all required inputs in the section
+    const requiredInputs = section.querySelectorAll('input[required], select[required], textarea[required]');
+    let allCompleted = true;
+    
+    requiredInputs.forEach(input => {
+        if (!input.value.trim()) {
+            allCompleted = false;
+        }
+    });
+    
+    // If all required fields are filled, mark as completed
+    if (allCompleted && requiredInputs.length > 0) {
+        markSectionCompleted(sectionId);
+        return true;
+    }
+    
+    return false;
+}
+
+function canNavigateToSection(sectionId) {
+    // Allow free navigation to any section
+    return true;
+}
+
+function validateCurrentSection() {
+    const section = document.getElementById(currentSection);
+    if (!section) return false;
+    
+    // Get all required inputs in current section
+    const requiredInputs = section.querySelectorAll('input[required], select[required], textarea[required]');
+    let isValid = true;
+    
+    requiredInputs.forEach(input => {
+        if (!input.value.trim()) {
+            isValid = false;
+            input.style.borderColor = '#dc3545';
+        } else {
+            input.style.borderColor = '';
+        }
+    });
+    
+    if (isValid) {
+        markSectionCompleted(currentSection);
+        return true;
+    } else {
+        // Show validation message
+        showSectionValidationMessage('Please complete all required fields before proceeding.');
+        return false;
+    }
+}
+
+function showSectionValidationMessage(message) {
+    // Remove existing validation message
+    const existingMessage = document.querySelector('.section-validation-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create new validation message
+    const validationMessage = document.createElement('div');
+    validationMessage.className = 'section-validation-message';
+    validationMessage.style.cssText = `
+        background: #f8d7da;
+        color: #721c24;
+        padding: 12px 16px;
+        border: 1px solid #f5c6cb;
+        border-radius: 6px;
+        margin: 15px 0;
+        font-size: 14px;
+        animation: slideInFade 0.3s ease-out;
+    `;
+    validationMessage.textContent = message;
+    
+    // Insert after current section
+    const currentActiveSection = document.querySelector('.form-section.active');
+    if (currentActiveSection) {
+        currentActiveSection.insertAdjacentElement('afterend', validationMessage);
+        
+        // Auto-remove after 4 seconds
+        setTimeout(() => {
+            if (validationMessage.parentNode) {
+                validationMessage.remove();
+            }
+        }, 4000);
+    }
+}
+
+/**
  * Initialize the application when DOM is loaded
  */
 document.addEventListener('DOMContentLoaded', function() {
@@ -1209,6 +1425,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         }
     }, 1000);
+    
+    // Initialize professional section navigation
+    initializeSectionNavigation();
     
     // Initialize navigation panel
     initializeNavigation();

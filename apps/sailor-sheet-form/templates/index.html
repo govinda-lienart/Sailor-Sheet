@@ -350,89 +350,90 @@
                          </div>
      
                     <!-- Hidden fields for file uploads -->
-                         <input type="hidden" name="bills_file_link" id="billsFileLinkInput">
-                         <input type="hidden" name="bills_file_name" id="billsFileNameInput">
-                         <input type="hidden" name="red_bills_file_link" id="redBillsFileLinkInput">
-                         <input type="hidden" name="red_bills_file_name" id="redBillsFileNameInput">
-                         <input type="hidden" name="documentation_file_link" id="documentationFileLinkInput">
-                         <input type="hidden" name="documentation_file_name" id="documentationFileNameInput">
-                         <input type="hidden" name="transaction_number" id="transactionNumberInput">
-                     </div>
+                        <input type="hidden" name="bills_file_link" id="billsFileLinkInput">
+                        <input type="hidden" name="bills_file_name" id="billsFileNameInput">
+                        <input type="hidden" name="red_bills_file_link" id="redBillsFileLinkInput">
+                        <input type="hidden" name="red_bills_file_name" id="redBillsFileNameInput">
+                        <input type="hidden" name="documentation_file_link" id="documentationFileLinkInput">
+                        <input type="hidden" name="documentation_file_name" id="documentationFileNameInput">
+                        <input type="hidden" name="transaction_number" id="transactionNumberInput">
+                </div>
+                
+                <!-- DOCUMENT UPLOAD SECTION -->
+                <div id="document-upload-section" class="form-section section-document-upload">
+                    <h4 class="section-heading heading-document-upload">📎 Document Upload</h4>
+                    <p style="margin-bottom: 20px; color: #6c757d; font-size: 14px;">Choose document type and either upload a file or paste a Google Drive link.</p>
+                    
+                    <!-- Document Type Dropdown -->
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">📋 Select Document Type:</label>
+                        <select id="documentTypeDropdown" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; background: white;">
+                            <option value="">-- Choose document type --</option>
+                            <option value="bills">📄 Bills (Receipts, invoices, supporting documents)</option>
+                            <option value="redBills">🔴 Red Bills (Urgent payment documents)</option>
+                            <option value="bankStatement">🏦 Bank Statement (Bank transaction records)</option>
+                            <option value="documentation">📚 Documentation (Reference materials)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Upload Mode Toggle -->
+                    <div id="uploadModeToggle" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 6px; border: 1px solid #ddd; display: none;">
+                        <div style="display: flex; gap: 20px; margin-bottom: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+                                <input type="radio" name="uploadMode" value="file" checked style="margin: 0;">
+                                <span style="font-weight: 500;">📁 Upload File</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+                                <input type="radio" name="uploadMode" value="link" style="margin: 0;">
+                                <span style="font-weight: 500;">🔗 Google Drive Link</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- File Upload Section -->
+                    <div id="fileUploadSection" style="display: none; background: white; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📁 Select File:</label>
+                        <input type="file" id="documentFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg" 
+                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 10px;">
+                        <div style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">
+                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                            <strong>Maximum size:</strong> 16MB
+                        </div>
+                        <button type="button" id="uploadFileBtn" class="btn-enhanced" 
+                                style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                            Upload File
+                        </button>
+                    </div>
+                    
+                    <!-- Google Drive Link Section -->
+                    <div id="googleDriveLinkSection" style="display: none; background: white; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">🔗 Google Drive Link:</label>
+                        <input type="url" id="googleDriveLinkInput" placeholder="Paste your Google Drive link here..." 
+                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 15px;">
+                        <button type="button" id="processGoogleDriveBtn" class="btn-enhanced" 
+                                style="background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                            Process Google Drive Link
+                        </button>
+                    </div>
+                    
+                    <!-- Upload Status -->
+                    <div id="uploadStatus" style="display: none; margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 6px; border: 1px solid #c3e6cb;">
+                        <div id="uploadStatusMessage" style="color: #155724; font-weight: 600;"></div>
+                    </div>
+                    
+                    <!-- Upload Progress -->
+                    <div id="uploadProgress" style="display: none; flex: 1; margin-left: 10px;">
+                        <div style="background: #e9ecef; height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div id="progressBar" style="background: linear-gradient(90deg, #28a745, #20c997); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <small id="progressText" style="color: #6c757d; font-size: 12px;">Uploading...</small>
+                    </div>
+                    
+                    <div id="uploadResult" style="margin-top: 15px; display: none;"></div>
+                </div>
+    
+                </form>
      
-                 </form>
-     
-                
-            <!-- ==========================================================
-                 DOCUMENT UPLOAD SECTION (Simplified with Dropdown)
-                 ========================================================== -->
-            <div class="form-section section-document-upload" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 8px; border: 2px solid #dee2e6;">
-                <div class="section-header" style="margin-bottom: 20px;">
-                    <span class="section-icon" style="font-size: 24px; margin-right: 10px;">📎</span>
-                    <h3 class="section-title" style="margin: 0; color: #495057; font-size: 20px; font-weight: 600;">Document Upload</h3>
-                </div>
-                <p style="margin-bottom: 20px; color: #6c757d; font-size: 14px;">Choose document type and either upload a file or paste a Google Drive link.</p>
-                
-                <!-- Document Type Dropdown -->
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">📋 Select Document Type:</label>
-                    <select id="documentTypeDropdown" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; background: white;">
-                        <option value="">-- Choose document type --</option>
-                        <option value="bills">📄 Bills (Receipts, invoices, supporting documents)</option>
-                        <option value="redBills">🔴 Red Bills (Urgent payment documents)</option>
-                        <option value="bankStatement">🏦 Bank Statement (Bank transaction records)</option>
-                        <option value="documentation">📚 Documentation (Reference materials)</option>
-                    </select>
-                </div>
-                
-                <!-- Upload Mode Toggle -->
-                <div id="uploadModeToggle" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 6px; border: 1px solid #ddd; display: none;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📎 Upload Method:</label>
-                    <div style="display: flex; gap: 20px; margin-bottom: 15px;">
-                        <label style="display: flex; align-items: center; cursor: pointer; padding: 10px 15px; border-radius: 6px; background: #e3f2fd; border: 2px solid #2196f3;">
-                            <input type="radio" name="uploadMode" value="file" checked style="margin-right: 8px;">
-                            <span style="font-weight: 500;">📁 Upload File</span>
-                        </label>
-                        <label style="display: flex; align-items: center; cursor: pointer; padding: 10px 15px; border-radius: 6px; background: #f3e5f5; border: 2px solid #9c27b0;">
-                            <input type="radio" name="uploadMode" value="link" style="margin-right: 8px;">
-                            <span style="font-weight: 500;">🔗 Google Drive Link</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- File Upload Section -->
-                <div id="fileUploadSection" style="display: none; background: white; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📁 Select File:</label>
-                    <input type="file" id="documentFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg" 
-                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 10px;">
-                    <div style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">
-                        <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
-                        <strong>Maximum size:</strong> 16MB
-                    </div>
-                    <button type="button" id="uploadFileBtn" class="btn-enhanced" 
-                            style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                        Upload File
-                    </button>
-                </div>
-                
-                <!-- Google Drive Link Section -->
-                <div id="googleDriveLinkSection" style="display: none; background: white; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">🔗 Google Drive Link:</label>
-                    <input type="url" id="googleDriveLinkInput" placeholder="Paste Google Drive URL here..." 
-                           style="width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; min-height: 50px; box-sizing: border-box; margin-bottom: 10px;">
-                    <div style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">
-                        💡 <strong>Tip:</strong> Copy the "Share" link from Google Drive (make sure it's set to "Anyone with the link can view")
-                    </div>
-                    <button type="button" id="processGoogleDriveBtn" class="btn-enhanced" 
-                            style="background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                        Process Google Drive Link
-                    </button>
-                </div>
-                
-                <!-- Upload Status -->
-                <div id="uploadStatus" style="display: none; margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 6px; border: 1px solid #c3e6cb;">
-                    <div id="uploadStatusMessage" style="color: #155724; font-weight: 600;"></div>
-                </div>
-            </div>
      
             <!-- FINAL SUBMIT BUTTON -->
             <button type="submit" form="mainForm" class="btn-enhanced enhanced-submit-btn">
@@ -607,7 +608,7 @@
                 <a href="#credit-account-section" class="nav-link regular-account nav-link-base nav-border-purple">💰 Credit</a>
                 <a href="#payment-method-section" class="nav-link nav-link-base nav-border-cyan">💳 Payment Method</a>
                 <a href="#description-section" class="nav-link nav-link-base nav-border-black">📝 Description</a>
-                <a href="#upload-bills-section" class="nav-link nav-link-base nav-border-black">📎 Upload</a>
+                <a href="#document-upload-section" class="nav-link nav-link-base nav-border-green">📎 Document Upload</a>
                 
                 <!-- Submit Button -->
                 <a href="#" class="nav-link nav-submit-btn" id="submitNavBtn">🚀 Submit to Google Sheets</a>

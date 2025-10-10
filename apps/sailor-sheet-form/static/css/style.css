@@ -1022,6 +1022,38 @@ h1 {
     padding: 15px;
     border-radius: 8px;
     border: 2px solid;
+    transition: all 0.4s ease-in-out;
+    opacity: 0;
+    transform: translateY(20px);
+    display: none;
+}
+
+.form-section.active {
+    opacity: 1;
+    transform: translateY(0);
+    display: block;
+    animation: slideInFade 0.4s ease-out;
+}
+
+/* Keep upload and other non-main sections always visible */
+.form-section:not(#transaction-number-section):not(#transaction-type-section):not(#sheet-worksheet-section):not(#date-section):not(#amount-section):not(#fund-section):not(#category-section):not(#sub-category-section):not(#debit-account-section):not(#credit-account-section):not(#payment-method-section):not(#description-section):not(#document-upload-section),
+#upload-bills-section,
+#upload-red-bills-section,
+#upload-documentation-section {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    display: block !important;
+}
+
+@keyframes slideInFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Individual section color themes */
@@ -1080,6 +1112,11 @@ h1 {
     background-color: #fffbf0;
 }
 
+.section-document-upload {
+    border-color: #28a745;
+    background-color: #f0fff4;
+}
+
 /* Section headings */
 .section-heading {
     margin-bottom: 15px;
@@ -1128,6 +1165,10 @@ h1 {
 
 .heading-description {
     color: #000000;
+}
+
+.heading-document-upload {
+    color: #28a745;
 }
 
 /* Master Ledger subsections */
@@ -1179,6 +1220,54 @@ h1 {
     background-color: #f8f9fa;
     color: #495057;
     border-left: 4px solid #7a8288;
+}
+
+/* Professional Navigation with Progress Tracking */
+.nav-link-base {
+    background-color: #f8f9fa;
+    color: #495057;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-link-base.completed {
+    background-color: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745 !important;
+}
+
+.nav-link-base.completed::before {
+    content: "✓";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #28a745;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.nav-link-base.current {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border-left: 4px solid #3b82f6 !important;
+    font-weight: 600;
+}
+
+.nav-link-base.current::after {
+    content: "●";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #3b82f6;
+    font-size: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 /* Navigation link base styles */
