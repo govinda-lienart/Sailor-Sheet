@@ -291,7 +291,7 @@ function loadWorksheets() {
     }
 
     console.log('Fetching worksheets for sheet:', selectedSheetId);
-    fetch(`/get_worksheets/${selectedSheetId}`)
+    fetch(`/api/get_worksheets/${selectedSheetId}`)
         .then(r => {
             console.log('Response status:', r.status);
             return r.json();
