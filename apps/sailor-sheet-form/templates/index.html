@@ -238,7 +238,7 @@
                          <select name="fund_id" required>
                              <option value="">Choose a fund...</option>
                              {% for fund in funds %}
-                            <option value="{{ fund.id }}" data-color="{{ fund.color }}">
+                            <option value="{{ fund.id }}" data-color="{{ fund.color }}" {% if fund.default %}selected{% endif %}>
                                 {{ fund.name }}
                             </option>
                              {% endfor %}

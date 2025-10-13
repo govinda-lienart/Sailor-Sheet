@@ -1493,6 +1493,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Apply colors when the page loads
     applyFundColors();
     
+    // Auto-select default fund if none is selected
+    function autoSelectDefaultFund() {
+        const fundSelect = document.querySelector('select[name="fund_id"]');
+        if (fundSelect && fundSelect.value === '') {
+            // Look for the default fund option (marked as selected in HTML)
+            const defaultOption = fundSelect.querySelector('option[selected]');
+            if (defaultOption && defaultOption.value !== '') {
+                fundSelect.value = defaultOption.value;
+                console.log('✅ Auto-selected default fund:', defaultOption.textContent);
+            }
+        }
+    }
+    
+    // Auto-select default fund when page loads
+    autoSelectDefaultFund();
+    
     // Re-apply colors when funds are refreshed
     const originalRefreshFormData = window.refreshFormData;
     if (originalRefreshFormData) {
@@ -1500,6 +1516,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = originalRefreshFormData.apply(this, arguments);
             // Re-apply colors after form data is refreshed
             setTimeout(applyFundColors, 100);
+            // Re-apply default fund selection
+            setTimeout(autoSelectDefaultFund, 100);
             return result;
         };
     }
