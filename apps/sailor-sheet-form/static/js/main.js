@@ -24,11 +24,6 @@ import {
 import { setupDateInputHandlers } from './services/dateService.js';
 import { showTemporaryMessage } from './services/uiService.js';
 import { handleFormSubmit } from './services/formSubmissionService.js';
-import { initializeChatbot } from './services/chatbotService.js';
-import { initializeSearch } from './services/searchService.js';
-import { initializeUpdateForm } from './services/updateFormService.js';
-import { initializeCountrySelection } from './services/countrySelectionService.js';
-import { initializeGoogleDriveService } from './services/googleDriveService.js';
 
 /**
  * Apply fund colors to option elements
@@ -178,21 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Setup date input handlers
     setupDateInputHandlers('date_input', showTemporaryMessage);
-    
-    // Initialize chatbot
-    initializeChatbot();
-    
-    // Initialize search functionality
-    initializeSearch();
-    
-    // Initialize update form functionality
-    initializeUpdateForm();
-    
-    // Initialize country selection
-    initializeCountrySelection();
-    
-    // Initialize Google Drive service
-    initializeGoogleDriveService();
     
     console.log('NGO Accounting System initialized successfully! 🚀');
 });
