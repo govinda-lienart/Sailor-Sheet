@@ -528,11 +528,29 @@ def download_file_from_google_drive(file_id):
         
         # First, get file metadata to get the filename and MIME type
         print("DEBUG: Getting file metadata...")
-        file_metadata = drive.files().get(
-            fileId=file_id,
-            fields="name,mimeType",
-            supportsAllDrives=True
-        ).execute()
+        try:
+            file_metadata = drive.files().get(
+                fileId=file_id,
+                fields="name,mimeType",
+                supportsAllDrives=True
+            ).execute()
+        except Exception as metadata_error:
+            error_msg = str(metadata_error)
+            if '404' in error_msg or 'not found' in error_msg.lower():
+                raise Exception(
+                    f"❌ Google Drive file not found!\n\n"
+                    f"This could mean:\n"
+                    f"1. The file was deleted or moved\n"
+                    f"2. The sharing link is incorrect\n"
+                    f"3. Your service account doesn't have permission\n\n"
+                    f"📋 To fix:\n"
+                    f"1. Share the file with: machine@my-project-sailor-sheet-16754.iam.gserviceaccount.com\n"
+                    f"   OR\n"
+                    f"2. Set sharing to 'Anyone with the link can view'\n\n"
+                    f"File ID: {file_id}"
+                )
+            else:
+                raise Exception(f"Failed to get file metadata: {error_msg}")
         
         file_name = file_metadata.get('name', 'unknown_file')
         mime_type = file_metadata.get('mimeType', 'unknown')

@@ -959,6 +959,35 @@ function resetUploadState() {
         }
     });
     
+    // Clear file upload result displays (the "File uploaded" messages)
+    const uploadResultElements = [
+        'billsUploadResult',
+        'redBillsUploadResult', 
+        'documentationUploadResult'
+    ];
+    
+    uploadResultElements.forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.style.display = 'none';
+            element.innerHTML = '';
+        }
+    });
+    
+    // Clear file link displays
+    const fileLinkElements = [
+        'billsFileLink',
+        'redBillsFileLink',
+        'documentationFileLink'
+    ];
+    
+    fileLinkElements.forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.innerHTML = '';
+        }
+    });
+    
     // ===== UPDATE FORM UPLOAD STATE =====
     
     // Reset update form file inputs and labels
@@ -994,17 +1023,18 @@ function resetUploadState() {
 let isSubmitting = false; // Flag to prevent duplicate submissions
 
 function handleFormSubmit(event) {
-    console.log('handleFormSubmit called - Form submission started');
+    console.log('✅ handleFormSubmit called - Form submission started');
     
     // Prevent default form submission
     event.preventDefault();
     
     // Check if already submitting
     if (isSubmitting) {
-        console.log('Already submitting, ignoring duplicate submission');
+        console.log('⚠️ Already submitting, ignoring duplicate submission');
         return false;
     }
     
+    console.log('🔓 Setting isSubmitting = true');
     isSubmitting = true;
     
     // Get form data
@@ -1059,24 +1089,40 @@ function submitToGoogleSheets(formData) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('📨 Server response:', data);
         if (data.success) {
             showSuccessMessage('Successfully submitted to Google Sheet!');
+            
+            // Get current sheet and transaction type before reset
+            const currentSheetId = document.getElementById('sheet_select')?.value;
+            const currentTransactionType = document.getElementById('transaction_category')?.value;
+            
             // Reset form
-            document.getElementById('mainForm').reset();
+            const mainForm = document.getElementById('mainForm');
+            mainForm.reset();
+            
+            // Re-attach form submission handler after reset
+            mainForm.removeEventListener('submit', handleFormSubmit);
+            mainForm.addEventListener('submit', handleFormSubmit);
+            console.log('🔄 Form submission handler re-attached after reset');
+            
             // Reset upload state (clear file inputs, labels, and hidden fields)
             resetUploadState();
             // Generate new transaction number
             generateTransactionNumber();
+            
             // Re-apply transaction type defaults after reset
             setTimeout(() => {
                 const transactionSelect = document.getElementById('transaction_category');
-                if (transactionSelect && transactionSelect.value) {
-                    applyTransactionDefaults(transactionSelect.value);
+                if (transactionSelect && currentTransactionType) {
+                    transactionSelect.value = currentTransactionType;
+                    applyTransactionDefaults(currentTransactionType);
                 }
                 
                 // Reload worksheets for the selected sheet
                 const sheetSelect = document.getElementById('sheet_select');
-                if (sheetSelect && sheetSelect.value) {
+                if (sheetSelect && currentSheetId) {
+                    sheetSelect.value = currentSheetId;
                     loadWorksheets();
                 }
                 
@@ -1097,7 +1143,7 @@ function submitToGoogleSheets(formData) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '🚀 Submit to Google Sheets';
         isSubmitting = false; // Reset the flag
-        console.log('Submission complete, flag reset');
+        console.log('🔓 Submission complete, isSubmitting = false');
     });
 }
 
@@ -1439,6 +1485,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize form monitoring for navigation progress
     setupFormMonitoring();
     console.log('Form progress monitoring initialized');
+    
+    // Add form submission event listener
+    const mainForm = document.getElementById('mainForm');
+    if (mainForm) {
+        mainForm.addEventListener('submit', handleFormSubmit);
+        console.log('✅ Form submission event listener attached');
+    } else {
+        console.error('❌ mainForm not found - form submission will not work!');
+    }
+    
+    // Sheet change handler is handled in loadWorksheets() function
+    // No additional handler needed here
     
     // Add event listeners for all upload buttons (only if they exist)
     const billsUploadBtn = document.getElementById('billsUploadBtn');
