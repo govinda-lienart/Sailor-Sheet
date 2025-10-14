@@ -4,7 +4,7 @@ Handles file upload and Google Drive link processing API routes.
 """
 
 from flask import Blueprint, request, jsonify
-from services.file_service import FileService
+from file_operations.file_service import FileService
 
 # Create blueprint
 api_files_bp = Blueprint('api_files', __name__, url_prefix='/api')
