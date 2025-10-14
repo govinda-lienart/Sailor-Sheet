@@ -813,9 +813,10 @@
     </style>
 
     <!-- =================================================================
-         JAVASCRIPT
+         JAVASCRIPT - ES6 Modules
          ================================================================= -->
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/global-bridge.js') }}"></script>
     
     <!-- Chatbot Integration Script -->
     <script>
@@ -3288,44 +3289,7 @@
             updateDocumentTypeDropdown(selectedCountry);
         }
         
-        // Regenerate transaction number when country changes (inline version)
-        function regenerateTransactionNumberForCountry() {
-            console.log('🔄 Regenerating transaction number for new country...');
-            generateTransactionNumber();
-        }
-        
-        // Generate transaction number with country prefix (inline version)
-        function generateTransactionNumber() {
-            const now = new Date();
-            
-            // Get current country from sessionStorage, default to BE
-            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
-            const countryPrefix = selectedCountry.toUpperCase();
-            
-            // Generate timestamp part: DDMMYY-HHMMSS
-            const timestamp = now.getDate().toString().padStart(2, '0') +
-                             (now.getMonth() + 1).toString().padStart(2, '0') +
-                             now.getFullYear().toString().slice(-2) + '-' +
-                             now.getHours().toString().padStart(2, '0') +
-                             now.getMinutes().toString().padStart(2, '0') +
-                             now.getSeconds().toString().padStart(2, '0');
-            
-            // Combine country prefix with timestamp
-            const transactionNumber = `${countryPrefix}-${timestamp}`;
-            
-            const displayField = document.getElementById('transactionNumberDisplay');
-            const inputField = document.getElementById('transactionNumberInput');
-            
-            if (displayField) {
-                displayField.value = transactionNumber;
-            }
-            if (inputField) {
-                inputField.value = transactionNumber;
-            }
-            
-            console.log(`Generated ${countryPrefix} transaction number:`, transactionNumber);
-            return transactionNumber;
-        }
+        // Transaction number functions are now loaded from modules via global-bridge.js
         
         // Helper function to update dropdown options
         function updateDropdownOptions(dropdown, countryCode, redBillsValue) {
