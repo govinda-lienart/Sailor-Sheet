@@ -269,11 +269,13 @@ class SheetsOperations:
             print(f"DEBUG: Headers: {headers}")
             
             # Find the document column index
-            # Correct column mapping based on actual Google Sheet structure:
-            # A=Transaction, B=dd/mm/YY, C=Month, D=Year, E=Funds, F=Account, G=Category, H=Sub-Category, I=Debit, J=Credit, K=Offset, L=Payment, M=Description, N=Bank Transaction, O=Bill, P=Red Bill, Q=Doc
+            # IMPORTANT: Belgium and Vietnam have DIFFERENT column structures!
+            # BELGIUM: N=Bank Transaction Number, O=Bill, P=Bank Statement, Q=Doc
+            # VIETNAM: N=Bank Transaction, O=Bill, P=Red Bill, Q=Doc
             document_column_map = {
                 'bill': ['Bill', 'bill', 'BILL'],
-                'redBill': ['Red Bill', 'Red BIll', 'Red Bills', 'red bill', 'RED BILL', 'Red Bill '],  # Try different variations
+                'redBill': ['Red Bill', 'Red BIll', 'Red Bills', 'red bill', 'RED BILL', 'Red Bill '],
+                'bankStatement': ['Bank Statement', 'bank statement', 'BANK STATEMENT'],  # Belgium only
                 'documentation': ['Doc', 'Documentation', 'doc', 'DOC', 'Documentation ']
             }
             
@@ -299,13 +301,21 @@ class SheetsOperations:
                 print(f"ERROR: None of the columns {possible_columns} found in headers")
                 print(f"DEBUG: Available headers: {headers}")
                 
-                # Fallback: Use known column positions based on your Google Sheet structure
-                # O=Bill (column 15), P=Red Bill (column 16), Q=Doc (column 17)
-                fallback_columns = {
-                    'bill': 14,      # Column O (0-indexed)
-                    'redBill': 15,   # Column P (0-indexed) 
-                    'documentation': 16  # Column Q (0-indexed)
-                }
+                # Fallback: Use known column positions - COUNTRY SPECIFIC!
+                # BELGIUM: O=Bill, P=Bank Statement, Q=Doc
+                # VIETNAM: O=Bill, P=Red Bill, Q=Doc
+                if sheet_type.lower() == 'be':
+                    fallback_columns = {
+                        'bill': 14,              # Column O (0-indexed)
+                        'bankStatement': 15,     # Column P (0-indexed) - Belgium only
+                        'documentation': 16      # Column Q (0-indexed)
+                    }
+                else:  # Vietnam
+                    fallback_columns = {
+                        'bill': 14,              # Column O (0-indexed)
+                        'redBill': 15,           # Column P (0-indexed) - Vietnam only
+                        'documentation': 16      # Column Q (0-indexed)
+                    }
                 
                 if document_type in fallback_columns:
                     column_index = fallback_columns[document_type]
@@ -362,19 +372,27 @@ class SheetsOperations:
             hyperlink_formula = f'=HYPERLINK("{file_url}"; "✔")'
             print(f"DEBUG: Created HYPERLINK formula: {hyperlink_formula}")
             
-            # Map document types to column letters based on actual Google Sheet structure
-            # A=Transaction, B=dd/mm/YY, C=Month, D=Year, E=Funds, F=Account, G=Category, H=Sub-Category, 
-            # I=Debit, J=Credit, K=Offset, L=Payment, M=Description, N=Bank Transaction, O=Bill, P=Red Bill, Q=Doc
-            column_mapping = {
-                'bill': 'O',           # Bill column (was N, now O)
-                'redBill': 'P',        # Red Bill column (was O, now P)
-                'documentation': 'Q'   # Doc column (was P, now Q)
-            }
+            # Map document types to column letters - COUNTRY SPECIFIC!
+            # BELGIUM: O=Bill, P=Bank Statement, Q=Doc
+            # VIETNAM: O=Bill, P=Red Bill, Q=Doc
+            if sheet_type.lower() == 'be':
+                column_mapping = {
+                    'bill': 'O',
+                    'bankStatement': 'P',     # Belgium: Bank Statement in column P
+                    'documentation': 'Q'
+                }
+            else:  # Vietnam
+                column_mapping = {
+                    'bill': 'O',
+                    'redBill': 'P',           # Vietnam: Red Bill in column P
+                    'documentation': 'Q'
+                }
             
             # Get the column letter for this document type
             column_letter = column_mapping.get(document_type)
             if not column_letter:
-                print(f"ERROR: Invalid document type: {document_type}")
+                print(f"ERROR: Invalid document type '{document_type}' for sheet '{sheet_type}'")
+                print(f"DEBUG: Valid types for {sheet_type}: {list(column_mapping.keys())}")
                 return False
             
             print(f"DEBUG: Using column {column_letter} for document type {document_type}")
