@@ -85,140 +85,207 @@ function initializeNavigation() {
 
 
 /**
- * Update navigation button visual state based on completion
+ * Manual navigation tracking - green checkmarks only appear when clicked
  */
-function updateNavButtonState(navButton, isCompleted) {
-    if (isCompleted) {
-        // Completed state: Full vibrant blue
+let manuallyCheckedSections = new Set();
+
+function toggleSectionCheck(navButton) {
+    const sectionId = navButton.getAttribute('href').substring(1); // Remove #
+    
+    if (manuallyCheckedSections.has(sectionId)) {
+        // Uncheck - remove green checkmark, but keep blue if has data
+        manuallyCheckedSections.delete(sectionId);
+        const hasData = checkSectionHasData(sectionId);
+        updateNavButtonState(navButton, false, hasData);
+        console.log(`❌ Unchecked section: ${sectionId}`);
+    } else {
+        // Check - add green checkmark, but keep blue if has data
+        manuallyCheckedSections.add(sectionId);
+        const hasData = checkSectionHasData(sectionId);
+        updateNavButtonState(navButton, true, hasData);
+        console.log(`✅ Checked section: ${sectionId}`);
+    }
+}
+
+/**
+ * Update navigation button visual state - blue/gray backgrounds + green checkmark only
+ */
+function updateNavButtonState(navButton, isManuallyChecked, hasData = false) {
+    // Remove any existing checkmark first
+    const existingCheckmark = navButton.querySelector('.manual-checkmark');
+    if (existingCheckmark) {
+        existingCheckmark.remove();
+    }
+    
+    // Apply base styling (blue if has data, gray if not)
+    if (hasData) {
+        // Has data state: Blue highlighting
         navButton.style.borderLeft = '4px solid #007bff';
         navButton.style.backgroundColor = '#f0f8ff';
         navButton.style.color = '#0056b3';
         navButton.style.fontWeight = '600';
     } else {
-        // Incomplete state: Light gray
+        // Empty state: Light gray
         navButton.style.borderLeft = '4px solid #e9ecef';
         navButton.style.backgroundColor = '#f8f9fa';
         navButton.style.color = '#6c757d';
         navButton.style.fontWeight = '500';
     }
+    
+    // Add green checkmark if manually checked (without changing base styling)
+    if (isManuallyChecked) {
+        const checkmark = document.createElement('span');
+        checkmark.className = 'manual-checkmark';
+        checkmark.innerHTML = ' ✅';
+        checkmark.style.float = 'right';
+        navButton.appendChild(checkmark);
+    }
 }
 
 /**
- * Update navigation progress indicators
+ * Check if a section has data filled in
  */
-function updateNavigationProgress() {
-    const sections = [
-        {
-            id: 'transaction-number-section',
-            navSelector: 'a[href="#transaction-number-section"]',
-            validator: () => document.getElementById('transactionNumberDisplay').value !== 'Generating...' && document.getElementById('transactionNumberDisplay').value.length > 0
-        },
-        {
-            id: 'transaction-type-section', 
-            navSelector: 'a[href="#transaction-type-section"]',
-            validator: () => document.querySelector('select[name="transaction_category"]').value !== ''
-        },
-        {
-            id: 'sheet-worksheet-section',
-            navSelector: 'a[href="#sheet-worksheet-section"]',
-            validator: () => {
-                const sheetId = document.querySelector('select[name="sheet_id"]')?.value;
-                const worksheetName = document.querySelector('select[name="worksheet_name"]')?.value;
-                return sheetId && worksheetName;
-            }
-        },
-        {
-            id: 'date-section',
-            navSelector: 'a[href="#date-section"]', 
-            validator: () => document.querySelector('input[name="date_input"]').value !== ''
-        },
-        {
-            id: 'amount-section',
-            navSelector: 'a[href="#amount-section"]',
-            validator: () => {
-                const amount = document.querySelector('input[name="amount"]').value;
-                return amount !== '' && parseFloat(amount) > 0;
-            }
-        },
-        {
-            id: 'fund-section',
-            navSelector: 'a[href="#fund-section"]',
-            validator: () => document.querySelector('select[name="fund_id"]').value !== ''
-        },
-        {
-            id: 'category-section',
-            navSelector: 'a[href="#category-section"]',
-            validator: () => document.querySelector('select[name="category_id"]').value !== ''
-        },
-        {
-            id: 'debit-account-section',
-            navSelector: 'a[href="#debit-account-section"]',
-            validator: () => {
-                const regularDebit = document.querySelector('select[name="regular_debit_account_id"]');
-                const masterDebitA = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
-                if (regularDebit && regularDebit.hasAttribute('required')) return regularDebit.value !== '';
-                if (masterDebitA && masterDebitA.hasAttribute('required')) return masterDebitA.value !== '';
-                return true;
-            }
-        },
-        {
-            id: 'credit-account-section',
-            navSelector: 'a[href="#credit-account-section"]',
-            validator: () => {
-                const regularCredit = document.querySelector('select[name="regular_credit_account_id"]');
-                const masterCreditA = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
-                if (regularCredit && regularCredit.hasAttribute('required')) return regularCredit.value !== '';
-                if (masterCreditA && masterCreditA.hasAttribute('required')) return masterCreditA.value !== '';
-                return true;
-            }
-        },
-        {
-            id: 'payment-method-section',
-            navSelector: 'a[href="#payment-method-section"]',
-            validator: () => {
-                const paymentMethod = document.querySelector('select[name="payment_method"]');
-                if (paymentMethod && paymentMethod.hasAttribute('required')) return paymentMethod.value !== '';
-                return true;
-            }
-        },
-        {
-            id: 'description-section',
-            navSelector: 'a[href="#description-section"]',
-            validator: () => document.querySelector('textarea[name="description"]').value.trim() !== ''
-        }
+function checkSectionHasData(sectionId) {
+    switch (sectionId) {
+        case 'transaction-number-section':
+            return document.getElementById('transactionNumberDisplay')?.value !== 'Generating...' && document.getElementById('transactionNumberDisplay')?.value.length > 0;
+        case 'transaction-type-section':
+            return document.getElementById('transaction_category')?.value !== '';
+        case 'sheet-worksheet-section':
+            const sheetId = document.getElementById('sheet_select')?.value;
+            const worksheetName = document.getElementById('worksheet_select')?.value;
+            return sheetId && worksheetName;
+        case 'date-section':
+            return document.getElementById('date_input')?.value !== '';
+        case 'amount-section':
+            const amount = document.querySelector('input[name="amount"]')?.value;
+            return amount !== '' && parseFloat(amount) > 0;
+        case 'fund-section':
+            return document.querySelector('select[name="fund_id"]')?.value !== '';
+        case 'category-section':
+            return document.querySelector('select[name="category_id"]')?.value !== '';
+        case 'debit-account-section':
+            const regularDebit = document.querySelector('select[name="regular_debit_account_id"]');
+            const masterDebitA = document.querySelector('select[name="master_ledger_a_debit_account_id"]');
+            if (regularDebit && regularDebit.hasAttribute('required')) return regularDebit.value !== '';
+            if (masterDebitA && masterDebitA.hasAttribute('required')) return masterDebitA.value !== '';
+            return true;
+        case 'credit-account-section':
+            const regularCredit = document.querySelector('select[name="regular_credit_account_id"]');
+            const masterCreditA = document.querySelector('select[name="master_ledger_a_credit_account_id"]');
+            if (regularCredit && regularCredit.hasAttribute('required')) return regularCredit.value !== '';
+            if (masterCreditA && masterCreditA.hasAttribute('required')) return masterCreditA.value !== '';
+            return true;
+        case 'payment-method-section':
+            const paymentMethod = document.getElementById('payment_method');
+            if (paymentMethod && paymentMethod.hasAttribute('required')) return paymentMethod.value !== '';
+            return true;
+        case 'description-section':
+            return document.querySelector('textarea[name="description"]')?.value.trim() !== '';
+        default:
+            return false;
+    }
+}
+
+/**
+ * Update all navigation states based on current form data
+ */
+function updateAllNavigationStates() {
+    const sectionIds = [
+        'transaction-number-section',
+        'transaction-type-section', 
+        'sheet-worksheet-section',
+        'date-section',
+        'amount-section',
+        'fund-section',
+        'category-section',
+        'debit-account-section',
+        'credit-account-section',
+        'payment-method-section',
+        'description-section'
     ];
 
-    sections.forEach(section => {
-        const navButton = document.querySelector(section.navSelector);
-        if (!navButton) return;
-
-        const isCompleted = section.validator();
-        updateNavButtonState(navButton, isCompleted);
+    sectionIds.forEach(sectionId => {
+        const navButton = document.querySelector(`a[href="#${sectionId}"]`);
+        if (navButton) {
+            const isManuallyChecked = manuallyCheckedSections.has(sectionId);
+            const hasData = checkSectionHasData(sectionId);
+            updateNavButtonState(navButton, isManuallyChecked, hasData);
+        }
     });
-
-    // Update overall progress
-    const completedSections = sections.filter(section => section.validator()).length;
-    const totalSections = sections.length;
-    const progressPercentage = Math.round((completedSections / totalSections) * 100);
-    
-    console.log(`Form Progress: ${completedSections}/${totalSections} sections completed (${progressPercentage}%)`);
 }
 
 /**
- * Setup form monitoring for progress tracking
+ * Setup manual navigation tracking - click to check/uncheck sections
  */
-function setupFormMonitoring() {
-    // Monitor all form inputs for changes
+function setupManualNavigationTracking() {
+    const sectionIds = [
+        'transaction-number-section',
+        'transaction-type-section', 
+        'sheet-worksheet-section',
+        'date-section',
+        'amount-section',
+        'fund-section',
+        'category-section',
+        'debit-account-section',
+        'credit-account-section',
+        'payment-method-section',
+        'description-section'
+    ];
+
+    sectionIds.forEach(sectionId => {
+        const navButton = document.querySelector(`a[href="#${sectionId}"]`);
+        if (navButton) {
+            // Remove any existing click listeners
+            navButton.removeEventListener('click', handleNavClick);
+            // Add manual check toggle
+            navButton.addEventListener('click', handleNavClick);
+        }
+    });
+    
+    // Monitor form changes to update blue highlighting
     const formInputs = document.querySelectorAll('input, select, textarea');
     formInputs.forEach(input => {
-        input.addEventListener('change', updateNavigationProgress);
-        input.addEventListener('input', updateNavigationProgress);
+        input.addEventListener('change', updateAllNavigationStates);
+        input.addEventListener('input', updateAllNavigationStates);
     });
-
-    // Initial progress check
-    setTimeout(updateNavigationProgress, 1000);
     
-    console.log('Form monitoring setup complete - navigation will update as you fill sections');
+    // Initial state update
+    updateAllNavigationStates();
+    
+    console.log('✅ Manual navigation tracking setup complete - blue for data, green for manual check');
+}
+
+/**
+ * Handle navigation link clicks - toggle manual check
+ */
+function handleNavClick(event) {
+    // Prevent default scroll behavior temporarily
+    event.preventDefault();
+    
+    const navButton = event.currentTarget;
+    const sectionId = navButton.getAttribute('href').substring(1);
+    
+    // Toggle manual check
+    toggleSectionCheck(navButton);
+    
+    // Then scroll to section after a brief delay
+    setTimeout(() => {
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 100);
+}
+
+/**
+ * Setup form monitoring - now using manual check system
+ */
+function setupFormMonitoring() {
+    // Setup manual navigation tracking instead of automatic
+    setupManualNavigationTracking();
+    
+    console.log('✅ Manual form tracking setup complete - click section links to mark as checked');
 }
 
 // ============================================================================
@@ -1018,7 +1085,7 @@ function resetUploadState() {
 }
 
 /**
- * SESSION MEMORY - Save form state to remember dropdown selections
+ * SESSION MEMORY - Save form state to remember dropdown selections (excluding date)
  */
 function saveFormState() {
     try {
@@ -1031,12 +1098,12 @@ function saveFormState() {
             subCategoryId: document.querySelector('select[name="sub_category_id"]')?.value,
             debitAccountId: document.querySelector('select[name="regular_debit_account_id"]')?.value,
             creditAccountId: document.querySelector('select[name="regular_credit_account_id"]')?.value,
-            paymentMethod: document.getElementById('payment_method')?.value,
-            dateInput: document.getElementById('date_input')?.value
+            paymentMethod: document.getElementById('payment_method')?.value
+            // Note: dateInput intentionally excluded - always starts fresh
         };
         
         sessionStorage.setItem('sailorSheetFormState', JSON.stringify(formState));
-        console.log('💾 Form state saved to session:', formState);
+        console.log('💾 Form state saved to session (excluding date):', formState);
     } catch (e) {
         console.error('❌ Error saving form state:', e);
     }
@@ -1113,13 +1180,9 @@ function restoreFormState() {
             if (paymentSelect) paymentSelect.value = formState.paymentMethod;
         }
         
-        // Restore date
-        if (formState.dateInput) {
-            const dateInput = document.getElementById('date_input');
-            if (dateInput) dateInput.value = formState.dateInput;
-        }
+        // Note: Date is intentionally NOT restored - always starts fresh
         
-        console.log('✅ Form state restored successfully');
+        console.log('✅ Form state restored successfully (date field left fresh)');
     } catch (e) {
         console.error('❌ Error restoring form state:', e);
     }
@@ -1240,8 +1303,9 @@ function submitToGoogleSheets(formData) {
                 // 📂 RESTORE FORM STATE after reset (Session Memory)
                 setTimeout(() => {
                     restoreFormState();
-                    // Update navigation progress to clear blue highlighting
-                    updateNavigationProgress();
+                    // Clear manual checkmarks after form reset
+                    manuallyCheckedSections.clear();
+                    setupManualNavigationTracking();
                 }, 200); // Wait for worksheets to load
             }, 100);
         } else {
