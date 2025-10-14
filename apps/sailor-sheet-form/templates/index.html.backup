@@ -1,0 +1,3493 @@
+     <!DOCTYPE html>
+<!-- 
+=============================================================================
+
+=============================================================================
+-->
+<html lang="en">
+    <head>
+    <!-- ==================================================================
+         META INFORMATION & TITLE
+         ================================================================= -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NGO Accounting - Data Entry</title>
+    <meta name="description" content="Professional accounting system for NGO financial management">
+    
+    <!-- ===================================================================
+         STYLESHEETS
+         ================================================================= -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        
+    <!-- =================================================================
+         FAVICON & THEME
+         ================================================================= -->
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231e40af;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23grad1)' stroke='%23ffffff' stroke-width='1'/%3E%3Cg fill='white'%3E%3Cpath d='M10 12 L10 16 L14 14 Z'/%3E%3Cpath d='M22 16 L22 20 L18 18 Z'/%3E%3Cpath d='M12 16 A 4 4 0 0 1 20 16' stroke='white' stroke-width='2' fill='none'/%3E%3Cpath d='M20 16 A 4 4 0 0 1 12 16' stroke='white' stroke-width='2' fill='none'/%3E%3C/g%3E%3C/svg%3E">
+        <meta name="theme-color" content="#007bff">
+        <meta name="msapplication-TileColor" content="#007bff">
+        
+    <!-- Loading animation removed - no longer needed -->
+     </head>
+     
+     <body>
+    <!-- =====================================================================
+         TOP NAVIGATION BAR
+         ===================================================================== -->
+    <nav class="top-navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <div class="navbar-logo">
+                    <img src="{{ url_for('static', filename='images/logo2.png') }}" alt="Sailor Sheet Logo" class="logo-image">
+                </div>
+                <div class="navbar-title-container">
+                    <span class="navbar-title">Sailor Sheet</span>
+                    <span class="navbar-subtitle">Accounting System</span>
+                </div>
+            </div>
+            <!-- Future: User menu, notifications, etc. will go here -->
+            <div class="navbar-menu">
+                <div class="country-selector">
+                    <label for="countrySelect" class="country-label">Country:</label>
+                    <select id="countrySelect" class="country-dropdown">
+                        <option value="BE">🇧🇪 Belgium</option>
+                        <option value="VN">🇻🇳 Vietnam</option>
+                    </select>
+                </div>
+                <div class="powered-by">
+                    <span class="powered-by-text">Accounting powered by</span>
+                    <span class="google-sheets-badge">Google Sheets</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- =====================================================================
+         MAIN CONTAINER
+         ===================================================================== -->
+    <div class="container">
+        
+        <!-- =============================================================
+             LEFT ACCESS PANEL
+             ============================================================= -->
+        <div id="form-access-panel" class="form-access-panel">
+                <h5>📊 Quick Access</h5>
+                
+            <!-- Google Sheets Access -->
+                <div class="access-section">
+                <h6 class="access-heading-main">📊 Sheet Access</h6>
+                    <div class="access-links">
+                    <a href="https://docs.google.com/spreadsheets/d/1o5RnuAmm00YAqZzLkyrhZx7CocEETBhi-snPGUzbqSk/edit?gid=949985454#gid=949985454" 
+                       target="_blank" class="access-link access-link-be">🇧🇪 BE - Master Ledger</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1Fvrld1X0OioH7AbKCiSIMNac5U9OvlKJh0OSk02bTTI/edit?gid=1240648507#gid=1240648507" 
+                       target="_blank" class="access-link access-link-vn">🇻🇳 VN - Master Ledger</a>
+                    </div>
+                </div>
+                
+            <!-- Google Drive Access -->
+                <div class="access-section">
+                <h6 class="access-heading-main">📁 Files Access</h6>
+                    <div class="access-links">
+                    <!-- Vietnam Files (VN) -->
+                    <a href="https://drive.google.com/drive/u/1/folders/1UH-mqbvJ6k6Y0wDD4x7DcDRzsEjf0Rz0" 
+                       target="_blank" class="access-link access-link-bills-vn">📄 Bills (VN)</a>
+                    <a href="https://drive.google.com/drive/u/1/folders/10gGkRi9P9417FjZ9vFeQTnpLA-ExbBVO" 
+                       target="_blank" class="access-link access-link-red-bills-vn">🔴 Red Bills (VN)</a>
+                    <a href="https://drive.google.com/drive/u/1/folders/1QDiSNjqzT2x99AGelRdQceg9l4q9iIrW" 
+                       target="_blank" class="access-link access-link-bank-statement-vn">🏦 Bank Statement (VN)</a>
+                    <a href="https://drive.google.com/drive/u/1/folders/1ylG5_VDP020HaBXxy-o_A4QYuYiK9y8y" 
+                       target="_blank" class="access-link access-link-documentation-vn">📚 Documentation (VN)</a>
+                    
+                    <!-- Belgium Files (BE) -->
+                    <a href="https://drive.google.com/drive/folders/1xV-NfDVHTV_wsJU8siduISqUUkNL27yB?usp=drive_link" 
+                       target="_blank" class="access-link access-link-bills-be">📄 Bills (BE)</a>
+                    <a href="https://drive.google.com/drive/folders/1DAjkM8mKhFmmYGvewu5AEXmy89K_gD7p?usp=drive_link" 
+                       target="_blank" class="access-link access-link-bank-statement-be">🏦 Bank Statement (BE)</a>
+                    <a href="https://drive.google.com/drive/folders/1qBS9V8n2Z8eM_gLOP7tKOG3_YaImBVWP?usp=drive_link" 
+                       target="_blank" class="access-link access-link-documentation-be">📚 Documentation (BE)</a>
+                    </div>
+                </div>
+                
+            <!-- Tools Section -->
+                <div class="access-section">
+                <h6 class="access-heading-main">🔧 Tools</h6>
+                    <div class="access-links">
+                    <button id="newEntryBtn" class="access-link access-link-new-entry tool-btn active">✏️ New Entry</button>
+                    <button id="updateEntryBtn" class="access-link access-link-update-entry tool-btn">🔄 Update Entry</button>
+                    </div>
+                </div>
+        </div>
+        
+        <!-- =============================================================
+             MAIN FORM CONTENT
+             ============================================================= -->
+        <div class="main-content">
+            
+        <!-- =============================================================
+             MAIN FORM CONTAINER
+             ============================================================= -->
+            <div class="form-container">
+            
+            <!-- HEADER SECTION -->
+                <div class="form-header-section">
+                    <h1 class="form-main-title">✏️ New Entry</h1>
+                    <p class="form-subtitle">Create a new transaction record</p>
+                </div>
+     
+            <!-- FLASH MESSAGES -->
+                 {% with messages = get_flashed_messages(with_categories=true) %}
+                     {% if messages %}
+                         {% for category, message in messages %}
+                             <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                                 {{ message }}
+                             </div>
+                         {% endfor %}
+                     {% endif %}
+                 {% endwith %}
+     
+            <!-- ==========================================================
+                 MAIN TRANSACTION FORM
+                 ========================================================== -->
+                 <form method="POST" id="mainForm" onsubmit="return handleFormSubmit(event)">
+                
+                     <!-- TRANSACTION NUMBER SECTION -->
+                <div id="transaction-number-section" class="form-section section-transaction-number">
+                    <h4 class="section-heading heading-transaction-number">🔢 Transaction Number</h4>
+                     <div class="form-group">
+                         <label>Transaction Number:</label>
+                         <input type="text" id="transactionNumberDisplay" readonly value="Generating...">
+                         <div class="form-text">This number will be used for both the transaction and file naming</div>
+                     </div>
+                     </div>
+                     
+                     <!-- TRANSACTION TYPE SECTION -->
+                <div id="transaction-type-section" class="form-section section-transaction-type">
+                    <h4 class="section-heading heading-transaction-type">⚡ Transaction Type</h4>
+                         <div class="form-group">
+                         <label>Transaction Type:</label>
+                             <select name="transaction_category" id="transaction_category" required onchange="handleTransactionTypeChange()">
+                                <option value="payment" selected>Payment</option>
+                                <option value="internal_transfer">Internal Transfer</option>
+                                <option value="donation">Donation</option>
+                                <option value="grant">Grant</option>
+                             </select>
+                             <div class="form-text">Select the type of transaction you are recording</div>
+                         </div>
+                     </div>
+     
+                     <!-- SHEET & WORKSHEET SELECTION SECTION -->
+                <div id="sheet-worksheet-section" class="form-section section-sheet-worksheet">
+                    <h4 class="section-heading heading-sheet-worksheet">📊 Sheet & Worksheet Selection</h4>
+     
+                    <!-- Regular Transaction Sheets (for most transactions) -->
+                         <div id="regular-sheet-worksheet" class="sheet-worksheet-content">
+                             <div class="form-group">
+                                 <label>Select Sheet:</label>
+                                 <select name="sheet_id" id="sheet_select" required onchange="loadWorksheets()">
+                                     <option value="">Choose a sheet...</option>
+                                     {% for sheet in sheets %}
+                                     <option value="{{ sheet.id }}" {% if 'TMWC Vietnam Accounting' in sheet.title %}selected{% endif %}>{{ sheet.title }}</option>
+                                     {% endfor %}
+                                 </select>
+                             </div>
+                             
+                             <div class="form-group">
+                                 <label>Select Worksheet:</label>
+                                 <select name="worksheet_name" id="worksheet_select" required disabled>
+                                     <option value="">First select a sheet...</option>
+                                 </select>
+                                 <div class="form-text">This shows the name of each worksheet</div>
+                             </div>
+                         </div>
+                         
+                    </div>
+     
+                     <!-- DATE SECTION -->
+                <div id="date-section" class="form-section section-date">
+                    <h4 class="section-heading heading-date">📅 Date</h4>
+                    <div class="form-group">
+                        <label>Date:</label>
+                        <input type="text" name="date_input" id="date_input" placeholder="dd/mm/yyyy or dd/mm/yy" required>
+                        <div class="form-text">Enter date (dd/mm/yyyy or dd/mm/yy) or paste from Excel. You can also use the calendar icon.</div>
+                        </div>
+                     </div>
+     
+                     <!-- AMOUNT SECTION -->
+                <div id="amount-section" class="form-section section-amount">
+                    <h4 class="section-heading heading-amount">💰 Amount</h4>
+                     <div class="form-group">
+                         <label>Amount:</label>
+                         <input type="number" name="amount" step="0.01" required placeholder="Enter amount (always positive)">
+                         </div>
+                     
+                     <!-- Bank Fee Checkbox -->
+                     <div class="form-group">
+                         <label class="checkbox-label">
+                             <input type="checkbox" name="include_bank_fees" id="include_bank_fees">
+                             <span class="checkmark"></span>
+                             Include bank fee transactions (VND)
+                         </label>
+                         <div class="form-text">Automatically creates additional transactions for 5000 VND and 500 VND bank fees</div>
+                     </div>
+                     </div>
+     
+                     <!-- FUND SECTION -->
+                <div id="fund-section" class="form-section section-fund">
+                    <h4 class="section-heading heading-fund">🏦 Fund</h4>
+                     <div class="form-group">
+                         <label>Fund:</label>
+                         <select name="fund_id" required>
+                             <option value="">Choose a fund...</option>
+                             {% for fund in funds %}
+                            <option value="{{ fund.id }}" data-color="{{ fund.color }}" {% if fund.default %}selected{% endif %}>
+                                {{ fund.name }}
+                            </option>
+                             {% endfor %}
+                         </select>
+                         </div>
+                     </div>
+     
+                     <!-- CATEGORY SECTION -->
+                <div id="category-section" class="form-section section-category">
+                    <h4 class="section-heading heading-category">📂 Category</h4>
+                                         <div class="form-group">
+                        <label>Category:</label>
+                        <select name="category_id" required>
+                            <option value="">Choose a category...</option>
+                            {% for category in categories %}
+                            <option value="{{ category.code }}">
+                                {{ category.name }} ({{ category.category }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                         </div>
+                     </div>
+                     
+                     <!-- SUB-CATEGORY SECTION -->
+                <div id="sub-category-section" class="form-section section-sub-category">
+                    <h4 class="section-heading heading-sub-category">👤 Sub-Category</h4>
+                    <div class="form-group">
+                        <label>Sub-Category:</label>
+                        <select name="sub_category_id">
+                            <option value="">Choose a sub-category...</option>
+                            {% for sub_category in sub_categories %}
+                            <option value="{{ sub_category.id }}">
+                                {{ sub_category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Select the person or project this transaction relates to</div>
+                    </div>
+                </div>
+                    
+                <!-- =======================================================
+                     ACCOUNT SECTIONS (varies by transaction type)
+                     ======================================================= -->
+                
+                    
+                <!-- REGULAR ACCOUNT SECTIONS (for non-interbanking transfers) -->
+                    <div id="regularAccountSections">
+                    
+                    <!-- Debit Account -->
+                    <div id="debit-account-section" class="form-section section-debit-account">
+                        <h4 class="section-heading heading-debit-account">💳 Debit Account</h4>
+                    <div class="form-group">
+                        <label>Debit:</label>
+                                <select name="regular_debit_account_id" required>
+                            <option value="">Choose account to debit...</option>
+                            {% for account in accounts %}
+                            <option value="{{ account.code }}">
+                                {{ account.name }} ({{ account.type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                            <div class="form-text">Select the account to be debited [Payment: Increase] [Internal Transfer: To] [Donation/Grant: Receiver]</div>
+                            </div>
+                    </div>
+                    
+                    <!-- Credit Account -->
+                    <div id="credit-account-section" class="form-section section-credit-account">
+                        <h4 class="section-heading heading-credit-account">💰 Credit Account</h4>
+                    <div class="form-group">
+                        <label>Credit:</label>
+                                <select name="regular_credit_account_id" required>
+                            <option value="">Choose account to credit...</option>
+                            {% for account in accounts %}
+                            <option value="{{ account.code }}">
+                                {{ account.name }} ({{ account.type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                            <div class="form-text">Select the account to be credited [Payment: Decrease] [Internal Transfer: From] [Donation/Grant: Source]</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- PAYMENT METHOD SECTION -->
+                <div id="payment-method-section" class="form-section section-payment-method">
+                    <h4 class="section-heading heading-payment-method">💳 Payment Method</h4>
+                        <div class="form-group">
+                            <label>Payment Method:</label>
+                            <select name="payment_method" id="payment_method" required>
+                                <option value="bank" selected>Bank</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                            <div class="form-text">Select how the payment was made</div>
+                        </div>
+                    </div>
+     
+                     <!-- DESCRIPTION SECTION -->
+                <div id="description-section" class="form-section section-description">
+                    <h4 class="section-heading heading-description">📝 Description</h4>
+                     <div class="form-group">
+                         <label>Description:</label>
+                         <textarea name="description" id="descriptionField" rows="3" required placeholder="Enter description"></textarea>
+                         </div>
+                         
+                     <div class="form-group">
+                         <label>Bank Transaction Reference Number:</label>
+                         <input type="text" name="reference_number" id="referenceNumberField" placeholder="Enter bank transaction reference number (e.g., 120TFIN221680056)">
+                         <div class="form-text">Enter the reference number from your bank statement</div>
+                         </div>
+     
+                    <!-- Hidden fields for file uploads -->
+                        <input type="hidden" name="bills_file_link" id="billsFileLinkInput">
+                        <input type="hidden" name="bills_file_name" id="billsFileNameInput">
+                        <input type="hidden" name="red_bills_file_link" id="redBillsFileLinkInput">
+                        <input type="hidden" name="red_bills_file_name" id="redBillsFileNameInput">
+                        <input type="hidden" name="documentation_file_link" id="documentationFileLinkInput">
+                        <input type="hidden" name="documentation_file_name" id="documentationFileNameInput">
+                        <input type="hidden" name="transaction_number" id="transactionNumberInput">
+                </div>
+                
+                <!-- DOCUMENT UPLOAD SECTION -->
+                <div id="document-upload-section" class="form-section section-document-upload">
+                    <h4 class="section-heading heading-document-upload">📎 Document Upload</h4>
+                    <p style="margin-bottom: 20px; color: #6c757d; font-size: 14px;">Choose document type and either upload a file or paste a Google Drive link.</p>
+                    
+                    <!-- Document Type Dropdown -->
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">📋 Select Document Type:</label>
+                        <select id="documentTypeDropdown" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; background: white;">
+                            <option value="">-- Choose document type --</option>
+                            <option value="bills">📄 Bills (Receipts, invoices, supporting documents)</option>
+                            <option value="redBills">🔴 Red Bills (Urgent payment documents)</option>
+                            <option value="bankStatement">🏦 Bank Statement (Bank transaction records)</option>
+                            <option value="documentation">📚 Documentation (Reference materials)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Upload Mode Toggle -->
+                    <div id="uploadModeToggle" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 6px; border: 1px solid #ddd; display: none;">
+                        <div style="display: flex; gap: 20px; margin-bottom: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+                                <input type="radio" name="uploadMode" value="file" checked style="margin: 0;">
+                                <span style="font-weight: 500;">📁 Upload File</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+                                <input type="radio" name="uploadMode" value="link" style="margin: 0;">
+                                <span style="font-weight: 500;">🔗 Google Drive Link</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- File Upload Section -->
+                    <div id="fileUploadSection" style="display: none; background: white; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📁 Select File:</label>
+                        <input type="file" id="documentFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg" 
+                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 10px;">
+                        <div style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">
+                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                            <strong>Maximum size:</strong> 16MB
+                        </div>
+                        <button type="button" id="uploadFileBtn" class="btn-enhanced" 
+                                style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                            Upload File
+                        </button>
+                    </div>
+                    
+                    <!-- Google Drive Link Section -->
+                    <div id="googleDriveLinkSection" style="display: none; background: white; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">🔗 Google Drive Link:</label>
+                        <input type="url" id="googleDriveLinkInput" placeholder="Paste your Google Drive link here..." 
+                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 15px;">
+                        <button type="button" id="processGoogleDriveBtn" class="btn-enhanced" 
+                                style="background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                            Process Google Drive Link
+                        </button>
+                    </div>
+                    
+                    <!-- Upload Status -->
+                    <div id="uploadStatus" style="display: none; margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 6px; border: 1px solid #c3e6cb;">
+                        <div id="uploadStatusMessage" style="color: #155724; font-weight: 600;"></div>
+                    </div>
+                    
+                    <!-- Upload Progress -->
+                    <div id="uploadProgress" style="display: none; flex: 1; margin-left: 10px;">
+                        <div style="background: #e9ecef; height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div id="progressBar" style="background: linear-gradient(90deg, #28a745, #20c997); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <small id="progressText" style="color: #6c757d; font-size: 12px;">Uploading...</small>
+                    </div>
+                    
+                    <div id="uploadResult" style="margin-top: 15px; display: none;"></div>
+                </div>
+    
+                </form>
+     
+     
+            <!-- FINAL SUBMIT BUTTON -->
+            <button type="submit" form="mainForm" class="btn-enhanced enhanced-submit-btn">
+                    🚀 Submit to Google Sheets
+                </button>
+            
+        </div> <!-- End form-container -->
+        
+        <!-- =============================================================
+             UPDATE ENTRY FORM (Initially Hidden)
+             ============================================================= -->
+        <div id="updateFormContainer" class="form-container update-form-container" style="display: none;">
+            
+            <!-- UPDATE FORM HEADER -->
+            <div class="form-header-section">
+                <h1 class="form-main-title">🔄 Update Transaction</h1>
+                <p class="form-subtitle">Search and modify existing transaction records</p>
+            </div>
+            
+            <!-- SEARCH TRANSACTION SECTION -->
+            <div class="form-section" id="search-transaction-section">
+                <div class="section-header">
+                    <span class="section-icon">🔍</span>
+                    <h3 class="section-title">Search Transaction</h3>
+                    <p class="section-description">Select the sheet and enter the transaction number to find and update an existing record</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="searchSheet" class="form-label">
+                        <span class="label-icon">📊</span>
+                        Select Sheet to Search:
+                        <span class="required-asterisk">*</span>
+                    </label>
+                    <select id="searchSheet" name="searchSheet" class="form-control" required>
+                        <option value="vn">🇻🇳 Vietnamese Master Ledger (Default)</option>
+                        <option value="be">🇧🇪 Belgian Master Ledger</option>
+                    </select>
+                    <div class="field-help">
+                        <small class="help-text">
+                            💡 Choose which master ledger to search in
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="searchTransactionNumber" class="form-label">
+                        <span class="label-icon">🔢</span>
+                        Search Transaction Number:
+                        <span class="required-asterisk">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="searchTransactionNumber" 
+                        name="searchTransactionNumber" 
+                        class="form-control" 
+                        placeholder="Enter transaction number (e.g., 260925-110759)"
+                        required
+                    >
+                    <div class="field-help">
+                        <small class="help-text">
+                            💡 Enter the complete transaction number to search for existing records
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" id="searchTransactionBtn" class="btn-enhanced enhanced-search-btn">
+                        🔍 Search Transaction
+                    </button>
+                </div>
+                
+                <!-- Search Results Area -->
+                <div id="searchResults" class="search-results-container" style="display: none;">
+                    <div class="alert alert-success">
+                        <strong>✅ Transaction Found!</strong>
+                        <p>Transaction details retrieved successfully. Ready for document updates.</p>
+                    </div>
+                    
+                    <!-- Transaction Details Table -->
+                    <div id="transactionDetails" class="transaction-details-table">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    
+                    <!-- Update Options -->
+                    <div id="updateOptions" class="update-options-section">
+                        <h4>📎 Update Attached Documents</h4>
+                        <p class="update-description">Upload new documents to replace existing ones</p>
+                        
+                        <!-- File Upload Sections (Same as New Entry) -->
+                        <div class="form-section" id="upload-bills-section">
+                            <div class="section-header">
+                                <span class="section-icon">📄</span>
+                                <h3 class="section-title">Bills Upload</h3>
+                                <p class="section-description">Upload normal bills and receipts</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="billsFile" class="enhanced-file-input-label">
+                                    <span class="file-icon">📄</span>
+                                    <span class="file-text">Choose Bills File</span>
+                                    <span class="file-hint">Click to select or drag & drop</span>
+                                </label>
+                                <input type="file" id="billsFile" name="billsFile" class="enhanced-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section" id="upload-red-bills-section">
+                            <div class="section-header">
+                                <span class="section-icon">🔴</span>
+                                <h3 class="section-title">Red Bills Upload</h3>
+                                <p class="section-description">Upload red bills and invoices</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="redBillsFile" class="enhanced-file-input-label">
+                                    <span class="file-icon">🔴</span>
+                                    <span class="file-text">Choose Red Bills File</span>
+                                    <span class="file-hint">Click to select or drag & drop</span>
+                                </label>
+                                <input type="file" id="redBillsFile" name="redBillsFile" class="enhanced-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            </div>
+                        </div>
+                        
+                        <div class="form-section" id="upload-documentation-section">
+                            <div class="section-header">
+                                <span class="section-icon">📚</span>
+                                <h3 class="section-title">Documentation Upload</h3>
+                                <p class="section-description">Upload supporting documentation</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="documentationFile" class="enhanced-file-input-label">
+                                    <span class="file-icon">📚</span>
+                                    <span class="file-text">Choose Documentation File</span>
+                                    <span class="file-hint">Click to select or drag & drop</span>
+                                </label>
+                                <input type="file" id="documentationFile" name="documentationFile" class="enhanced-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            </div>
+                        </div>
+                        
+                        <!-- Update Submit Button -->
+                        <div class="form-group">
+                            <button type="button" id="updateTransactionBtn" class="btn-enhanced enhanced-submit-btn">
+                                🔄 Update Transaction Documents
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <!-- End update-form-container -->
+        
+        </div> <!-- End main-content -->
+        
+        <!-- =============================================================
+             NAVIGATION PANEL (Right Sidebar)
+             ============================================================= -->
+        <div id="form-navigation" class="form-navigation">
+            <h5>📋 Quick Navigation</h5>
+            <div class="nav-links">
+                <!-- Core Transaction Fields -->
+                <a href="#transaction-number-section" class="nav-link nav-link-base nav-border-gray">🔢 Number</a>
+                <a href="#transaction-type-section" class="nav-link nav-link-base nav-border-yellow">⚡ Type</a>
+                <a href="#sheet-worksheet-section" class="nav-link nav-link-base nav-border-orange">📊 Sheet</a>
+                <a href="#date-section" class="nav-link nav-link-base nav-border-green">📅 Date</a>
+                <a href="#amount-section" class="nav-link nav-link-base nav-border-red">💰 Amount</a>
+                <a href="#fund-section" class="nav-link nav-link-base nav-border-teal">🏦 Fund</a>
+                <a href="#category-section" class="nav-link nav-link-base nav-border-brown">📂 Category</a>
+                
+                <!-- Regular Account Links (shown for most transaction types) -->
+                <a href="#debit-account-section" class="nav-link regular-account nav-link-base nav-border-blue">💳 Debit</a>
+                <a href="#credit-account-section" class="nav-link regular-account nav-link-base nav-border-purple">💰 Credit</a>
+                <a href="#payment-method-section" class="nav-link nav-link-base nav-border-cyan">💳 Payment Method</a>
+                <a href="#description-section" class="nav-link nav-link-base nav-border-black">📝 Description</a>
+                <a href="#document-upload-section" class="nav-link nav-link-base nav-border-green">📎 Document Upload</a>
+                
+                <!-- Submit Button -->
+                <a href="#" class="nav-link nav-submit-btn" id="submitNavBtn">🚀 Submit to Google Sheets</a>
+                
+            </div>
+        </div>
+        
+    </div> <!-- End container -->
+    
+    <!-- =================================================================
+         CHATBOT INTEGRATION - Embeddable Widget with Lottie Animation
+         ================================================================= -->
+    <!-- Lottie Animation Script -->
+    <script
+        src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js"
+        type="module">
+    </script>
+
+    <!-- Container for the widget -->
+    <div id="chatbot-widget" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    ">
+        <!-- Robot Button with Lottie Animation - No Background -->
+        <div id="chat-toggle" style="
+            width: 180px;
+            height: 180px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            animation: gentleBounce 3s ease-in-out infinite;
+            overflow: visible;
+            position: relative;
+        " onclick="toggleChat()">
+            <!-- Lottie Robot Animation - Full Size -->
+            <dotlottie-wc
+                src="https://lottie.host/1274f05f-0d0e-470b-988e-b3f0a3426a5c/9K3tUb0dDP.lottie"
+                style="width: 160px; height: 160px; background: transparent;"
+                speed="1.2"
+                autoplay
+                loop>
+            </dotlottie-wc>
+        </div>
+
+        <!-- Chat Window (Hidden by default) -->
+        <div id="chat-window" style="
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        ">
+            <!-- Chat Header -->
+            <div style="
+                background: linear-gradient(45deg, #2196F3, #21CBF3);
+                color: white;
+                padding: 15px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            ">
+                <h4 style="margin: 0;">🤖 Sailor Sheet Assistant</h4>
+                <button onclick="toggleChat()" style="
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 20px;
+                    cursor: pointer;
+                    padding: 0;
+                    width: 25px;
+                    height: 25px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">&times;</button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chat-messages" style="
+                flex: 1;
+                padding: 15px;
+                overflow-y: auto;
+                background: #f8f9fa;
+            ">
+                <div style="
+                    background: white;
+                    padding: 10px 15px;
+                    border-radius: 15px;
+                    margin-bottom: 10px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                ">
+                    Hello! I'm your AI Sailor Sheet assistant. How can I help you today?
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div style="
+                padding: 15px;
+                border-top: 1px solid #e0e0e0;
+                background: white;
+                display: flex;
+                gap: 10px;
+            ">
+                <input type="text" id="chat-input" placeholder="Type your message..." style="
+                    flex: 1;
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 20px;
+                    outline: none;
+                    font-size: 14px;
+                " onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" style="
+                    background: #2196F3;
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                ">→</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes gentleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        @keyframes blink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+        
+        @keyframes lookAround {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+        
+        #chat-toggle:hover {
+            animation-play-state: paused;
+            transform: scale(1.1);
+        }
+        
+        /* Lottie Animation Styling - No Background */
+        dotlottie-wc {
+            display: block;
+            background: transparent !important;
+            border-radius: 0 !important;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+        }
+        
+        /* Enhanced robot animation on hover */
+        #chat-toggle:hover dotlottie-wc {
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+        }
+        
+        /* Ensure no circular background anywhere */
+        #chat-toggle {
+            border-radius: 0 !important;
+            background: none !important;
+            box-shadow: none !important;
+        }
+        
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .user-message {
+            background: #2196F3;
+            color: white;
+            margin-left: 50px;
+            text-align: right;
+        }
+        
+        .bot-message {
+            background: white;
+            margin-right: 50px;
+        }
+    </style>
+
+    <!-- =================================================================
+         JAVASCRIPT - ES6 Modules
+         ================================================================= -->
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/global-bridge.js') }}"></script>
+    
+    <!-- Application JavaScript (Externalized for Performance) -->
+    <script src="{{ url_for('static', filename='js/app-inline.js') }}"></script>
+    
+    <!-- Note: This script was moved from inline to external file for:
+         - Better browser caching
+         - Cleaner HTML structure
+         - NO logic changes - exact same code
+        let isOpen = false;
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            const chatToggle = document.getElementById('chat-toggle');
+            
+            isOpen = !isOpen;
+            
+            if (isOpen) {
+                chatWindow.style.display = 'flex';
+                chatToggle.style.transform = 'scale(0.9)';
+                document.getElementById('chat-input').focus();
+            } else {
+                chatWindow.style.display = 'none';
+                chatToggle.style.transform = 'scale(1)';
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Generate bot response after a delay
+            setTimeout(() => {
+                const response = getBotResponse(message);
+                addMessage(response, 'bot');
+            }, 800);
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            
+            messageDiv.className = `chat-message ${sender}-message`;
+            messageDiv.textContent = text;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function getBotResponse(message) {
+            const responses = {
+                'hello': 'Hi there! How can I help you with your accounting today?',
+                'hi': 'Hello! What would you like to know about Sailor Sheet?',
+                'help': 'I can help you with creating transactions, understanding categories, finding accounts, and general accounting questions.',
+                'transaction': 'To create a transaction, fill out the form fields: date, description, amount, category, account, and fund. Then click Submit to Google Sheets.',
+                'category': 'Categories help organize your transactions. You can select from the dropdown or add new ones.',
+                'account': 'Accounts represent where the money comes from or goes to. Choose the appropriate account from the dropdown.',
+                'fund': 'Funds help you track different sources of money or projects within your organization.',
+                'sheet': 'This form submits data directly to your Google Sheets. Make sure you have the right sheet selected!',
+                'how': 'I can guide you through the process. What specifically do you need help with?'
+            };
+
+            const lowerMessage = message.toLowerCase();
+            
+            for (const key in responses) {
+                if (lowerMessage.includes(key)) {
+                    return responses[key];
+                }
+            }
+            
+            return "I'm here to help with your accounting questions! Try asking about transactions, categories, accounts, or funds.";
+        }
+
+        // Close chat when clicking outside
+        document.addEventListener('click', function(e) {
+            const widget = document.getElementById('chatbot-widget');
+            if (isOpen && !widget.contains(e.target)) {
+                toggleChat();
+            }
+        });
+
+        // =====================================================================
+        // TOOLS FUNCTIONALITY - Toggle between New Entry and Update Entry
+        // =====================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const newEntryBtn = document.getElementById('newEntryBtn');
+            const updateEntryBtn = document.getElementById('updateEntryBtn');
+            const mainFormContainer = document.querySelector('.form-container:not(.update-form-container)');
+            const updateFormContainer = document.getElementById('updateFormContainer');
+            const searchTransactionBtn = document.getElementById('searchTransactionBtn');
+            const searchResults = document.getElementById('searchResults');
+
+            // New Entry Button Click
+            newEntryBtn.addEventListener('click', function() {
+                // Update active states
+                newEntryBtn.classList.add('active');
+                updateEntryBtn.classList.remove('active');
+                
+                // Show/hide forms
+                mainFormContainer.style.display = 'block';
+                updateFormContainer.style.display = 'none';
+                
+                console.log('✏️ Switched to New Entry mode');
+            });
+
+            // Update Entry Button Click
+            updateEntryBtn.addEventListener('click', function() {
+                // Update active states
+                updateEntryBtn.classList.add('active');
+                newEntryBtn.classList.remove('active');
+                
+                // Show/hide forms
+                mainFormContainer.style.display = 'none';
+                updateFormContainer.style.display = 'block';
+                
+                console.log('🔄 Switched to Update Entry mode');
+            });
+
+            // Search Transaction Button Click
+            searchTransactionBtn.addEventListener('click', function() {
+                const transactionNumber = document.getElementById('searchTransactionNumber').value.trim();
+                const selectedSheet = document.getElementById('searchSheet').value;
+                
+                if (!transactionNumber) {
+                    alert('Please enter a transaction number to search');
+                    return;
+                }
+                
+                // Show loading state
+                searchResults.style.display = 'block';
+                searchResults.innerHTML = `
+                    <div class="alert alert-info">
+                        <strong>🔍 Searching for: ${transactionNumber}</strong>
+                        <p>Searching in ${selectedSheet === 'vn' ? 'Vietnamese' : 'Belgian'} Master Ledger...</p>
+                        <p><em>Please wait while we retrieve the transaction data...</em></p>
+                    </div>
+                `;
+                
+                // Call the real API
+                fetch('/api/search_transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sheet_type: selectedSheet,
+                        transaction_number: transactionNumber
+                    })
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    console.log('Response ok:', response.ok);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API Response received:', data);
+                    console.log('Response type:', typeof data);
+                    console.log('Response keys:', Object.keys(data || {}));
+                    
+                    if (data && data.success) {
+                        console.log('Transaction data received:', data.data);
+                        console.log('Number of fields:', Object.keys(data.data).length);
+                        console.log('Field names:', Object.keys(data.data));
+                        console.log('Field values:', Object.values(data.data));
+                        
+                        // Store the transaction number for later use in file uploads
+                        const transactionNumberFromData = data.data['Transaction Number'];
+                        if (transactionNumberFromData) {
+                            console.log(`DEBUG: Storing transaction number for uploads: "${transactionNumberFromData}"`);
+                            // Store in a data attribute on the search results container
+                            if (searchResults) {
+                                searchResults.setAttribute('data-transaction-number', transactionNumberFromData);
+                            }
+                            // Also store in sessionStorage for backup
+                            sessionStorage.setItem('currentTransactionNumber', transactionNumberFromData);
+                        }
+                        
+                        displayTransactionDetails(data.data);
+                    } else {
+                        console.log('Search failed or no data:', data);
+                        // Show error message
+                        if (searchResults) {
+                            searchResults.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <strong>❌ Search Failed</strong>
+                                    <p>${data ? data.error : 'No response data'}</p>
+                                </div>
+                            `;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    if (searchResults) {
+                        searchResults.innerHTML = `
+                            <div class="alert alert-danger">
+                                <strong>❌ Error</strong>
+                                <p>Search failed: ${error.message}</p>
+                                <p>Check console for details.</p>
+                            </div>
+                        `;
+                    }
+                });
+                
+                console.log('🔍 Searching for transaction:', transactionNumber, 'in sheet:', selectedSheet);
+            });
+            
+        // Display Transaction Details Function
+        function displayTransactionDetails(transactionData) {
+            console.log('=== DEBUGGING DISPLAY TRANSACTION DETAILS ===');
+            console.log('1. Function called with data:', transactionData);
+            
+            // Check if updateFormContainer exists
+            const updateFormContainer = document.getElementById('updateFormContainer');
+            console.log('2. updateFormContainer found:', !!updateFormContainer);
+            
+            if (!updateFormContainer) {
+                console.error('FATAL: updateFormContainer not found');
+                return;
+            }
+            
+            // Make it visible
+            updateFormContainer.style.display = 'block';
+            console.log('3. Made updateFormContainer visible');
+            
+            // Check if searchResults exists
+            const searchResults = document.getElementById('searchResults');
+            console.log('4. searchResults found:', !!searchResults);
+            
+            if (!searchResults) {
+                console.error('FATAL: searchResults not found');
+                return;
+            }
+            
+            // Show loading message in searchResults
+            searchResults.style.display = 'block';
+            searchResults.innerHTML = `
+                <div class="alert alert-success">
+                    <strong>✅ Transaction Found!</strong>
+                    <p>Transaction details retrieved successfully. Ready for document updates.</p>
+                </div>
+                
+                <!-- Transaction Details Table -->
+                <div id="transactionDetails" class="transaction-details-table">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                
+                <!-- Transaction details will be populated here -->
+            `;
+            console.log('5. Set searchResults HTML with new transactionDetails');
+            
+            // Now find the transactionDetails element
+            setTimeout(() => {
+                const transactionDetails = document.getElementById('transactionDetails');
+                console.log('6. transactionDetails found after creating:', !!transactionDetails);
+                
+                if (!transactionDetails) {
+                    console.error('FATAL: Still cannot find transactionDetails after creating it');
+                    return;
+                }
+                
+                console.log('7. Creating table...');
+                displayTransactionTable(transactionData, transactionDetails);
+            }, 50);
+        }
+        
+        // Separate function to display the transaction table
+        function displayTransactionTable(transactionData, transactionDetails) {
+            console.log('Creating transaction table with data:', transactionData);
+            console.log('Available field names:', Object.keys(transactionData));
+            
+            // Extract debit and credit account information
+            console.log('=== EXTRACTING ACCOUNTS ===');
+            console.log('Transaction data keys:', Object.keys(transactionData));
+            console.log('Full transaction data:', transactionData);
+            
+            // Use the accounts that were identified by the backend
+            const debitAccount = transactionData['Debit Account'] || 'Not specified';
+            const creditAccount = transactionData['Credit Account'] || 'Not specified';
+            
+            console.log('Debit Account from backend:', debitAccount);
+            console.log('Credit Account from backend:', creditAccount);
+            
+            // Create simple accounts header
+            const accountsHeader = `
+                <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                    <h4 style="margin: 0 0 8px 0; color: #495057; font-size: 1.1em;">Accounts Involved in this Transaction:</h4>
+                    <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                        <span><strong style="color: #dc3545;">Debit:</strong> ${debitAccount}</span>
+                        <span style="color: #6c757d;">↔️</span>
+                        <span><strong style="color: #28a745;">Credit:</strong> ${creditAccount}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Create table rows in the exact same order as Google Sheets columns
+            const columnOrder = [
+                'Transaction Number',    // Column A
+                'dd/mm/YY',             // Column B (exact field name from headers)
+                'Month',                // Column C
+                'Year',                 // Column D
+                'Funds',                // Column E
+                'Account',              // Column F
+                'Category',             // Column G
+                'Debit (VND)',          // Column H
+                'Credit (VND)',         // Column I
+                'Payment Method',        // Column K (Payment)
+                'Description',          // Column L
+                'Bank Transaction Number', // Column M (Bank Transaction)
+                'Bill',                 // Column N (Normal Bill)
+                'Red BIll',             // Column O (Red Bill - note the capital I)
+                'Doc'                   // Column P (Supporting Documentation)
+            ];
+            
+            let tableRows = '';
+            
+            // First, add fields in the specified column order
+            for (const field of columnOrder) {
+                const docFields = new Set(['Bill', 'Red BIll', 'Doc']);
+                const rawValue = transactionData[field] ?? '';
+                const hasContent = typeof rawValue === 'string' ? rawValue.trim() !== '' : !!rawValue;
+                
+                // Always show document fields, even if empty
+                if (hasContent || docFields.has(field)) {
+                    let fieldValue = rawValue;
+
+                    // Document fields: create clickable links or show placeholders
+                    if (docFields.has(field)) {
+                        if (!fieldValue || fieldValue.trim() === '') {
+                            fieldValue = '—';
+                        } else if (typeof fieldValue === 'string' && (fieldValue.startsWith('http') || fieldValue.startsWith('https'))) {
+                            fieldValue = `<a href="${fieldValue}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>`;
+                        } else if (fieldValue === '✔') {
+                            fieldValue = '✔ Available (see sheet)';
+                        } else {
+                            fieldValue = `📄 ${fieldValue}`;
+                        }
+                    }
+
+                    tableRows += `
+                        <tr>
+                            <td class="field-label">${formatFieldName(field)}</td>
+                            <td class="field-value">${fieldValue}</td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            // Then add any remaining fields not in the column order
+            for (const [field, value] of Object.entries(transactionData)) {
+                if (value && value.trim() !== '' && 
+                    field !== 'N' && 
+                    !columnOrder.includes(field)) {
+                    tableRows += `
+                        <tr>
+                            <td class="field-label">${formatFieldName(field)}</td>
+                            <td class="field-value">${value}</td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            console.log('Generated table rows:', tableRows);
+            
+            // Create three-column layout for double-entry bookkeeping
+            const threeColumnRows = createThreeColumnLayout(transactionData);
+            
+            transactionDetails.innerHTML = `
+                ${accountsHeader}
+                <div style="margin: 30px 0; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h4 style="color: #495057; margin-bottom: 20px; font-size: 1.2em;">📊 Double-Entry Transaction Details</h4>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd; background: white;">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    <th style="padding: 15px; border: 1px solid #ddd; text-align: left; width: 20%; font-weight: 600;">Field</th>
+                                    <th style="padding: 15px; border: 1px solid #ddd; text-align: center; width: 40%; background: #dc3545; color: white; font-weight: 600;">Debit Details</th>
+                                    <th style="padding: 15px; border: 1px solid #ddd; text-align: center; width: 40%; background: #28a745; color: white; font-weight: 600;">Credit Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${threeColumnRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Interactive Document Upload Subform -->
+                <div style="margin-top: 30px; padding: 25px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <h4 style="color: #495057; margin-bottom: 20px; font-size: 1.1em;">📎 Update Attached Documents</h4>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">Select Document Type to Update:</label>
+                        <select id="documentTypeSelect" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <option value="">Choose document type...</option>
+                            <option value="bill">📄 Bill (Normal Invoice)</option>
+                            <option value="redBill">🔴 Red Bill (Special Invoice)</option>
+                            <option value="bankStatement">🏦 Bank Statement (Bank transaction records)</option>
+                            <option value="documentation">📋 Supporting Documentation</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Dynamic Upload Form (initially hidden) -->
+                    <div id="uploadFormContainer" style="display: none; padding: 20px; background: white; border-radius: 6px; border: 1px solid #dee2e6;">
+                        <h5 style="margin: 0 0 15px 0; color: #495057;" id="uploadFormTitle">Upload Document</h5>
+                        
+                        <form id="documentUploadForm" enctype="multipart/form-data">
+                            <!-- Upload Mode Toggle -->
+                            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📎 Upload Method:</label>
+                                <div style="display: flex; gap: 20px; margin-bottom: 10px;">
+                                    <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #e3f2fd; border: 1px solid #2196f3;">
+                                        <input type="radio" name="updateUploadMode" value="file" checked style="margin-right: 8px;">
+                                        <span style="font-weight: 500;">📁 Upload New File</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 4px; background: #f3e5f5; border: 1px solid #9c27b0;">
+                                        <input type="radio" name="updateUploadMode" value="link" style="margin-right: 8px;">
+                                        <span style="font-weight: 500;">🔗 Link Existing File</span>
+                                    </label>
+                                </div>
+                                <small style="color: #6c757d; font-size: 12px;">
+                                    💡 Choose how you want to add the document: upload a new file or link to an existing Google Drive file
+                                </small>
+                            </div>
+                            
+                            <!-- File Upload Section -->
+                            <div id="updateFileUploadSection" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Select File:</label>
+                                <input type="file" id="documentFile" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.txt" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <small style="color: #6c757d; font-size: 12px;">Allowed: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, GIF, TXT</small>
+                            </div>
+                            
+                            <!-- Google Drive Link Section -->
+                            <div id="linkInputSection" style="margin-bottom: 15px; display: none;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #495057;">Google Drive Link:</label>
+                                <input type="url" id="googleDriveLink" placeholder="Paste Google Drive URL here..." 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <small style="color: #6c757d; font-size: 12px; margin-top: 5px; display: block;">
+                                    💡 Tip: Copy the "Share" link from Google Drive (make sure it's set to "Anyone with the link can view")
+                                </small>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <button type="submit" id="uploadBtn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                    📤 Upload to Google Drive
+                                </button>
+                                <button type="button" id="updateSheetsBtn" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: none;">
+                                    📊 Update Google Sheets
+                                </button>
+                                <button type="button" id="cancelUploadBtn" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                    ❌ Cancel
+                                </button>
+                                <div id="uploadProgress" style="display: none; flex: 1; margin-left: 10px;">
+                                    <div style="background: #e9ecef; border-radius: 4px; height: 8px; overflow: hidden;">
+                                        <div id="progressBar" style="background: linear-gradient(90deg, #28a745, #20c997); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                                    </div>
+                                    <small id="progressText" style="color: #6c757d; font-size: 12px;">Uploading...</small>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div id="uploadResult" style="margin-top: 15px; display: none;"></div>
+                    </div>
+                </div>
+            `;
+            
+            console.log('Table HTML set successfully');
+            
+            // Update the alert message
+            const searchResults = document.getElementById('searchResults');
+            if (searchResults) {
+                const alertDiv = searchResults.querySelector('.alert');
+                if (alertDiv) {
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.innerHTML = `
+                        <strong>✅ Transaction Found!</strong>
+                        <p>Transaction details retrieved successfully. Ready for document updates.</p>
+                    `;
+                }
+            }
+            
+            // Initialize document upload functionality
+            initializeDocumentUpload();
+        }
+        
+        // Initialize document upload functionality
+        function initializeDocumentUpload() {
+            const documentTypeSelect = document.getElementById('documentTypeSelect');
+            const uploadFormContainer = document.getElementById('uploadFormContainer');
+            const uploadFormTitle = document.getElementById('uploadFormTitle');
+            const documentUploadForm = document.getElementById('documentUploadForm');
+            const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+            
+            // Apply country filtering to update form dropdown when it becomes visible
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const target = mutation.target;
+                        if (target.id === 'updateOptions' && target.style.display !== 'none') {
+                            console.log('DEBUG: Update form became visible, applying country filtering');
+                            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+                            updateDocumentTypeDropdown(selectedCountry);
+                        }
+                    }
+                });
+            });
+            
+            // Observe the update form container for visibility changes
+            const updateOptions = document.getElementById('updateOptions');
+            if (updateOptions) {
+                observer.observe(updateOptions, { attributes: true, attributeFilter: ['style'] });
+            }
+            
+            // Upload mode toggle elements (for update form)
+            const uploadModeRadios = document.querySelectorAll('input[name="updateUploadMode"]');
+            const fileUploadSection = document.getElementById('updateFileUploadSection');
+            const linkInputSection = document.getElementById('linkInputSection');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            if (!documentTypeSelect || !uploadFormContainer) return;
+            
+            // Handle upload mode toggle
+            uploadModeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'file') {
+                        // Show file upload, hide link input
+                        fileUploadSection.style.display = 'block';
+                        linkInputSection.style.display = 'none';
+                        uploadBtn.textContent = '📤 Upload to Google Drive';
+                        uploadBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                        
+                        // Clear link input
+                        document.getElementById('googleDriveLink').value = '';
+                    } else if (this.value === 'link') {
+                        // Show link input, hide file upload
+                        fileUploadSection.style.display = 'none';
+                        linkInputSection.style.display = 'block';
+                        uploadBtn.textContent = '🔗 Process Google Drive Link';
+                        uploadBtn.style.background = 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)';
+                        
+                        // Clear file input
+                        document.getElementById('documentFile').value = '';
+                    }
+                });
+            });
+            
+            // Show/hide upload form based on document type selection
+            documentTypeSelect.addEventListener('change', function() {
+                const selectedType = this.value;
+                
+                if (selectedType) {
+                    // Show upload form
+                    uploadFormContainer.style.display = 'block';
+                    
+                    // Update form title based on selection
+                    const typeNames = {
+                        'bill': '📄 Bill (Normal Invoice)',
+                        'redBill': '🔴 Red Bill (Special Invoice)',
+                        'bankStatement': '🏦 Bank Statement (Bank transaction records)',
+                        'documentation': '📋 Supporting Documentation'
+                    };
+                    uploadFormTitle.textContent = `Upload ${typeNames[selectedType]}`;
+                } else {
+                    // Hide upload form
+                    uploadFormContainer.style.display = 'none';
+                }
+            });
+            
+            // Apply country filtering when dropdown is clicked/focused
+            documentTypeSelect.addEventListener('focus', function() {
+                console.log('DEBUG: Update form dropdown focused, applying country filtering');
+                forceUpdateDocumentTypeDropdowns();
+            });
+            
+            documentTypeSelect.addEventListener('click', function() {
+                console.log('DEBUG: Update form dropdown clicked, applying country filtering');
+                forceUpdateDocumentTypeDropdowns();
+            });
+            
+            // Cancel upload
+            if (cancelUploadBtn) {
+                cancelUploadBtn.addEventListener('click', function() {
+                    uploadFormContainer.style.display = 'none';
+                    documentTypeSelect.value = '';
+                    documentUploadForm.reset();
+                    hideUploadResult();
+                    
+                    // Hide the Google Sheets update button
+                    const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                    if (updateSheetsBtn) {
+                        updateSheetsBtn.style.display = 'none';
+                        updateSheetsBtn.disabled = false;
+                        updateSheetsBtn.textContent = '📊 Update Google Sheets';
+                        updateSheetsBtn.style.background = 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)';
+                    }
+                    
+                    // Clear uploaded file data
+                    window.uploadedFileData = null;
+                });
+            }
+            
+            // Handle form submission (Step 1: Upload to Google Drive or Process Link)
+            if (documentUploadForm) {
+                documentUploadForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Check which mode is selected (for update form)
+                    const allUploadModeElements = document.querySelectorAll('input[name="updateUploadMode"]');
+                    console.log('DEBUG: All update upload mode elements found:', allUploadModeElements.length);
+                    allUploadModeElements.forEach((el, index) => {
+                        console.log(`DEBUG: Update upload mode ${index}:`, el.value, 'checked:', el.checked);
+                    });
+                    
+                    const selectedModeElement = document.querySelector('input[name="updateUploadMode"]:checked');
+                    console.log('DEBUG: Selected update mode element:', selectedModeElement);
+                    
+                    if (!selectedModeElement) {
+                        console.error('ERROR: No upload mode selected');
+                        showUploadResult('Please select an upload method.', 'error');
+                        return;
+                    }
+                    
+                    const selectedMode = selectedModeElement.value;
+                    console.log('DEBUG: Selected mode value:', selectedMode);
+                    
+                    if (selectedMode === 'file') {
+                        console.log('DEBUG: Calling handleDocumentUpload()');
+                        handleDocumentUpload();
+                    } else if (selectedMode === 'link') {
+                        console.log('DEBUG: Calling handleGoogleDriveLink()');
+                        handleGoogleDriveLink();
+                    } else {
+                        console.error('ERROR: Unknown upload mode:', selectedMode);
+                        showUploadResult('Unknown upload method selected.', 'error');
+                    }
+                });
+            }
+            
+            // Handle Google Sheets update (Step 2: Update Google Sheets)
+            const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+            if (updateSheetsBtn) {
+                updateSheetsBtn.addEventListener('click', function() {
+                    handleGoogleSheetsUpdate();
+                });
+            }
+        }
+        
+        // Handle Google Drive link processing for update form
+        async function handleGoogleDriveLink() {
+            console.log('DEBUG: handleGoogleDriveLink() called');
+            
+            const documentTypeSelect = document.getElementById('documentTypeSelect');
+            const googleDriveLinkInput = document.getElementById('googleDriveLink');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            const selectedType = documentTypeSelect ? documentTypeSelect.value : '';
+            const googleDriveLink = googleDriveLinkInput ? googleDriveLinkInput.value.trim() : '';
+            
+            console.log('DEBUG: Selected type:', selectedType);
+            console.log('DEBUG: Google Drive link:', googleDriveLink);
+            
+            if (!selectedType || !googleDriveLink) {
+                console.error('DEBUG: Validation failed - selectedType:', selectedType, 'googleDriveLink:', googleDriveLink);
+                showUploadResult('Please select a document type and enter a Google Drive URL.', 'error');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error');
+                return;
+            }
+            
+            // Get current transaction number from the search results
+            const searchResults = document.getElementById('searchResults');
+            const transactionTable = searchResults ? searchResults.querySelector('table') : null;
+            let transactionNumber = '';
+            
+            console.log('DEBUG: searchResults element:', searchResults);
+            console.log('DEBUG: transactionTable element:', transactionTable);
+            
+            // First, try to get transaction number from the search input field (most reliable)
+            const searchInput = document.getElementById('searchTransactionNumber');
+            console.log('DEBUG: searchInput element:', searchInput);
+            console.log('DEBUG: searchInput value:', searchInput ? searchInput.value : 'NOT FOUND');
+            
+            if (searchInput && searchInput.value.trim()) {
+                transactionNumber = searchInput.value.trim();
+                console.log('DEBUG: Transaction number from search input:', transactionNumber);
+            } else {
+                console.log('DEBUG: Search input is empty or not found');
+            }
+            
+            // If not found in search input, try to get from the table
+            if (!transactionNumber && transactionTable) {
+                const allRows = Array.from(transactionTable.querySelectorAll('tr'));
+                console.log('DEBUG: Found', allRows.length, 'table rows');
+                
+                allRows.forEach((row, index) => {
+                    if (row.cells && row.cells[0]) {
+                        const headerText = row.cells[0].textContent.trim();
+                        console.log(`DEBUG: Row ${index}: "${headerText}"`);
+                        if (row.cells[1]) {
+                            console.log(`DEBUG: Row ${index} value: "${row.cells[1].textContent.trim()}"`);
+                        }
+                        
+                        // Check if this looks like a transaction number header
+                        if (headerText.includes('Transaction Number')) {
+                            console.log(`DEBUG: FOUND TRANSACTION NUMBER HEADER: "${headerText}"`);
+                        }
+                    }
+                });
+                
+                const transactionRow = allRows.find(row => {
+                    if (!row.cells[0]) return false;
+                    const headerText = row.cells[0].textContent.trim();
+                    return headerText === 'Transaction Number' || 
+                           headerText === 'BE-Transaction Number' || 
+                           headerText === 'VN-Transaction Number';
+                });
+                
+                console.log('DEBUG: transactionRow found:', transactionRow);
+                
+                if (transactionRow && transactionRow.cells[1]) {
+                    const tableTransactionNumber = transactionRow.cells[1].textContent.trim();
+                    // Only use table value if it's not the em dash placeholder
+                    if (tableTransactionNumber && tableTransactionNumber !== '—') {
+                        transactionNumber = tableTransactionNumber;
+                        console.log('DEBUG: Transaction number from table:', transactionNumber);
+                    } else {
+                        console.log('DEBUG: Table has em dash placeholder, ignoring');
+                    }
+                }
+            }
+            
+            // Final fallback
+            if (!transactionNumber) {
+                const fallbackInput = document.getElementById('transactionNumberInput');
+                transactionNumber = fallbackInput ? fallbackInput.value : '';
+                console.log('DEBUG: Fallback transaction number from input:', transactionNumber);
+            }
+            
+            console.log('DEBUG: Final transaction number:', transactionNumber);
+            
+            if (!transactionNumber) {
+                showUploadResult('Transaction number not found. Please search for a transaction first.', 'error');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log('DEBUG: Selected country from sessionStorage:', selectedCountry);
+            
+            // Show progress
+            uploadBtn.disabled = true;
+            uploadProgress.style.display = 'flex';
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Processing Google Drive link...';
+            
+            try {
+                // Simulate progress
+                progressBar.style.width = '30%';
+                progressText.textContent = 'Downloading file...';
+                
+                // Call API to process Google Drive link
+                const requestData = {
+                    google_drive_url: googleDriveLink,
+                    document_type: selectedType,
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                };
+                console.log('DEBUG: Sending API request with data:', requestData);
+                
+                const response = await fetch('/api/process_google_drive_link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                progressBar.style.width = '70%';
+                progressText.textContent = 'Uploading to correct folder...';
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Store the uploaded file data for later use
+                    window.uploadedFileData = {
+                        transactionNumber: transactionNumber,
+                        documentType: selectedType,
+                        fileUrl: data.file_url,
+                        fileName: data.file_name
+                    };
+                    
+                    progressBar.style.width = '100%';
+                    progressText.textContent = 'Complete!';
+                    
+                    // Update button states
+                    setTimeout(() => {
+                        uploadBtn.disabled = true;
+                        uploadBtn.textContent = '✅ Link Processed Successfully!';
+                        uploadBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                        
+                        // Show Google Sheets update button
+                        const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                        if (updateSheetsBtn) {
+                            updateSheetsBtn.style.display = 'inline-block';
+                        }
+                        
+                        showUploadResult(`✅ Google Drive link processed successfully!<br>File: ${data.file_name}<br>Ready to update Google Sheets.`, 'success');
+                    }, 500);
+                    
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+                
+            } catch (error) {
+                console.error('Error processing Google Drive link:', error);
+                uploadProgress.style.display = 'none';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '🔗 Process Google Drive Link';
+                uploadBtn.style.background = 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)';
+                
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error');
+            }
+        }
+        
+        // Handle document upload
+        function handleDocumentUpload() {
+            const documentTypeSelect = document.getElementById('documentTypeSelect');
+            const documentFile = document.getElementById('documentFile');
+            const fileDescription = document.getElementById('fileDescription');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            const selectedType = documentTypeSelect.value;
+            const file = documentFile.files[0];
+            
+            if (!selectedType || !file) {
+                showUploadResult('Please select a document type and file.', 'error');
+                return;
+            }
+            
+            // Get current transaction number from the search results instead of input field
+            const searchResults = document.getElementById('searchResults');
+            const transactionTable = searchResults ? searchResults.querySelector('table') : null;
+            let transactionNumber = '';
+            
+            // Try to get transaction number from the displayed table
+            if (transactionTable) {
+                console.log('DEBUG: Looking for Transaction Number row in table...');
+                const allRows = Array.from(transactionTable.querySelectorAll('tr'));
+                console.log(`DEBUG: Found ${allRows.length} rows in table`);
+                
+                allRows.forEach((row, index) => {
+                    if (row.cells && row.cells.length >= 2) {
+                        const firstCell = row.cells[0].textContent.trim();
+                        const secondCell = row.cells[1].textContent.trim();
+                        console.log(`DEBUG: Row ${index}: "${firstCell}" -> "${secondCell}"`);
+                    }
+                });
+                
+                const transactionRow = allRows.find(row => 
+                    row.cells[0] && row.cells[0].textContent.trim() === 'Transaction Number'
+                );
+                if (transactionRow && transactionRow.cells[1]) {
+                    transactionNumber = transactionRow.cells[1].textContent.trim();
+                    console.log(`DEBUG: Found transaction number in table: "${transactionNumber}"`);
+                } else {
+                    console.log('DEBUG: No Transaction Number row found in table');
+                }
+            } else {
+                console.log('DEBUG: No transaction table found');
+            }
+            
+            // Fallback to search input field if table method fails or returns em dash
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
+                const searchInput = document.getElementById('searchTransactionNumber');
+                if (searchInput && searchInput.value.trim()) {
+                    transactionNumber = searchInput.value.trim();
+                    console.log(`DEBUG: Using transaction number from search input: "${transactionNumber}"`);
+                }
+            }
+            
+            // Fallback to stored transaction number from search results
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
+                if (searchResults) {
+                    const storedTransactionNumber = searchResults.getAttribute('data-transaction-number');
+                    if (storedTransactionNumber && storedTransactionNumber !== '—' && storedTransactionNumber !== '-') {
+                        transactionNumber = storedTransactionNumber;
+                        console.log(`DEBUG: Using stored transaction number from search results: "${transactionNumber}"`);
+                    }
+                }
+            }
+            
+            // Fallback to sessionStorage
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
+                const sessionTransactionNumber = sessionStorage.getItem('currentTransactionNumber');
+                if (sessionTransactionNumber && sessionTransactionNumber !== '—' && sessionTransactionNumber !== '-') {
+                    transactionNumber = sessionTransactionNumber;
+                    console.log(`DEBUG: Using transaction number from sessionStorage: "${transactionNumber}"`);
+                }
+            }
+            
+            // Final fallback to hidden input field
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
+                const hiddenInput = document.getElementById('transactionNumberInput');
+                if (hiddenInput && hiddenInput.value.trim()) {
+                    transactionNumber = hiddenInput.value.trim();
+                    console.log(`DEBUG: Using transaction number from hidden input: "${transactionNumber}"`);
+                }
+            }
+            
+            console.log(`DEBUG: Final transaction number to be used: "${transactionNumber}"`);
+            console.log(`DEBUG: Transaction number from input field: "${document.getElementById('transactionNumberInput').value}"`);
+            
+            // Debug: Check all possible sources
+            console.log('DEBUG: === TRANSACTION NUMBER DEBUG ===');
+            console.log('1. Search input field:', document.getElementById('searchTransactionNumber')?.value);
+            console.log('2. Hidden input field:', document.getElementById('transactionNumberInput')?.value);
+            console.log('3. Search results data attribute:', searchResults?.getAttribute('data-transaction-number'));
+            console.log('4. SessionStorage:', sessionStorage.getItem('currentTransactionNumber'));
+            console.log('5. Final transaction number:', transactionNumber);
+            console.log('=== END DEBUG ===');
+            
+            if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-') {
+                showUploadResult('Transaction number not found. Please search for a transaction first.', 'error');
+                return;
+            }
+            
+            // Show progress
+            uploadBtn.disabled = true;
+            uploadProgress.style.display = 'flex';
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Preparing upload...';
+            
+            // Create form data
+            console.log(`DEBUG: Creating FormData with transaction_number: "${transactionNumber}"`);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('transaction_number', transactionNumber);
+            console.log(`DEBUG: FormData created, transaction_number set to: "${transactionNumber}"`);
+            
+            // Map document types to file types that match Python FOLDER_IDS keys
+            const fileTypeMapping = {
+                'bill': 'bills',
+                'redBill': 'redBills',  // Add 's' to match FOLDER_IDS['redBills']
+                'documentation': 'documentation'
+            };
+            const fileType = fileTypeMapping[selectedType] || selectedType;
+            formData.append('file_type', fileType);
+            
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + '%';
+                progressText.textContent = `Uploading... ${Math.round(progress)}%`;
+            }, 200);
+            
+            // Upload file
+            fetch('/upload_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Complete!';
+                
+                if (data.success) {
+                    // Store the upload data for Google Sheets update
+                    window.uploadedFileData = {
+                        transactionNumber: transactionNumber,
+                        documentType: selectedType,
+                        fileUrl: data.file_url,
+                        fileName: data.file_name
+                    };
+                    
+                    // Show success message and enable Google Sheets update button
+                    showUploadResult(`
+                        <div style="color: #28a745; font-weight: 600;">
+                            ✅ File uploaded to Google Drive successfully!
+                            <br><strong>File:</strong> ${data.file_name}
+                            <br><strong>Type:</strong> ${selectedType}
+                            <br><a href="${data.file_url}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>
+                            <br><br><strong>Next Step:</strong> Click "Update Google Sheets" to add the document link to your transaction.
+                        </div>
+                    `, 'success');
+                    
+                    // Show the Google Sheets update button
+                    const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                    if (updateSheetsBtn) {
+                        updateSheetsBtn.style.display = 'inline-block';
+                    }
+                    
+                } else {
+                    showUploadResult(`❌ Upload failed: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                clearInterval(progressInterval);
+                showUploadResult(`❌ Upload failed: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                uploadBtn.disabled = false;
+                setTimeout(() => {
+                    uploadProgress.style.display = 'none';
+                }, 1000);
+            });
+        }
+        
+        // Show upload result
+        function showUploadResult(message, type) {
+            const uploadResult = document.getElementById('uploadResult');
+            if (!uploadResult) return;
+            
+            uploadResult.style.display = 'block';
+            uploadResult.innerHTML = message;
+            uploadResult.style.padding = '10px';
+            uploadResult.style.borderRadius = '4px';
+            uploadResult.style.marginTop = '15px';
+            
+            if (type === 'success') {
+                uploadResult.style.backgroundColor = '#d4edda';
+                uploadResult.style.border = '1px solid #c3e6cb';
+                uploadResult.style.color = '#155724';
+            } else {
+                uploadResult.style.backgroundColor = '#f8d7da';
+                uploadResult.style.border = '1px solid #f5c6cb';
+                uploadResult.style.color = '#721c24';
+            }
+        }
+        
+        // Hide upload result
+        function hideUploadResult() {
+            const uploadResult = document.getElementById('uploadResult');
+            if (uploadResult) {
+                uploadResult.style.display = 'none';
+            }
+        }
+        
+        
+        // Handle Google Sheets update (Step 2)
+        function handleGoogleSheetsUpdate() {
+            if (!window.uploadedFileData) {
+                showUploadResult('❌ No uploaded file data found. Please upload a file first.', 'error');
+                return;
+            }
+            
+            let { transactionNumber, documentType, fileUrl, fileName } = window.uploadedFileData;
+            
+            // Double-check the transaction number from the displayed search results
+            const searchResults = document.getElementById('searchResults');
+            const transactionTable = searchResults ? searchResults.querySelector('table') : null;
+            
+            console.log('DEBUG: handleGoogleSheetsUpdate - searchResults:', searchResults);
+            console.log('DEBUG: handleGoogleSheetsUpdate - transactionTable:', transactionTable);
+            console.log('DEBUG: handleGoogleSheetsUpdate - initial transactionNumber:', transactionNumber);
+            
+            // First, try to get transaction number from the search input field (most reliable)
+            const searchInput = document.getElementById('searchTransactionNumber');
+            if (searchInput && searchInput.value.trim()) {
+                const searchInputTransactionNumber = searchInput.value.trim();
+                console.log('DEBUG: handleGoogleSheetsUpdate - Transaction number from search input:', searchInputTransactionNumber);
+                // Only use search input if current transaction number is empty or is the em dash
+                if (!transactionNumber || transactionNumber === '—') {
+                    transactionNumber = searchInputTransactionNumber;
+                    console.log('DEBUG: handleGoogleSheetsUpdate - Using transaction number from search input:', transactionNumber);
+                }
+            }
+            
+            if (transactionTable) {
+                const allRows = Array.from(transactionTable.querySelectorAll('tr'));
+                console.log('DEBUG: handleGoogleSheetsUpdate - Found', allRows.length, 'table rows');
+                
+                allRows.forEach((row, index) => {
+                    if (row.cells && row.cells[0]) {
+                        console.log(`DEBUG: handleGoogleSheetsUpdate - Row ${index}: "${row.cells[0].textContent.trim()}"`);
+                        if (row.cells[1]) {
+                            console.log(`DEBUG: handleGoogleSheetsUpdate - Row ${index} value: "${row.cells[1].textContent.trim()}"`);
+                        }
+                    }
+                });
+                
+                const transactionRow = allRows.find(row => {
+                    if (!row.cells[0]) return false;
+                    const headerText = row.cells[0].textContent.trim();
+                    return headerText === 'Transaction Number' || 
+                           headerText === 'BE-Transaction Number' || 
+                           headerText === 'VN-Transaction Number';
+                });
+                
+                console.log('DEBUG: handleGoogleSheetsUpdate - transactionRow found:', transactionRow);
+                
+                if (transactionRow && transactionRow.cells[1]) {
+                    const tableTransactionNumber = transactionRow.cells[1].textContent.trim();
+                    console.log(`DEBUG: Transaction number from uploaded data: "${transactionNumber}"`);
+                    console.log(`DEBUG: Transaction number from search results table: "${tableTransactionNumber}"`);
+                    
+                    // Use the transaction number from the search results table (most reliable)
+                    // Only use table value if it's not the em dash placeholder
+                    if (tableTransactionNumber && tableTransactionNumber !== '—') {
+                        transactionNumber = tableTransactionNumber;
+                        console.log(`DEBUG: Using transaction number from search results: "${transactionNumber}"`);
+                    } else {
+                        console.log('DEBUG: handleGoogleSheetsUpdate - Table has em dash placeholder, keeping current value');
+                    }
+                }
+            }
+            
+            console.log(`DEBUG: Starting Google Sheets update for transaction: ${transactionNumber}`);
+            console.log(`DEBUG: Document type: ${documentType}`);
+            console.log(`DEBUG: File URL: ${fileUrl}`);
+            
+            // Show loading state
+            const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+            if (updateSheetsBtn) {
+                updateSheetsBtn.disabled = true;
+                updateSheetsBtn.textContent = '🔄 Updating...';
+            }
+            
+            // Call the Google Sheets update API
+            updateGoogleSheetsDocument(transactionNumber, documentType, fileUrl);
+        }
+        
+        // Update Google Sheets with document link
+        function updateGoogleSheetsDocument(transactionNumber, documentType, fileUrl) {
+            // Get the current sheet type from the search form
+            const sheetTypeSelect = document.getElementById('searchSheet');
+            const sheetType = sheetTypeSelect ? sheetTypeSelect.value : 'vn';
+            
+            console.log(`DEBUG: Updating Google Sheets - Transaction: ${transactionNumber}, Type: ${documentType}, Sheet: ${sheetType}, URL: ${fileUrl}`);
+            
+            // Call the document update API
+            fetch('/api/update_document', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sheet_type: sheetType,
+                    transaction_number: transactionNumber,
+                    document_type: documentType,
+                    file_url: fileUrl
+                })
+            })
+            .then(response => {
+                console.log('DEBUG: API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('DEBUG: API response data:', data);
+                if (data.success) {
+                    console.log('✅ Google Sheets updated successfully:', data.message);
+                    
+                    // Reset button state
+                    const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                    if (updateSheetsBtn) {
+                        updateSheetsBtn.disabled = false;
+                        updateSheetsBtn.textContent = '✅ Updated Successfully!';
+                        updateSheetsBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                    }
+                    
+                    // Show success message to user
+                    showUploadResult(`
+                        <div style="color: #28a745; font-weight: 600;">
+                            ✅ Google Sheets updated successfully!
+                            <br><strong>Transaction:</strong> ${transactionNumber}
+                            <br><strong>Document Type:</strong> ${documentType}
+                            <br><strong>Status:</strong> Both debit and credit rows updated with document link
+                            <br><a href="${fileUrl}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>
+                        </div>
+                    `, 'success');
+                    
+                    // Clear the uploaded file data
+                    window.uploadedFileData = null;
+                    
+                } else {
+                    console.error('❌ Google Sheets update failed:', data.error);
+                    
+                    // Reset button state
+                    const updateSheetsBtn = document.getElementById('updateSheetsBtn');
+                    if (updateSheetsBtn) {
+                        updateSheetsBtn.disabled = false;
+                        updateSheetsBtn.textContent = '📊 Update Google Sheets';
+                    }
+                    
+                    showUploadResult(`❌ Google Sheets update failed: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error updating Google Sheets:', error);
+                showUploadResult(`❌ Error updating Google Sheets: ${error.message}`, 'error');
+            });
+        }
+        
+        // Create three-column layout for double-entry bookkeeping
+        function createThreeColumnLayout(transactionData) {
+            console.log('Creating three-column layout with data:', transactionData);
+            console.log('Available fields:', Object.keys(transactionData));
+            console.log('Debit Account:', transactionData['Debit Account']);
+            console.log('Credit Account:', transactionData['Credit Account']);
+            console.log('Debit (VND):', transactionData['Debit (VND)']);
+            console.log('Credit (VND):', transactionData['Credit (VND)']);
+            
+            // Define the fields to show in order
+            const fieldsToShow = [
+                'Transaction Number',
+                'dd/mm/YY',
+                'Month', 
+                'Year',
+                'Funds',
+                'Account',
+                'Category',
+                'Debit (VND)',
+                'Credit (VND)',
+                'Payment Method',
+                'Description',
+                'Bank Transaction Number',
+                'Bill',
+                'Red BIll',
+                'Doc'
+            ];
+            
+            let rows = '';
+            
+            for (const field of fieldsToShow) {
+                const fieldLabel = formatFieldName(field);
+                const rawValue = transactionData[field] || '';
+                
+                // Handle special cases for debit/credit display
+                let debitValue = '';
+                let creditValue = '';
+                
+                if (field === 'Account') {
+                    // Show the specific accounts for debit and credit
+                    debitValue = transactionData['Debit Account'] || '—';
+                    creditValue = transactionData['Credit Account'] || '—';
+                } else if (field === 'Debit (VND)') {
+                    // Show debit amount in debit column, empty in credit column
+                    debitValue = transactionData['Debit (VND)'] || '—';
+                    creditValue = '—';
+                } else if (field === 'Credit (VND)') {
+                    // Show credit amount in credit column, empty in debit column
+                    debitValue = '—';
+                    creditValue = transactionData['Credit (VND)'] || '—';
+                } else if (field === 'Bill') {
+                    // Show separate bill data for debit and credit sides
+                    debitValue = formatDocumentField(field, transactionData['Debit Bill'] || '');
+                    creditValue = formatDocumentField(field, transactionData['Credit Bill'] || '');
+                } else if (field === 'Red BIll') {
+                    // Show separate red bill data for debit and credit sides
+                    debitValue = formatDocumentField(field, transactionData['Debit Red Bill'] || '');
+                    creditValue = formatDocumentField(field, transactionData['Credit Red Bill'] || '');
+                } else if (field === 'Doc') {
+                    // Show separate doc data for debit and credit sides
+                    debitValue = formatDocumentField(field, transactionData['Debit Doc'] || '');
+                    creditValue = formatDocumentField(field, transactionData['Credit Doc'] || '');
+                } else {
+                    // For all other fields, show the same value in both columns
+                    const displayValue = formatDocumentField(field, rawValue);
+                    debitValue = displayValue;
+                    creditValue = displayValue;
+                }
+                
+                rows += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: bold;">${fieldLabel}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center; background: #fff5f5;">${debitValue}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center; background: #f0fff4;">${creditValue}</td>
+                    </tr>
+                `;
+            }
+            
+            return rows;
+        }
+        
+        // Format document fields for display
+        function formatDocumentField(field, value) {
+            const docFields = new Set(['Bill', 'Red BIll', 'Doc']);
+            
+            if (docFields.has(field)) {
+                if (!value || value.trim() === '') {
+                    return '—';
+                } else if (typeof value === 'string' && (value.startsWith('http') || value.startsWith('https'))) {
+                    return `<a href="${value}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>`;
+                } else if (value === '✔') {
+                    return '✔ Available (see sheet)';
+                } else {
+                    return `📄 ${value}`;
+                }
+            }
+            
+            return value || '—';
+        }
+            
+            // Helper function to format field names
+            function formatFieldName(fieldName) {
+                // Convert field names to readable format
+                const fieldMap = {
+                    'Transaction Number': 'Transaction Number',
+                    'dd/mm/YY': 'Dd/Mm/YY',
+                    'Date': 'Date',
+                    'Type': 'Type',
+                    'Amount': 'Amount',
+                    'Fund': 'Fund',
+                    'Funds': 'Funds',
+                    'Category': 'Category',
+                    'Debit (VND)': 'Debit (VND)',
+                    'Credit (VND)': 'Credit (VND)',
+                    'Debit Account': 'Debit Account',
+                    'Credit Account': 'Credit Account',
+                    'Description': 'Description',
+                    'Payment Method': 'Payment Method',
+                    'Bank Transaction Number': 'Bank Transaction Number',
+                    'Bill': 'Bill',
+                    'Red BIll': 'Red Bill',
+                    'Red Bills': 'Red Bills',
+                    'Doc': 'Documentation',
+                    'Documentation': 'Documentation'
+                };
+                
+                return fieldMap[fieldName] || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
+            
+            // Update Transaction Button Click
+            document.getElementById('updateTransactionBtn').addEventListener('click', function() {
+                const billsFile = document.getElementById('billsFile').files[0];
+                const redBillsFile = document.getElementById('redBillsFile').files[0];
+                const documentationFile = document.getElementById('documentationFile').files[0];
+                
+                if (!billsFile && !redBillsFile && !documentationFile) {
+                    alert('Please select at least one file to upload');
+                    return;
+                }
+                
+                // Show processing message
+                const updateBtn = this;
+                const originalText = updateBtn.innerHTML;
+                updateBtn.innerHTML = '⏳ Processing...';
+                updateBtn.disabled = true;
+                
+                // Simulate file upload processing
+                setTimeout(() => {
+                    alert('✅ Transaction documents updated successfully!\n\nNew files will replace existing ones in Google Sheets.');
+                    updateBtn.innerHTML = originalText;
+                    updateBtn.disabled = false;
+                    
+                    // Reset file inputs
+                    document.getElementById('billsFile').value = '';
+                    document.getElementById('redBillsFile').value = '';
+                    document.getElementById('documentationFile').value = '';
+                }, 2000);
+                
+                console.log('🔄 Updating transaction documents...');
+            });
+        });
+        
+        // =====================================================================
+        // GOOGLE DRIVE LINK PROCESSING FOR NEW ENTRY FORM
+        // =====================================================================
+        
+        // Process Google Drive link for Bills
+        function processBillsGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('billsGoogleDriveLink').value.trim();
+            const processBtn = document.getElementById('billsGoogleDriveBtn');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error', 'bills');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error', 'bills');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Please generate a transaction number first.', 'error', 'bills');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Bills Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'bill',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('billsFileLinkInput').value = data.file_url;
+                    document.getElementById('billsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    showUploadResult(`✅ Bills file processed successfully!<br>File: ${data.file_name}`, 'success', 'bills');
+                    
+                    // Clear the input
+                    document.getElementById('billsGoogleDriveLink').value = '';
+                    
+                    console.log('DEBUG: Bills Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Bills Google Drive link:', error);
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error', 'bills');
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Link';
+            });
+        }
+        
+        // Process Google Drive link for Red Bills
+        function processRedBillsGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('redBillsGoogleDriveLink').value.trim();
+            const processBtn = document.getElementById('redBillsGoogleDriveBtn');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error', 'redBills');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error', 'redBills');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Please generate a transaction number first.', 'error', 'redBills');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Red Bills Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'redBill',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('redBillsFileLinkInput').value = data.file_url;
+                    document.getElementById('redBillsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    showUploadResult(`✅ Red Bills file processed successfully!<br>File: ${data.file_name}`, 'success', 'redBills');
+                    
+                    // Clear the input
+                    document.getElementById('redBillsGoogleDriveLink').value = '';
+                    
+                    console.log('DEBUG: Red Bills Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Red Bills Google Drive link:', error);
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error', 'redBills');
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Link';
+            });
+        }
+        
+        // Process Google Drive link for Documentation
+        function processDocumentationGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('documentationGoogleDriveLink').value.trim();
+            const processBtn = document.getElementById('documentationGoogleDriveBtn');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error', 'documentation');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error', 'documentation');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Please generate a transaction number first.', 'error', 'documentation');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Documentation Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'documentation',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('documentationFileLinkInput').value = data.file_url;
+                    document.getElementById('documentationFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    showUploadResult(`✅ Documentation file processed successfully!<br>File: ${data.file_name}`, 'success', 'documentation');
+                    
+                    // Clear the input
+                    document.getElementById('documentationGoogleDriveLink').value = '';
+                    
+                    console.log('DEBUG: Documentation Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Documentation Google Drive link:', error);
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error', 'documentation');
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Link';
+            });
+        }
+        
+        // Helper function to show upload results
+        function showUploadResult(message, type, section) {
+            const statusDiv = document.getElementById(`${section}UploadStatus`);
+            const resultDiv = document.getElementById(`${section}UploadResult`);
+            
+            if (statusDiv && resultDiv) {
+                statusDiv.style.display = 'block';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'danger'}">${message}</div>`;
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    resultDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Process Google Drive link for Bills (Main Section)
+        function processBillsGoogleDriveLinkMain() {
+            const googleDriveLink = document.getElementById('billsGoogleDriveLinkMain').value.trim();
+            const processBtn = document.getElementById('billsGoogleDriveBtnMain');
+            
+            if (!googleDriveLink) {
+                alert('Please enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Bills Google Drive link (Main): ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'bill',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('billsFileLinkInput').value = data.file_url;
+                    document.getElementById('billsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    alert(`✅ Bills file processed successfully!\nFile: ${data.file_name}`);
+                    
+                    // Clear the input
+                    document.getElementById('billsGoogleDriveLinkMain').value = '';
+                    
+                    console.log('DEBUG: Bills Google Drive link processed successfully (Main)');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Bills Google Drive link (Main):', error);
+                alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Bills Link';
+            });
+        }
+        
+        // Process Google Drive link for Red Bills (Main Section)
+        function processRedBillsGoogleDriveLinkMain() {
+            const googleDriveLink = document.getElementById('redBillsGoogleDriveLinkMain').value.trim();
+            const processBtn = document.getElementById('redBillsGoogleDriveBtnMain');
+            
+            if (!googleDriveLink) {
+                alert('Please enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Red Bills Google Drive link (Main): ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'redBill',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('redBillsFileLinkInput').value = data.file_url;
+                    document.getElementById('redBillsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    alert(`✅ Red Bills file processed successfully!\nFile: ${data.file_name}`);
+                    
+                    // Clear the input
+                    document.getElementById('redBillsGoogleDriveLinkMain').value = '';
+                    
+                    console.log('DEBUG: Red Bills Google Drive link processed successfully (Main)');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Red Bills Google Drive link (Main):', error);
+                alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Red Bills Link';
+            });
+        }
+        
+        // Process Google Drive link for Documentation (Main Section)
+        function processDocumentationGoogleDriveLinkMain() {
+            const googleDriveLink = document.getElementById('documentationGoogleDriveLinkMain').value.trim();
+            const processBtn = document.getElementById('documentationGoogleDriveBtnMain');
+            
+            if (!googleDriveLink) {
+                alert('Please enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Documentation Google Drive link (Main): ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'documentation',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('documentationFileLinkInput').value = data.file_url;
+                    document.getElementById('documentationFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    alert(`✅ Documentation file processed successfully!\nFile: ${data.file_name}`);
+                    
+                    // Clear the input
+                    document.getElementById('documentationGoogleDriveLinkMain').value = '';
+                    
+                    console.log('DEBUG: Documentation Google Drive link processed successfully (Main)');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Documentation Google Drive link (Main):', error);
+                alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Documentation Link';
+            });
+        }
+        
+        // =====================================================================
+        // SIMPLIFIED DOCUMENT UPLOAD WITH DROPDOWN
+        // =====================================================================
+        
+        // Handle document type dropdown change
+        function handleDocumentTypeChange() {
+            const dropdown = document.getElementById('documentTypeDropdown');
+            const uploadModeToggle = document.getElementById('uploadModeToggle');
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            if (dropdown.value) {
+                uploadModeToggle.style.display = 'block';
+                uploadStatus.style.display = 'none';
+                
+                // Set up event listeners for upload mode radios when they become visible
+                const uploadModeRadios = document.querySelectorAll('input[name="updateUploadMode"]');
+                console.log('DEBUG: Setting up upload mode radios when toggle becomes visible:', uploadModeRadios.length);
+                uploadModeRadios.forEach((radio, index) => {
+                    console.log(`DEBUG: Adding event listener to radio ${index}:`, radio.value);
+                    radio.addEventListener('change', handleUploadModeChange);
+                });
+                
+                // Force show file upload section if "Upload File" is selected
+                const fileUploadSection = document.getElementById('fileUploadSection');
+                // Check both main form and update form radio buttons
+                const uploadFileRadio = document.querySelector('input[name="uploadMode"][value="file"]:checked') || 
+                                       document.querySelector('input[name="updateUploadMode"][value="file"]:checked');
+                if (uploadFileRadio && fileUploadSection) {
+                    console.log('DEBUG: Upload File is selected, showing file upload section');
+                    fileUploadSection.style.display = 'block';
+                }
+            } else {
+                uploadModeToggle.style.display = 'none';
+                fileUploadSection.style.display = 'none';
+                googleDriveLinkSection.style.display = 'none';
+                uploadStatus.style.display = 'none';
+            }
+        }
+        
+        // Handle upload mode change (works for both main form and update form)
+        function handleUploadModeChange() {
+            console.log('DEBUG: handleUploadModeChange called');
+            
+            // Main form elements
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
+            
+            // Update form elements
+            const updateFileUploadSection = document.getElementById('updateFileUploadSection');
+            const linkInputSection = document.getElementById('linkInputSection');
+            
+            // Check for both main form (uploadMode) and update form (updateUploadMode) radio buttons
+            const mainFormRadio = document.querySelector('input[name="uploadMode"]:checked');
+            const updateFormRadio = document.querySelector('input[name="updateUploadMode"]:checked');
+            const uploadMode = mainFormRadio ? mainFormRadio.value : (updateFormRadio ? updateFormRadio.value : null);
+            
+            console.log('DEBUG: Upload mode selected:', uploadMode);
+            console.log('DEBUG: Main form radio:', mainFormRadio);
+            console.log('DEBUG: Update form radio:', updateFormRadio);
+            
+            if (!uploadMode) {
+                console.log('ERROR: No upload mode radio button found');
+                return;
+            }
+            
+            if (uploadMode === 'file') {
+                console.log('DEBUG: Showing file upload section');
+                // Main form
+                if (fileUploadSection) fileUploadSection.style.display = 'block';
+                if (googleDriveLinkSection) googleDriveLinkSection.style.display = 'none';
+                // Update form
+                if (updateFileUploadSection) updateFileUploadSection.style.display = 'block';
+                if (linkInputSection) linkInputSection.style.display = 'none';
+            } else if (uploadMode === 'link') {
+                console.log('DEBUG: Showing Google Drive link section');
+                // Main form
+                if (fileUploadSection) fileUploadSection.style.display = 'none';
+                if (googleDriveLinkSection) googleDriveLinkSection.style.display = 'block';
+                // Update form
+                if (updateFileUploadSection) updateFileUploadSection.style.display = 'none';
+                if (linkInputSection) linkInputSection.style.display = 'block';
+            }
+        }
+        
+        // Handle file upload
+        function handleFileUpload() {
+            const dropdown = document.getElementById('documentTypeDropdown');
+            const fileInput = document.getElementById('documentFileInput');
+            const uploadBtn = document.getElementById('uploadFileBtn');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadStatusMessage = document.getElementById('uploadStatusMessage');
+            
+            const selectedType = dropdown.value;
+            const file = fileInput.files[0];
+            
+            if (!selectedType || !file) {
+                alert('Please select a document type and file.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            console.log(`DEBUG: Uploading file for ${selectedType}: ${file.name}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '🔄 Uploading...';
+            uploadStatus.style.display = 'block';
+            uploadStatusMessage.textContent = 'Uploading file...';
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log(`DEBUG: Uploading file for country: ${selectedCountry}`);
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('transaction_number', transactionNumber);
+            formData.append('country_code', selectedCountry);
+            
+            // Map document types to file types
+            const fileTypeMapping = {
+                'bills': 'bills',
+                'redBills': 'redBills',
+                'bankStatement': 'bankStatement',
+                'documentation': 'documentation'
+            };
+            const fileType = fileTypeMapping[selectedType];
+            formData.append('file_type', fileType);
+            
+            // Upload file
+            fetch('/upload_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    // Map dropdown values to correct field IDs
+                    const fieldMapping = {
+                        'bills': 'bills',
+                        'redBills': 'redBills', 
+                        'documentation': 'documentation'
+                    };
+                    
+                    const fieldPrefix = fieldMapping[selectedType];
+                    const linkField = document.getElementById(`${fieldPrefix}FileLinkInput`);
+                    const nameField = document.getElementById(`${fieldPrefix}FileNameInput`);
+                    
+                    if (linkField && nameField) {
+                        linkField.value = data.file_url;
+                        nameField.value = data.file_name;
+                    }
+                    
+                    // Show success
+                    uploadStatus.style.background = '#d4edda';
+                    uploadStatus.style.borderColor = '#c3e6cb';
+                    uploadStatusMessage.style.color = '#155724';
+                    uploadStatusMessage.textContent = `✅ File uploaded successfully! File: ${data.file_name}`;
+                    
+                    // Clear inputs
+                    fileInput.value = '';
+                    dropdown.value = '';
+                    document.getElementById('uploadModeToggle').style.display = 'none';
+                    document.getElementById('fileUploadSection').style.display = 'none';
+                    
+                    console.log('DEBUG: File uploaded successfully');
+                } else {
+                    throw new Error(data.error || 'Upload failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                uploadStatus.style.background = '#f8d7da';
+                uploadStatus.style.borderColor = '#f5c6cb';
+                uploadStatusMessage.style.color = '#721c24';
+                uploadStatusMessage.textContent = `❌ Upload failed: ${error.message}`;
+            })
+            .finally(() => {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload File';
+            });
+        }
+        
+        // Handle Google Drive link processing
+        function handleGoogleDriveProcessing() {
+            const dropdown = document.getElementById('documentTypeDropdown');
+            const googleDriveLink = document.getElementById('googleDriveLinkInput').value.trim();
+            const processBtn = document.getElementById('processGoogleDriveBtn');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadStatusMessage = document.getElementById('uploadStatusMessage');
+            
+            const selectedType = dropdown.value;
+            
+            if (!selectedType || !googleDriveLink) {
+                alert('Please select a document type and enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log(`DEBUG: Processing Google Drive link for country: ${selectedCountry}`);
+            console.log(`DEBUG: Processing Google Drive link for ${selectedType}: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            uploadStatus.style.display = 'block';
+            uploadStatusMessage.textContent = 'Processing Google Drive link...';
+            
+            // Map document types to API document types
+            const documentTypeMapping = {
+                'bills': 'bill',
+                'redBills': 'redBill',
+                'bankStatement': 'bankStatement',
+                'documentation': 'documentation'
+            };
+            const documentType = documentTypeMapping[selectedType];
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: documentType,
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    // Map dropdown values to correct field IDs
+                    const fieldMapping = {
+                        'bills': 'bills',
+                        'redBills': 'redBills', 
+                        'documentation': 'documentation'
+                    };
+                    
+                    const fieldPrefix = fieldMapping[selectedType];
+                    const linkField = document.getElementById(`${fieldPrefix}FileLinkInput`);
+                    const nameField = document.getElementById(`${fieldPrefix}FileNameInput`);
+                    
+                    if (linkField && nameField) {
+                        linkField.value = data.file_url;
+                        nameField.value = data.file_name;
+                    }
+                    
+                    // Show success
+                    uploadStatus.style.background = '#d4edda';
+                    uploadStatus.style.borderColor = '#c3e6cb';
+                    uploadStatusMessage.style.color = '#155724';
+                    uploadStatusMessage.textContent = `✅ Google Drive link processed successfully! File: ${data.file_name}`;
+                    
+                    // Clear inputs
+                    document.getElementById('googleDriveLinkInput').value = '';
+                    dropdown.value = '';
+                    document.getElementById('uploadModeToggle').style.display = 'none';
+                    document.getElementById('googleDriveLinkSection').style.display = 'none';
+                    
+                    console.log('DEBUG: Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Google Drive link:', error);
+                uploadStatus.style.background = '#f8d7da';
+                uploadStatus.style.borderColor = '#f5c6cb';
+                uploadStatusMessage.style.color = '#721c24';
+                uploadStatusMessage.textContent = `❌ Processing failed: ${error.message}`;
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Google Drive Link';
+            });
+        }
+        
+        // =====================================================================
+        // COUNTRY SELECTION FUNCTIONALITY
+        // =====================================================================
+        
+        // Initialize country selection on page load
+        function initializeCountrySelection() {
+            // Set default country to Belgium
+            const countrySelect = document.getElementById('countrySelect');
+            if (countrySelect) {
+                countrySelect.value = 'BE'; // Default to Belgium
+                
+                // Wait for sheets to be loaded before selecting country
+                setTimeout(() => {
+                    console.log('DEBUG: Initializing country selection after sheets are loaded');
+                    selectCountry('BE');
+                    
+                    // Also update Quick Access visibility on page load
+                    updateQuickAccessVisibility('BE');
+                    
+                    // Update document type dropdown on page load
+                    updateDocumentTypeDropdown('BE');
+                    
+                    // Apply transaction defaults on page load
+                    setTimeout(() => {
+                        const transactionSelect = document.getElementById('transaction_category');
+                        if (transactionSelect && transactionSelect.value) {
+                            console.log('🔄 Applying initial transaction defaults for BE...');
+                            applyTransactionDefaults(transactionSelect.value);
+                        }
+                    }, 1000);
+                }, 2000); // Wait 2 seconds for sheets to load
+            }
+        }
+        
+        // Handle country selection
+        function selectCountry(countryCode) {
+            console.log(`DEBUG: Selecting country: ${countryCode}`);
+            
+            // Check if sheet dropdown is populated
+            const sheetSelect = document.getElementById('sheet_select');
+            if (!sheetSelect || sheetSelect.options.length <= 1) {
+                console.log('DEBUG: Sheet dropdown not ready, waiting...');
+                setTimeout(() => {
+                    selectCountry(countryCode);
+                }, 1000);
+                return;
+            }
+            
+            // Show loading state
+            const countrySelect = document.getElementById('countrySelect');
+            if (countrySelect) {
+                countrySelect.disabled = true;
+            }
+            
+            // Call API to select country
+            fetch('/api/select_country', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    country_code: countryCode
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`DEBUG: Country switched to ${data.country.name}`);
+                    
+                    // Update sheet and worksheet dropdowns
+                    updateSheetSelection(data.country);
+                    
+                    // Update accounts data
+                    updateAccountsData(data.accounts);
+                    
+                    // Update Quick Access panel visibility
+                    updateQuickAccessVisibility(countryCode);
+                    
+                    // Update document type dropdown
+                    updateDocumentTypeDropdown(countryCode);
+                    
+                    // Store country in sessionStorage
+                    sessionStorage.setItem('selectedCountry', countryCode);
+                    console.log(`DEBUG: Stored country ${countryCode} in sessionStorage`);
+                    
+                    // Regenerate transaction number with new country prefix
+                    console.log(`DEBUG: About to regenerate transaction number for country: ${countryCode}`);
+                    
+                    // Use setTimeout to ensure sessionStorage is properly set
+                    setTimeout(() => {
+                        if (typeof regenerateTransactionNumberForCountry === 'function') {
+                            regenerateTransactionNumberForCountry();
+                            console.log(`DEBUG: Transaction number regeneration called for ${countryCode}`);
+                        } else {
+                            console.error('DEBUG: regenerateTransactionNumberForCountry function not found');
+                            // Fallback: call generateTransactionNumber directly
+                            generateTransactionNumber();
+                        }
+                    }, 100);
+                    
+                    // Re-apply transaction defaults for the new country
+                    setTimeout(() => {
+                        const transactionSelect = document.getElementById('transaction_category');
+                        if (transactionSelect && transactionSelect.value) {
+                            console.log(`🔄 Re-applying transaction defaults for ${countryCode}...`);
+                            applyTransactionDefaults(transactionSelect.value);
+                        }
+                    }, 500);
+                    
+                    console.log('DEBUG: Country selection completed successfully');
+                } else {
+                    console.error('Error selecting country:', data.error);
+                    alert(`Error switching country: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error selecting country:', error);
+                alert(`Error switching country: ${error.message}`);
+            })
+            .finally(() => {
+                // Re-enable country selector
+                if (countrySelect) {
+                    countrySelect.disabled = false;
+                }
+            });
+        }
+        
+        // Update sheet and worksheet selection based on country
+        function updateSheetSelection(countryInfo) {
+            console.log(`DEBUG: Updating sheet selection for ${countryInfo.name}`);
+            console.log(`DEBUG: Looking for sheet: ${countryInfo.sheet_name}`);
+            console.log(`DEBUG: Looking for worksheet: ${countryInfo.worksheet_name}`);
+            
+            const sheetSelect = document.getElementById('sheet_select');
+            const worksheetSelect = document.getElementById('worksheet_select');
+            
+            if (sheetSelect) {
+                console.log(`DEBUG: Available sheet options:`);
+                for (let option of sheetSelect.options) {
+                    console.log(`  - ${option.value}: ${option.textContent}`);
+                }
+                
+                // Find and select the country-specific sheet
+                let foundSheet = false;
+                
+                // First try exact match
+                for (let option of sheetSelect.options) {
+                    if (option.textContent.trim() === countryInfo.sheet_name.trim()) {
+                        console.log(`DEBUG: Found exact match: ${option.textContent}`);
+                        sheetSelect.value = option.value;
+                        foundSheet = true;
+                        break;
+                    }
+                }
+                
+                // If no exact match, try partial match
+                if (!foundSheet) {
+                    console.log(`DEBUG: No exact match found, trying partial match`);
+                    for (let option of sheetSelect.options) {
+                        if (option.textContent.includes(countryInfo.sheet_name) || 
+                            countryInfo.sheet_name.includes(option.textContent)) {
+                            console.log(`DEBUG: Found partial match: ${option.textContent}`);
+                            sheetSelect.value = option.value;
+                            foundSheet = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // If still no match, try case-insensitive match
+                if (!foundSheet) {
+                    console.log(`DEBUG: No partial match found, trying case-insensitive match`);
+                    const searchName = countryInfo.sheet_name.toLowerCase();
+                    for (let option of sheetSelect.options) {
+                        if (option.textContent.toLowerCase().includes(searchName) || 
+                            searchName.includes(option.textContent.toLowerCase())) {
+                            console.log(`DEBUG: Found case-insensitive match: ${option.textContent}`);
+                            sheetSelect.value = option.value;
+                            foundSheet = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (foundSheet) {
+                    console.log(`DEBUG: Sheet selected: ${sheetSelect.value}`);
+                    
+                    // Trigger sheet change to load worksheets
+                    const event = new Event('change');
+                    sheetSelect.dispatchEvent(event);
+                    
+                    // After worksheets are loaded, select the country-specific worksheet
+                    setTimeout(() => {
+                        console.log(`DEBUG: Looking for worksheet: ${countryInfo.worksheet_name}`);
+                        if (worksheetSelect) {
+                            console.log(`DEBUG: Available worksheet options:`);
+                            for (let option of worksheetSelect.options) {
+                                console.log(`  - ${option.value}: ${option.textContent}`);
+                            }
+                            
+                            let foundWorksheet = false;
+                            
+                            // First try exact match
+                            for (let option of worksheetSelect.options) {
+                                if (option.textContent.trim() === countryInfo.worksheet_name.trim()) {
+                                    console.log(`DEBUG: Found exact worksheet match: ${option.textContent}`);
+                                    worksheetSelect.value = option.value;
+                                    foundWorksheet = true;
+                                    break;
+                                }
+                            }
+                            
+                            // If no exact match, try partial match
+                            if (!foundWorksheet) {
+                                console.log(`DEBUG: No exact worksheet match, trying partial match`);
+                                for (let option of worksheetSelect.options) {
+                                    if (option.textContent.includes(countryInfo.worksheet_name) || 
+                                        countryInfo.worksheet_name.includes(option.textContent)) {
+                                        console.log(`DEBUG: Found partial worksheet match: ${option.textContent}`);
+                                        worksheetSelect.value = option.value;
+                                        foundWorksheet = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            // If still no match, try case-insensitive match
+                            if (!foundWorksheet) {
+                                console.log(`DEBUG: No partial worksheet match, trying case-insensitive match`);
+                                const searchWorksheet = countryInfo.worksheet_name.toLowerCase();
+                                for (let option of worksheetSelect.options) {
+                                    if (option.textContent.toLowerCase().includes(searchWorksheet) || 
+                                        searchWorksheet.includes(option.textContent.toLowerCase())) {
+                                        console.log(`DEBUG: Found case-insensitive worksheet match: ${option.textContent}`);
+                                        worksheetSelect.value = option.value;
+                                        foundWorksheet = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (!foundWorksheet) {
+                                console.log(`DEBUG: No worksheet match found for: ${countryInfo.worksheet_name}`);
+                            }
+                        }
+                    }, 1000); // Increased timeout to ensure worksheets are loaded
+                } else {
+                    console.log(`DEBUG: No sheet match found for: ${countryInfo.sheet_name}`);
+                }
+            }
+        }
+        
+        // Update accounts data based on country
+        function updateAccountsData(accounts) {
+            console.log(`DEBUG: Updating accounts data with ${accounts.length} accounts`);
+            // Store accounts for later use
+            window.currentAccounts = accounts;
+            
+            // Update all account dropdowns
+            updateAccountDropdowns(accounts);
+        }
+        
+        // Update all account dropdowns with new account data
+        function updateAccountDropdowns(accounts) {
+            console.log(`DEBUG: Updating account dropdowns with ${accounts.length} accounts`);
+            
+            // List of all account dropdown selectors
+            const accountSelectors = [
+                'select[name="regular_debit_account_id"]',
+                'select[name="regular_credit_account_id"]',
+                'select[name="master_ledger_a_debit_account_id"]',
+                'select[name="master_ledger_a_credit_account_id"]',
+                'select[name="master_ledger_b_debit_account_id"]',
+                'select[name="master_ledger_b_credit_account_id"]'
+            ];
+            
+            accountSelectors.forEach(selector => {
+                const dropdown = document.querySelector(selector);
+                if (dropdown) {
+                    console.log(`DEBUG: Updating dropdown: ${selector}`);
+                    
+                    // Clear existing options (except the first placeholder)
+                    const placeholder = dropdown.querySelector('option[value=""]');
+                    dropdown.innerHTML = '';
+                    if (placeholder) {
+                        dropdown.appendChild(placeholder);
+                    }
+                    
+                    // Add new account options
+                    accounts.forEach(account => {
+                        if (account.active !== false) { // Only add active accounts
+                            const option = document.createElement('option');
+                            option.value = account.code;
+                            option.textContent = `${account.name} (${account.type})`;
+                            dropdown.appendChild(option);
+                        }
+                    });
+                    
+                    console.log(`DEBUG: Added ${accounts.length} options to ${selector}`);
+                } else {
+                    console.log(`DEBUG: Dropdown not found: ${selector}`);
+                }
+            });
+        }
+        
+        // Update document type dropdown based on country
+        function updateDocumentTypeDropdown(countryCode) {
+            console.log(`DEBUG: Updating document type dropdown for country: ${countryCode}`);
+            
+            // Update both dropdowns: main form and update form
+            const documentTypeDropdown = document.getElementById('documentTypeDropdown');
+            const documentTypeSelect = document.getElementById('documentTypeSelect');
+            
+            // Update main form dropdown
+            if (documentTypeDropdown) {
+                updateDropdownOptions(documentTypeDropdown, countryCode, 'redBills');
+            }
+            
+            // Update update form dropdown
+            if (documentTypeSelect) {
+                updateDropdownOptions(documentTypeSelect, countryCode, 'redBill');
+            }
+        }
+        
+        // Force update of document type dropdowns (can be called manually)
+        function forceUpdateDocumentTypeDropdowns() {
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log(`DEBUG: Force updating document type dropdowns for country: ${selectedCountry}`);
+            updateDocumentTypeDropdown(selectedCountry);
+        }
+        
+        // Transaction number functions are now loaded from modules via global-bridge.js
+        
+        // Helper function to update dropdown options
+        function updateDropdownOptions(dropdown, countryCode, redBillsValue) {
+            console.log(`DEBUG: Updating dropdown ${dropdown.id} for country: ${countryCode}`);
+            console.log(`DEBUG: Looking for redBillsValue: ${redBillsValue}`);
+            
+            // Get all options
+            const allOptions = dropdown.querySelectorAll('option');
+            console.log(`DEBUG: Found ${allOptions.length} options in ${dropdown.id}`);
+            
+            // Log all options for debugging
+            allOptions.forEach((option, index) => {
+                console.log(`DEBUG: Option ${index}: value="${option.value}", text="${option.textContent.trim()}"`);
+            });
+            
+            const redBillsOption = Array.from(allOptions).find(option => 
+                option.value === redBillsValue || 
+                option.textContent.includes('Red Bill') || 
+                option.textContent.includes('Red Bill (Special Invoice)')
+            );
+            
+            if (redBillsOption) {
+                console.log(`DEBUG: Found Red Bills option: value="${redBillsOption.value}", text="${redBillsOption.textContent.trim()}"`);
+                if (countryCode === 'BE') {
+                    // Belgium doesn't have red bills - hide the option
+                    redBillsOption.style.display = 'none';
+                    console.log(`DEBUG: Hidden Red Bills option for Belgium in ${dropdown.id}`);
+                } else if (countryCode === 'VN') {
+                    // Vietnam has red bills - show the option
+                    redBillsOption.style.display = 'block';
+                    console.log(`DEBUG: Shown Red Bills option for Vietnam in ${dropdown.id}`);
+                }
+            } else {
+                console.log(`DEBUG: Red Bills option not found in dropdown ${dropdown.id}`);
+                console.log(`DEBUG: Searched for value="${redBillsValue}" and text containing "Red Bill"`);
+            }
+            
+            // Update the dropdown to reflect country-specific document types
+            console.log(`DEBUG: Dropdown ${dropdown.id} updated for ${countryCode}`);
+            console.log(`DEBUG: Available document types for ${countryCode}:`, 
+                Array.from(allOptions)
+                    .filter(option => option.style.display !== 'none' && option.value !== '')
+                    .map(option => option.textContent.trim())
+            );
+        }
+        
+        // Update Quick Access panel visibility based on country
+        function updateQuickAccessVisibility(countryCode) {
+            console.log(`DEBUG: Updating Quick Access visibility for country: ${countryCode}`);
+            
+            // Get the Sheet Access elements
+            const beMasterLedger = document.querySelector('.access-link-be');
+            const vnMasterLedger = document.querySelector('.access-link-vn');
+            
+            // Get the Files Access elements
+            const beFiles = document.querySelectorAll('.access-link-bills-be, .access-link-bank-statement-be, .access-link-documentation-be');
+            const vnFiles = document.querySelectorAll('.access-link-bills-vn, .access-link-red-bills-vn, .access-link-bank-statement-vn, .access-link-documentation-vn');
+            
+            // Get the Update form search sheet dropdown
+            const searchSheetDropdown = document.getElementById('searchSheet');
+            
+            console.log(`DEBUG: Found BE Master Ledger:`, beMasterLedger);
+            console.log(`DEBUG: Found VN Master Ledger:`, vnMasterLedger);
+            console.log(`DEBUG: Found BE Files:`, beFiles.length);
+            console.log(`DEBUG: Found VN Files:`, vnFiles.length);
+            console.log(`DEBUG: Found Search Sheet Dropdown:`, searchSheetDropdown);
+            
+            if (countryCode === 'BE') {
+                // Show Belgium elements, hide Vietnam elements
+                if (beMasterLedger) beMasterLedger.style.display = 'block';
+                if (vnMasterLedger) vnMasterLedger.style.display = 'none';
+                
+                beFiles.forEach(file => file.style.display = 'block');
+                vnFiles.forEach(file => file.style.display = 'none');
+                
+                // Update the search sheet dropdown to Belgium
+                if (searchSheetDropdown) {
+                    searchSheetDropdown.value = 'be';
+                    console.log('DEBUG: Updated search sheet dropdown to Belgium');
+                }
+                
+                console.log('DEBUG: Showing Belgium elements, hiding Vietnam elements');
+            } else if (countryCode === 'VN') {
+                // Show Vietnam elements, hide Belgium elements
+                if (beMasterLedger) beMasterLedger.style.display = 'none';
+                if (vnMasterLedger) vnMasterLedger.style.display = 'block';
+                
+                beFiles.forEach(file => file.style.display = 'none');
+                vnFiles.forEach(file => file.style.display = 'block');
+                
+                // Update the search sheet dropdown to Vietnam
+                if (searchSheetDropdown) {
+                    searchSheetDropdown.value = 'vn';
+                    console.log('DEBUG: Updated search sheet dropdown to Vietnam');
+                }
+                
+                console.log('DEBUG: Showing Vietnam elements, hiding Belgium elements');
+            }
+        }
+        
+        // Add event listeners for Google Drive buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Apply country filtering immediately on page load
+            console.log('DEBUG: DOMContentLoaded - applying initial country filtering');
+            forceUpdateDocumentTypeDropdowns();
+            
+            // Bills Google Drive button (Original)
+            const billsGoogleDriveBtn = document.getElementById('billsGoogleDriveBtn');
+            if (billsGoogleDriveBtn) {
+                billsGoogleDriveBtn.addEventListener('click', processBillsGoogleDriveLink);
+            }
+            
+            // Red Bills Google Drive button (Original)
+            const redBillsGoogleDriveBtn = document.getElementById('redBillsGoogleDriveBtn');
+            if (redBillsGoogleDriveBtn) {
+                redBillsGoogleDriveBtn.addEventListener('click', processRedBillsGoogleDriveLink);
+            }
+            
+            // Documentation Google Drive button (Original)
+            const documentationGoogleDriveBtn = document.getElementById('documentationGoogleDriveBtn');
+            if (documentationGoogleDriveBtn) {
+                documentationGoogleDriveBtn.addEventListener('click', processDocumentationGoogleDriveLink);
+            }
+            
+            // Bills Google Drive button (Main Section)
+            const billsGoogleDriveBtnMain = document.getElementById('billsGoogleDriveBtnMain');
+            if (billsGoogleDriveBtnMain) {
+                billsGoogleDriveBtnMain.addEventListener('click', processBillsGoogleDriveLinkMain);
+            }
+            
+            // Red Bills Google Drive button (Main Section)
+            const redBillsGoogleDriveBtnMain = document.getElementById('redBillsGoogleDriveBtnMain');
+            if (redBillsGoogleDriveBtnMain) {
+                redBillsGoogleDriveBtnMain.addEventListener('click', processRedBillsGoogleDriveLinkMain);
+            }
+            
+            // Documentation Google Drive button (Main Section)
+            const documentationGoogleDriveBtnMain = document.getElementById('documentationGoogleDriveBtnMain');
+            if (documentationGoogleDriveBtnMain) {
+                documentationGoogleDriveBtnMain.addEventListener('click', processDocumentationGoogleDriveLinkMain);
+            }
+            
+            // Simplified dropdown functionality
+            const documentTypeDropdown = document.getElementById('documentTypeDropdown');
+            if (documentTypeDropdown) {
+                documentTypeDropdown.addEventListener('change', handleDocumentTypeChange);
+            }
+            
+            // Upload mode radio buttons
+            const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
+            console.log('DEBUG: Found upload mode radios:', uploadModeRadios.length);
+            
+            uploadModeRadios.forEach((radio, index) => {
+                console.log(`DEBUG: Adding event listener to radio ${index}:`, radio.value);
+                radio.addEventListener('change', handleUploadModeChange);
+            });
+            
+            // File upload button
+            const uploadFileBtn = document.getElementById('uploadFileBtn');
+            if (uploadFileBtn) {
+                uploadFileBtn.addEventListener('click', handleFileUpload);
+            }
+            
+            // Google Drive processing button
+            const processGoogleDriveBtn = document.getElementById('processGoogleDriveBtn');
+            if (processGoogleDriveBtn) {
+                processGoogleDriveBtn.addEventListener('click', handleGoogleDriveProcessing);
+            }
+            
+            // Country selection functionality
+            const countrySelect = document.getElementById('countrySelect');
+            if (countrySelect) {
+                countrySelect.addEventListener('change', function() {
+                    const selectedCountry = this.value;
+                    console.log(`DEBUG: Country changed to: ${selectedCountry}`);
+                    
+                    // Immediately update sessionStorage and regenerate transaction number
+                    sessionStorage.setItem('selectedCountry', selectedCountry);
+                    console.log(`DEBUG: Immediately regenerating transaction number for ${selectedCountry}`);
+                    
+                    // Call the transaction number generation directly
+                    setTimeout(() => {
+                        generateTransactionNumber();
+                    }, 50);
+                    
+                    // Then call the full country selection process
+                    selectCountry(selectedCountry);
+                });
+            }
+            
+            // Initialize country selection on page load
+            initializeCountrySelection();
+        });
+    </script>
+    
+     </body>
+     </html>
