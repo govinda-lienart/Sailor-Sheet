@@ -24,6 +24,7 @@ import {
 import { setupDateInputHandlers } from './services/dateService.js';
 import { showTemporaryMessage } from './services/uiService.js';
 import { handleFormSubmit } from './services/formSubmissionService.js';
+import { restoreFormState } from './services/formStateService.js';
 
 /**
  * Apply fund colors to option elements
@@ -89,6 +90,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (transactionSelect && debitAccountSelect && debitAccountSelect.options.length > 1) {
             console.log('✅ Accounts loaded, applying transaction defaults...');
             handleTransactionTypeChange();
+            
+            // Restore previously saved form state after defaults are applied
+            setTimeout(function() {
+                restoreFormState();
+                console.log('📂 Form state restoration attempted');
+            }, 300);
         } else {
             console.log('⏳ Accounts not ready yet, retrying in 500ms...');
             // Retry after another 500ms if accounts aren't ready
@@ -96,6 +103,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (transactionSelect) {
                     console.log('🔄 Retrying to apply transaction defaults...');
                     handleTransactionTypeChange();
+                    
+                    // Restore previously saved form state after defaults are applied
+                    setTimeout(function() {
+                        restoreFormState();
+                        console.log('📂 Form state restoration attempted (retry)');
+                    }, 300);
                 }
             }, 500);
         }

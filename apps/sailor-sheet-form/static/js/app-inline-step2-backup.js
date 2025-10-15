@@ -1,9 +1,39 @@
         // =====================================================================
-        // SEARCH FUNCTIONALITY
+        // TOOLS FUNCTIONALITY - Toggle between New Entry and Update Entry
         // =====================================================================
         document.addEventListener('DOMContentLoaded', function() {
+            const newEntryBtn = document.getElementById('newEntryBtn');
+            const updateEntryBtn = document.getElementById('updateEntryBtn');
+            const mainFormContainer = document.querySelector('.form-container:not(.update-form-container)');
+            const updateFormContainer = document.getElementById('updateFormContainer');
             const searchTransactionBtn = document.getElementById('searchTransactionBtn');
             const searchResults = document.getElementById('searchResults');
+
+            // New Entry Button Click
+            newEntryBtn.addEventListener('click', function() {
+                // Update active states
+                newEntryBtn.classList.add('active');
+                updateEntryBtn.classList.remove('active');
+                
+                // Show/hide forms
+                mainFormContainer.style.display = 'block';
+                updateFormContainer.style.display = 'none';
+                
+                console.log('✏️ Switched to New Entry mode');
+            });
+
+            // Update Entry Button Click
+            updateEntryBtn.addEventListener('click', function() {
+                // Update active states
+                updateEntryBtn.classList.add('active');
+                newEntryBtn.classList.remove('active');
+                
+                // Show/hide forms
+                mainFormContainer.style.display = 'none';
+                updateFormContainer.style.display = 'block';
+                
+                console.log('🔄 Switched to Update Entry mode');
+            });
 
             // Search Transaction Button Click
             searchTransactionBtn.addEventListener('click', function() {
@@ -1258,6 +1288,777 @@
             });
         });
         
+        // =====================================================================
+        // GOOGLE DRIVE LINK PROCESSING FOR NEW ENTRY FORM
+        // =====================================================================
+        
+        // Process Google Drive link for Bills
+        function processBillsGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('billsGoogleDriveLink').value.trim();
+            const processBtn = document.getElementById('billsGoogleDriveBtn');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error', 'bills');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error', 'bills');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Please generate a transaction number first.', 'error', 'bills');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Bills Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'bill',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('billsFileLinkInput').value = data.file_url;
+                    document.getElementById('billsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    showUploadResult(`✅ Bills file processed successfully!<br>File: ${data.file_name}`, 'success', 'bills');
+                    
+                    // Clear the input
+                    document.getElementById('billsGoogleDriveLink').value = '';
+                    
+                    console.log('DEBUG: Bills Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Bills Google Drive link:', error);
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error', 'bills');
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Link';
+            });
+        }
+        
+        // Process Google Drive link for Red Bills
+        function processRedBillsGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('redBillsGoogleDriveLink').value.trim();
+            const processBtn = document.getElementById('redBillsGoogleDriveBtn');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error', 'redBills');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error', 'redBills');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Please generate a transaction number first.', 'error', 'redBills');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Red Bills Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'redBill',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('redBillsFileLinkInput').value = data.file_url;
+                    document.getElementById('redBillsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    showUploadResult(`✅ Red Bills file processed successfully!<br>File: ${data.file_name}`, 'success', 'redBills');
+                    
+                    // Clear the input
+                    document.getElementById('redBillsGoogleDriveLink').value = '';
+                    
+                    console.log('DEBUG: Red Bills Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Red Bills Google Drive link:', error);
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error', 'redBills');
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Link';
+            });
+        }
+        
+        // Process Google Drive link for Documentation
+        function processDocumentationGoogleDriveLink() {
+            const googleDriveLink = document.getElementById('documentationGoogleDriveLink').value.trim();
+            const processBtn = document.getElementById('documentationGoogleDriveBtn');
+            
+            if (!googleDriveLink) {
+                showUploadResult('Please enter a Google Drive URL.', 'error', 'documentation');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                showUploadResult('Please enter a valid Google Drive URL.', 'error', 'documentation');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                showUploadResult('Please generate a transaction number first.', 'error', 'documentation');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Documentation Google Drive link: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'documentation',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('documentationFileLinkInput').value = data.file_url;
+                    document.getElementById('documentationFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    showUploadResult(`✅ Documentation file processed successfully!<br>File: ${data.file_name}`, 'success', 'documentation');
+                    
+                    // Clear the input
+                    document.getElementById('documentationGoogleDriveLink').value = '';
+                    
+                    console.log('DEBUG: Documentation Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Documentation Google Drive link:', error);
+                showUploadResult(`❌ Failed to process Google Drive link: ${error.message}`, 'error', 'documentation');
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Link';
+            });
+        }
+        
+        // Helper function to show upload results
+        function showUploadResult(message, type, section) {
+            const statusDiv = document.getElementById(`${section}UploadStatus`);
+            const resultDiv = document.getElementById(`${section}UploadResult`);
+            
+            if (statusDiv && resultDiv) {
+                statusDiv.style.display = 'block';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'danger'}">${message}</div>`;
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    resultDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Process Google Drive link for Bills (Main Section)
+        function processBillsGoogleDriveLinkMain() {
+            const googleDriveLink = document.getElementById('billsGoogleDriveLinkMain').value.trim();
+            const processBtn = document.getElementById('billsGoogleDriveBtnMain');
+            
+            if (!googleDriveLink) {
+                alert('Please enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Bills Google Drive link (Main): ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'bill',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('billsFileLinkInput').value = data.file_url;
+                    document.getElementById('billsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    alert(`✅ Bills file processed successfully!\nFile: ${data.file_name}`);
+                    
+                    // Clear the input
+                    document.getElementById('billsGoogleDriveLinkMain').value = '';
+                    
+                    console.log('DEBUG: Bills Google Drive link processed successfully (Main)');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Bills Google Drive link (Main):', error);
+                alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Bills Link';
+            });
+        }
+        
+        // Process Google Drive link for Red Bills (Main Section)
+        function processRedBillsGoogleDriveLinkMain() {
+            const googleDriveLink = document.getElementById('redBillsGoogleDriveLinkMain').value.trim();
+            const processBtn = document.getElementById('redBillsGoogleDriveBtnMain');
+            
+            if (!googleDriveLink) {
+                alert('Please enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Red Bills Google Drive link (Main): ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'redBill',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('redBillsFileLinkInput').value = data.file_url;
+                    document.getElementById('redBillsFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    alert(`✅ Red Bills file processed successfully!\nFile: ${data.file_name}`);
+                    
+                    // Clear the input
+                    document.getElementById('redBillsGoogleDriveLinkMain').value = '';
+                    
+                    console.log('DEBUG: Red Bills Google Drive link processed successfully (Main)');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Red Bills Google Drive link (Main):', error);
+                alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Red Bills Link';
+            });
+        }
+        
+        // Process Google Drive link for Documentation (Main Section)
+        function processDocumentationGoogleDriveLinkMain() {
+            const googleDriveLink = document.getElementById('documentationGoogleDriveLinkMain').value.trim();
+            const processBtn = document.getElementById('documentationGoogleDriveBtnMain');
+            
+            if (!googleDriveLink) {
+                alert('Please enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            
+            console.log(`DEBUG: Processing Documentation Google Drive link (Main): ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            console.log(`DEBUG: Country: ${selectedCountry}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: 'documentation',
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    document.getElementById('documentationFileLinkInput').value = data.file_url;
+                    document.getElementById('documentationFileNameInput').value = data.file_name;
+                    
+                    // Show success message
+                    alert(`✅ Documentation file processed successfully!\nFile: ${data.file_name}`);
+                    
+                    // Clear the input
+                    document.getElementById('documentationGoogleDriveLinkMain').value = '';
+                    
+                    console.log('DEBUG: Documentation Google Drive link processed successfully (Main)');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Documentation Google Drive link (Main):', error);
+                alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Documentation Link';
+            });
+        }
+        
+        // =====================================================================
+        // SIMPLIFIED DOCUMENT UPLOAD WITH DROPDOWN
+        // =====================================================================
+        
+        // Handle document type dropdown change
+        function handleDocumentTypeChange() {
+            const dropdown = document.getElementById('documentTypeDropdown');
+            const uploadModeToggle = document.getElementById('uploadModeToggle');
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            if (dropdown.value) {
+                uploadModeToggle.style.display = 'block';
+                uploadStatus.style.display = 'none';
+                
+                // Set up event listeners for upload mode radios when they become visible
+                const uploadModeRadios = document.querySelectorAll('input[name="updateUploadMode"]');
+                console.log('DEBUG: Setting up upload mode radios when toggle becomes visible:', uploadModeRadios.length);
+                uploadModeRadios.forEach((radio, index) => {
+                    console.log(`DEBUG: Adding event listener to radio ${index}:`, radio.value);
+                    radio.addEventListener('change', handleUploadModeChange);
+                });
+                
+                // Force show file upload section if "Upload File" is selected
+                const fileUploadSection = document.getElementById('fileUploadSection');
+                // Check both main form and update form radio buttons
+                const uploadFileRadio = document.querySelector('input[name="uploadMode"][value="file"]:checked') || 
+                                       document.querySelector('input[name="updateUploadMode"][value="file"]:checked');
+                if (uploadFileRadio && fileUploadSection) {
+                    console.log('DEBUG: Upload File is selected, showing file upload section');
+                    fileUploadSection.style.display = 'block';
+                }
+            } else {
+                uploadModeToggle.style.display = 'none';
+                fileUploadSection.style.display = 'none';
+                googleDriveLinkSection.style.display = 'none';
+                uploadStatus.style.display = 'none';
+            }
+        }
+        
+        // Handle upload mode change (works for both main form and update form)
+        function handleUploadModeChange() {
+            console.log('DEBUG: handleUploadModeChange called');
+            
+            // Main form elements
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const googleDriveLinkSection = document.getElementById('googleDriveLinkSection');
+            
+            // Update form elements
+            const updateFileUploadSection = document.getElementById('updateFileUploadSection');
+            const linkInputSection = document.getElementById('linkInputSection');
+            
+            // Check for both main form (uploadMode) and update form (updateUploadMode) radio buttons
+            const mainFormRadio = document.querySelector('input[name="uploadMode"]:checked');
+            const updateFormRadio = document.querySelector('input[name="updateUploadMode"]:checked');
+            const uploadMode = mainFormRadio ? mainFormRadio.value : (updateFormRadio ? updateFormRadio.value : null);
+            
+            console.log('DEBUG: Upload mode selected:', uploadMode);
+            console.log('DEBUG: Main form radio:', mainFormRadio);
+            console.log('DEBUG: Update form radio:', updateFormRadio);
+            
+            if (!uploadMode) {
+                console.log('ERROR: No upload mode radio button found');
+                return;
+            }
+            
+            if (uploadMode === 'file') {
+                console.log('DEBUG: Showing file upload section');
+                // Main form
+                if (fileUploadSection) fileUploadSection.style.display = 'block';
+                if (googleDriveLinkSection) googleDriveLinkSection.style.display = 'none';
+                // Update form
+                if (updateFileUploadSection) updateFileUploadSection.style.display = 'block';
+                if (linkInputSection) linkInputSection.style.display = 'none';
+            } else if (uploadMode === 'link') {
+                console.log('DEBUG: Showing Google Drive link section');
+                // Main form
+                if (fileUploadSection) fileUploadSection.style.display = 'none';
+                if (googleDriveLinkSection) googleDriveLinkSection.style.display = 'block';
+                // Update form
+                if (updateFileUploadSection) updateFileUploadSection.style.display = 'none';
+                if (linkInputSection) linkInputSection.style.display = 'block';
+            }
+        }
+        
+        // Handle file upload
+        function handleFileUpload() {
+            const dropdown = document.getElementById('documentTypeDropdown');
+            const fileInput = document.getElementById('documentFileInput');
+            const uploadBtn = document.getElementById('uploadFileBtn');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadStatusMessage = document.getElementById('uploadStatusMessage');
+            
+            const selectedType = dropdown.value;
+            const file = fileInput.files[0];
+            
+            if (!selectedType || !file) {
+                alert('Please select a document type and file.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            console.log(`DEBUG: Uploading file for ${selectedType}: ${file.name}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '🔄 Uploading...';
+            uploadStatus.style.display = 'block';
+            uploadStatusMessage.textContent = 'Uploading file...';
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log(`DEBUG: Uploading file for country: ${selectedCountry}`);
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('transaction_number', transactionNumber);
+            formData.append('country_code', selectedCountry);
+            
+            // Map document types to file types
+            const fileTypeMapping = {
+                'bills': 'bills',
+                'redBills': 'redBills',
+                'bankStatement': 'bankStatement',
+                'documentation': 'documentation'
+            };
+            const fileType = fileTypeMapping[selectedType];
+            formData.append('file_type', fileType);
+            
+            // Upload file
+            fetch('/upload_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    // Map dropdown values to correct field IDs
+                    const fieldMapping = {
+                        'bills': 'bills',
+                        'redBills': 'redBills', 
+                        'documentation': 'documentation'
+                    };
+                    
+                    const fieldPrefix = fieldMapping[selectedType];
+                    const linkField = document.getElementById(`${fieldPrefix}FileLinkInput`);
+                    const nameField = document.getElementById(`${fieldPrefix}FileNameInput`);
+                    
+                    if (linkField && nameField) {
+                        linkField.value = data.file_url;
+                        nameField.value = data.file_name;
+                    }
+                    
+                    // Show success
+                    uploadStatus.style.background = '#d4edda';
+                    uploadStatus.style.borderColor = '#c3e6cb';
+                    uploadStatusMessage.style.color = '#155724';
+                    uploadStatusMessage.textContent = `✅ File uploaded successfully! File: ${data.file_name}`;
+                    
+                    // Clear inputs
+                    fileInput.value = '';
+                    dropdown.value = '';
+                    document.getElementById('uploadModeToggle').style.display = 'none';
+                    document.getElementById('fileUploadSection').style.display = 'none';
+                    
+                    console.log('DEBUG: File uploaded successfully');
+                } else {
+                    throw new Error(data.error || 'Upload failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                uploadStatus.style.background = '#f8d7da';
+                uploadStatus.style.borderColor = '#f5c6cb';
+                uploadStatusMessage.style.color = '#721c24';
+                uploadStatusMessage.textContent = `❌ Upload failed: ${error.message}`;
+            })
+            .finally(() => {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload File';
+            });
+        }
+        
+        // Handle Google Drive link processing
+        function handleGoogleDriveProcessing() {
+            const dropdown = document.getElementById('documentTypeDropdown');
+            const googleDriveLink = document.getElementById('googleDriveLinkInput').value.trim();
+            const processBtn = document.getElementById('processGoogleDriveBtn');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadStatusMessage = document.getElementById('uploadStatusMessage');
+            
+            const selectedType = dropdown.value;
+            
+            if (!selectedType || !googleDriveLink) {
+                alert('Please select a document type and enter a Google Drive URL.');
+                return;
+            }
+            
+            if (!googleDriveLink.includes('drive.google.com')) {
+                alert('Please enter a valid Google Drive URL.');
+                return;
+            }
+            
+            // Get transaction number
+            const transactionNumber = document.getElementById('transactionNumberInput').value;
+            if (!transactionNumber) {
+                alert('Please generate a transaction number first.');
+                return;
+            }
+            
+            // Get current country
+            const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+            console.log(`DEBUG: Processing Google Drive link for country: ${selectedCountry}`);
+            console.log(`DEBUG: Processing Google Drive link for ${selectedType}: ${googleDriveLink}`);
+            console.log(`DEBUG: Transaction number: ${transactionNumber}`);
+            
+            // Show processing state
+            processBtn.disabled = true;
+            processBtn.textContent = '🔄 Processing...';
+            uploadStatus.style.display = 'block';
+            uploadStatusMessage.textContent = 'Processing Google Drive link...';
+            
+            // Map document types to API document types
+            const documentTypeMapping = {
+                'bills': 'bill',
+                'redBills': 'redBill',
+                'bankStatement': 'bankStatement',
+                'documentation': 'documentation'
+            };
+            const documentType = documentTypeMapping[selectedType];
+            
+            // Call API to process Google Drive link
+            fetch('/api/process_google_drive_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    google_drive_url: googleDriveLink,
+                    document_type: documentType,
+                    transaction_number: transactionNumber,
+                    country_code: selectedCountry
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store processed file data in hidden fields
+                    // Map dropdown values to correct field IDs
+                    const fieldMapping = {
+                        'bills': 'bills',
+                        'redBills': 'redBills', 
+                        'documentation': 'documentation'
+                    };
+                    
+                    const fieldPrefix = fieldMapping[selectedType];
+                    const linkField = document.getElementById(`${fieldPrefix}FileLinkInput`);
+                    const nameField = document.getElementById(`${fieldPrefix}FileNameInput`);
+                    
+                    if (linkField && nameField) {
+                        linkField.value = data.file_url;
+                        nameField.value = data.file_name;
+                    }
+                    
+                    // Show success
+                    uploadStatus.style.background = '#d4edda';
+                    uploadStatus.style.borderColor = '#c3e6cb';
+                    uploadStatusMessage.style.color = '#155724';
+                    uploadStatusMessage.textContent = `✅ Google Drive link processed successfully! File: ${data.file_name}`;
+                    
+                    // Clear inputs
+                    document.getElementById('googleDriveLinkInput').value = '';
+                    dropdown.value = '';
+                    document.getElementById('uploadModeToggle').style.display = 'none';
+                    document.getElementById('googleDriveLinkSection').style.display = 'none';
+                    
+                    console.log('DEBUG: Google Drive link processed successfully');
+                } else {
+                    throw new Error(data.error || 'Failed to process Google Drive link');
+                }
+            })
+            .catch(error => {
+                console.error('Error processing Google Drive link:', error);
+                uploadStatus.style.background = '#f8d7da';
+                uploadStatus.style.borderColor = '#f5c6cb';
+                uploadStatusMessage.style.color = '#721c24';
+                uploadStatusMessage.textContent = `❌ Processing failed: ${error.message}`;
+            })
+            .finally(() => {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Google Drive Link';
+            });
+        }
+        
+        // =====================================================================
         // COUNTRY SELECTION FUNCTIONALITY
         // =====================================================================
         
@@ -1695,8 +2496,68 @@
             console.log('DEBUG: DOMContentLoaded - applying initial country filtering');
             forceUpdateDocumentTypeDropdowns();
             
-            // NOTE: Google Drive button event listeners are now handled by google-drive-links.js
-            // NOTE: Document upload event listeners are now handled by document-upload.js
+            // Bills Google Drive button (Original)
+            const billsGoogleDriveBtn = document.getElementById('billsGoogleDriveBtn');
+            if (billsGoogleDriveBtn) {
+                billsGoogleDriveBtn.addEventListener('click', processBillsGoogleDriveLink);
+            }
+            
+            // Red Bills Google Drive button (Original)
+            const redBillsGoogleDriveBtn = document.getElementById('redBillsGoogleDriveBtn');
+            if (redBillsGoogleDriveBtn) {
+                redBillsGoogleDriveBtn.addEventListener('click', processRedBillsGoogleDriveLink);
+            }
+            
+            // Documentation Google Drive button (Original)
+            const documentationGoogleDriveBtn = document.getElementById('documentationGoogleDriveBtn');
+            if (documentationGoogleDriveBtn) {
+                documentationGoogleDriveBtn.addEventListener('click', processDocumentationGoogleDriveLink);
+            }
+            
+            // Bills Google Drive button (Main Section)
+            const billsGoogleDriveBtnMain = document.getElementById('billsGoogleDriveBtnMain');
+            if (billsGoogleDriveBtnMain) {
+                billsGoogleDriveBtnMain.addEventListener('click', processBillsGoogleDriveLinkMain);
+            }
+            
+            // Red Bills Google Drive button (Main Section)
+            const redBillsGoogleDriveBtnMain = document.getElementById('redBillsGoogleDriveBtnMain');
+            if (redBillsGoogleDriveBtnMain) {
+                redBillsGoogleDriveBtnMain.addEventListener('click', processRedBillsGoogleDriveLinkMain);
+            }
+            
+            // Documentation Google Drive button (Main Section)
+            const documentationGoogleDriveBtnMain = document.getElementById('documentationGoogleDriveBtnMain');
+            if (documentationGoogleDriveBtnMain) {
+                documentationGoogleDriveBtnMain.addEventListener('click', processDocumentationGoogleDriveLinkMain);
+            }
+            
+            // Simplified dropdown functionality
+            const documentTypeDropdown = document.getElementById('documentTypeDropdown');
+            if (documentTypeDropdown) {
+                documentTypeDropdown.addEventListener('change', handleDocumentTypeChange);
+            }
+            
+            // Upload mode radio buttons
+            const uploadModeRadios = document.querySelectorAll('input[name="uploadMode"]');
+            console.log('DEBUG: Found upload mode radios:', uploadModeRadios.length);
+            
+            uploadModeRadios.forEach((radio, index) => {
+                console.log(`DEBUG: Adding event listener to radio ${index}:`, radio.value);
+                radio.addEventListener('change', handleUploadModeChange);
+            });
+            
+            // File upload button
+            const uploadFileBtn = document.getElementById('uploadFileBtn');
+            if (uploadFileBtn) {
+                uploadFileBtn.addEventListener('click', handleFileUpload);
+            }
+            
+            // Google Drive processing button
+            const processGoogleDriveBtn = document.getElementById('processGoogleDriveBtn');
+            if (processGoogleDriveBtn) {
+                processGoogleDriveBtn.addEventListener('click', handleGoogleDriveProcessing);
+            }
             
             // Country selection functionality
             const countrySelect = document.getElementById('countrySelect');
