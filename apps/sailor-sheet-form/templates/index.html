@@ -840,29 +840,21 @@
     <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/global-bridge.js') }}"></script>
     
-    <!-- Chatbot Widget (Step 2: First extracted module) -->
-    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    <!-- Core Functionality -->
+    <script src="{{ url_for('static', filename='js/core/chatbot.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/form-toggle.js') }}"></script>
     
-    <!-- Form Toggle (Step 3: Second extracted module) -->
-    <script src="{{ url_for('static', filename='js/form-toggle.js') }}"></script>
+    <!-- Upload Functionality -->
+    <script src="{{ url_for('static', filename='js/upload/document-upload.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/upload/google-drive-links.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/upload/update-form-upload.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/upload/update-transaction-button.js') }}"></script>
     
-    <!-- Document Upload (Step 4: Third extracted module) -->
-    <script src="{{ url_for('static', filename='js/document-upload.js') }}"></script>
+    <!-- Search Functionality -->
+    <script src="{{ url_for('static', filename='js/search/search-transaction.js') }}"></script>
     
-    <!-- Google Drive Links (Step 5: Fourth extracted module) -->
-    <script src="{{ url_for('static', filename='js/google-drive-links.js') }}"></script>
-    
-    <!-- Transaction Search (Step 6: Fifth extracted module) -->
-    <script src="{{ url_for('static', filename='js/search-transaction.js') }}"></script>
-    
-    <!-- Update Form Document Upload (Step 7: Sixth extracted module) -->
-    <script src="{{ url_for('static', filename='js/update-form-upload.js') }}"></script>
-    
-    <!-- Country Selection (Step 9: Seventh extracted module) -->
-    <script src="{{ url_for('static', filename='js/country-selection.js') }}"></script>
-
-    <!-- Update Transaction Button (Step 10: Final extracted module) -->
-    <script src="{{ url_for('static', filename='js/update-transaction-button.js') }}"></script>
+    <!-- Localization Functionality -->
+    <script src="{{ url_for('static', filename='js/localization/country-selection.js') }}"></script>
     
     <!-- Note: Scripts were moved from inline to external files for:
          - Better browser caching
