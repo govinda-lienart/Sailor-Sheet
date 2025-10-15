@@ -113,13 +113,11 @@ export function applyTransactionDefaults(selectedType) {
     const selectedCountry = sessionStorage.getItem('selectedCountry') || COUNTRIES.BE;
     console.log(`🌍 Current country: ${selectedCountry}`);
     
-    // Clear previous selections
+    // Only clear account selections, NOT category/fund (they should persist from saved state)
     if (debitAccountSelect) debitAccountSelect.value = '';
     if (creditAccountSelect) creditAccountSelect.value = '';
-    if (categorySelect) categorySelect.value = '';
-    if (fundSelect) fundSelect.value = '';
     
-    console.log('🧹 Cleared previous selections');
+    console.log('🧹 Cleared debit/credit account selections (preserving category & fund)');
     
     // Get defaults for this transaction type
     const defaults = TRANSACTION_DEFAULTS[selectedType];
@@ -144,11 +142,12 @@ export function applyTransactionDefaults(selectedType) {
         setAccount(creditAccountSelect, countryDefaults.credit, 'credit account', selectedCountry);
     }
     
-    if (countryDefaults.category) {
+    // Only set category/fund if they're empty (don't override saved values)
+    if (countryDefaults.category && (!categorySelect || !categorySelect.value)) {
         setCategory(categorySelect, countryDefaults.category.pattern);
     }
     
-    if (countryDefaults.fund !== undefined) {
+    if (countryDefaults.fund !== undefined && (!fundSelect || !fundSelect.value)) {
         setFund(fundSelect, countryDefaults.fund?.pattern || null);
     }
 }
