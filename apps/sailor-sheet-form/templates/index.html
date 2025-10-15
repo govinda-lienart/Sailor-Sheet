@@ -592,6 +592,17 @@
                                 🔄 Update Transaction Documents
                             </button>
                         </div>
+                        
+                        <!-- Upload Progress Bar (for update form) -->
+                        <div id="uploadProgress" style="display: none; margin-top: 15px;">
+                            <div style="background: #e9ecef; border-radius: 4px; height: 8px; overflow: hidden;">
+                                <div id="progressBar" style="background: linear-gradient(90deg, #28a745, #20c997); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                            </div>
+                            <small id="progressText" style="color: #6c757d; font-size: 12px; margin-top: 5px; display: block;">Uploading...</small>
+                        </div>
+                        
+                        <!-- Upload Result Message (for update form) -->
+                        <div id="uploadResult" style="margin-top: 15px; display: none;"></div>
                     </div>
                 </div>
             </div>

@@ -295,6 +295,7 @@
         
         // Show progress
         uploadBtn.disabled = true;
+        uploadBtn.textContent = '🔄 Uploading...';
         uploadProgress.style.display = 'flex';
         progressBar.style.width = '0%';
         progressText.textContent = 'Preparing upload...';
@@ -371,6 +372,7 @@
         })
         .finally(() => {
             uploadBtn.disabled = false;
+            uploadBtn.textContent = '📤 Upload to Google Drive';
             setTimeout(() => {
                 uploadProgress.style.display = 'none';
             }, 1000);
