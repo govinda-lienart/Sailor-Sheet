@@ -230,9 +230,17 @@
     // Set up drag-and-drop functionality
     function setupDragAndDrop() {
         const fileUploadSection = document.getElementById('fileUploadSection');
+        const dragDropZone = document.getElementById('dragDropZone');
         const fileInput = document.getElementById('documentFileInput');
         
         if (!fileUploadSection || !fileInput) return;
+        
+        // Make drag-drop zone clickable to open file browser
+        if (dragDropZone) {
+            dragDropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
         
         // Prevent default drag behaviors
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -258,13 +266,19 @@
         }
         
         function highlight(e) {
-            fileUploadSection.style.border = '2px dashed #007bff';
-            fileUploadSection.style.background = '#e7f3ff';
+            if (dragDropZone) {
+                dragDropZone.style.borderColor = '#0056b3';
+                dragDropZone.style.background = '#d4e9ff';
+                dragDropZone.style.transform = 'scale(1.02)';
+            }
         }
         
         function unhighlight(e) {
-            fileUploadSection.style.border = '';
-            fileUploadSection.style.background = '';
+            if (dragDropZone) {
+                dragDropZone.style.borderColor = '#007bff';
+                dragDropZone.style.background = '#f0f8ff';
+                dragDropZone.style.transform = 'scale(1)';
+            }
         }
         
         function handleDrop(e) {

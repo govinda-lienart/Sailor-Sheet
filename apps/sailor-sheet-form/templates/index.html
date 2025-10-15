@@ -392,16 +392,28 @@
                     
                     <!-- File Upload Section -->
                     <div id="fileUploadSection" style="display: none; background: white; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
+                        <!-- Drag and Drop Zone -->
+                        <div id="dragDropZone" style="border: 3px dashed #007bff; background: #f0f8ff; padding: 40px 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; cursor: pointer; transition: all 0.3s ease;">
+                            <div style="font-size: 48px; margin-bottom: 10px;">📎</div>
+                            <div style="font-size: 18px; font-weight: 600; color: #007bff; margin-bottom: 8px;">
+                                Drag & Drop your file here
+                            </div>
+                            <div style="font-size: 14px; color: #6c757d; margin-bottom: 15px;">
+                                or click to browse
+                            </div>
+                            <div style="color: #6c757d; font-size: 12px;">
+                                <strong>Allowed:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
+                                <strong>Max size:</strong> 16MB
+                            </div>
+                        </div>
+                        
                         <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #495057;">📁 Select File:</label>
                         <input type="file" id="documentFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.jpeg" 
-                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 10px;">
-                        <div style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">
-                            <strong>Allowed types:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, JPEG<br>
-                            <strong>Maximum size:</strong> 16MB
-                        </div>
+                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 15px;">
+                        
                         <button type="button" id="uploadFileBtn" class="btn-enhanced" 
                                 style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                            Upload File
+                            📤 Upload File
                         </button>
                     </div>
                     

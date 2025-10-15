@@ -568,6 +568,9 @@
         const documentUploadForm = document.getElementById('documentUploadForm');
         const cancelUploadBtn = document.getElementById('cancelUploadBtn');
         
+        // Set up drag-and-drop for update form (now that it's visible)
+        setupDragAndDropForUpdateForm();
+        
         // Apply country filtering to update form dropdown when it becomes visible
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
@@ -730,11 +733,58 @@
     }
     
     // Set up drag-and-drop functionality for update form
-    function setupDragAndDrop() {
+    // Flag to track if drag-and-drop has been initialized
+    let dragDropInitialized = false;
+    
+    function setupDragAndDropForUpdateForm() {
+        // Prevent double initialization
+        if (dragDropInitialized) {
+            console.log('⏭️ Drag-and-drop already initialized for update form');
+            return;
+        }
+        
         const updateFileUploadSection = document.getElementById('updateFileUploadSection');
         const fileInput = document.getElementById('documentFile');
         
-        if (!updateFileUploadSection || !fileInput) return;
+        if (!updateFileUploadSection || !fileInput) {
+            console.log('⚠️ Update form drag-and-drop elements not found yet');
+            return;
+        }
+        
+        // Create and insert drag-and-drop zone before the file input
+        const dragDropZone = document.createElement('div');
+        dragDropZone.id = 'updateDragDropZone';
+        dragDropZone.style.cssText = `
+            border: 3px dashed #007bff;
+            background: #f0f8ff;
+            padding: 30px 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        `;
+        dragDropZone.innerHTML = `
+            <div style="font-size: 40px; margin-bottom: 8px;">📎</div>
+            <div style="font-size: 16px; font-weight: 600; color: #007bff; margin-bottom: 6px;">
+                Drag & Drop your file here
+            </div>
+            <div style="font-size: 13px; color: #6c757d; margin-bottom: 10px;">
+                or click to browse
+            </div>
+            <div style="color: #6c757d; font-size: 11px;">
+                <strong>Allowed:</strong> PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, GIF, TXT<br>
+                <strong>Max size:</strong> 16MB
+            </div>
+        `;
+        
+        // Insert before the file input
+        updateFileUploadSection.insertBefore(dragDropZone, updateFileUploadSection.firstChild);
+        
+        // Make drag-drop zone clickable
+        dragDropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
         
         // Prevent default drag behaviors
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -759,13 +809,21 @@
         }
         
         function highlight(e) {
-            updateFileUploadSection.style.border = '2px dashed #007bff';
-            updateFileUploadSection.style.background = '#e7f3ff';
+            const zone = document.getElementById('updateDragDropZone');
+            if (zone) {
+                zone.style.borderColor = '#0056b3';
+                zone.style.background = '#d4e9ff';
+                zone.style.transform = 'scale(1.02)';
+            }
         }
         
         function unhighlight(e) {
-            updateFileUploadSection.style.border = '';
-            updateFileUploadSection.style.background = '';
+            const zone = document.getElementById('updateDragDropZone');
+            if (zone) {
+                zone.style.borderColor = '#007bff';
+                zone.style.background = '#f0f8ff';
+                zone.style.transform = 'scale(1)';
+            }
         }
         
         function handleDrop(e) {
@@ -791,13 +849,9 @@
             }
         }
         
+        dragDropInitialized = true;
         console.log('✅ Drag-and-drop functionality enabled for update form');
     }
-    
-    // Initialize drag-and-drop when DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
-        setupDragAndDrop();
-    });
     
     // Expose functions to global scope
     window.initializeDocumentUpload = initializeDocumentUpload;
