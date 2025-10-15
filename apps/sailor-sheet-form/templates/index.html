@@ -818,13 +818,16 @@
     <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/global-bridge.js') }}"></script>
     
+    <!-- Chatbot Widget (Step 2: First extracted module) -->
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    
     <!-- Application JavaScript (Externalized for Performance) -->
     <script src="{{ url_for('static', filename='js/app-inline.js') }}"></script>
     
-    <!-- Note: This script was moved from inline to external file for:
+    <!-- Note: Scripts were moved from inline to external files for:
          - Better browser caching
          - Cleaner HTML structure
-         - NO logic changes - exact same code
+         - Incremental refactoring (one module at a time)
     
      </body>
      </html>
