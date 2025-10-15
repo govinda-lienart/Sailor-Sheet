@@ -1,0 +1,342 @@
+/* =====================================================================
+   FORMS.CSS - Form Sections and Input Styles
+   ===================================================================== */
+
+/* =============================================================================
+   FORM SECTION STYLES
+   ============================================================================= */
+
+/* Base form section styling */
+.form-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid;
+    transition: all 0.4s ease-in-out;
+    opacity: 0;
+    transform: translateY(20px);
+    display: none;
+}
+
+.form-section.active {
+    opacity: 1;
+    transform: translateY(0);
+    display: block;
+    animation: slideInFade 0.4s ease-out;
+}
+
+/* Keep upload and other non-main sections always visible */
+.form-section:not(#transaction-number-section):not(#transaction-type-section):not(#sheet-worksheet-section):not(#date-section):not(#amount-section):not(#fund-section):not(#category-section):not(#sub-category-section):not(#debit-account-section):not(#credit-account-section):not(#payment-method-section):not(#description-section):not(#document-upload-section),
+#upload-bills-section,
+#upload-red-bills-section,
+#upload-documentation-section {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    display: block !important;
+}
+
+@keyframes slideInFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Individual section color themes */
+.section-transaction-number {
+    border-color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+.section-transaction-type {
+    border-color: #ffc107;
+    background-color: #fffbf0;
+}
+
+.section-sheet-worksheet {
+    border-color: #fd7e14;
+    background-color: #fff8f0;
+}
+
+.section-date {
+    border-color: #28a745;
+    background-color: #f8fff8;
+}
+
+.section-amount {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.section-fund {
+    border-color: #20c997;
+    background-color: #f0fffe;
+}
+
+.section-category {
+    border-color: #8b4513;
+    background-color: #fdf5e6;
+}
+
+.section-debit-account {
+    border-color: #007bff;
+    background-color: #f0f8ff;
+}
+
+.section-credit-account {
+    border-color: #6f42c1;
+    background-color: #f8f5ff;
+}
+
+.section-payment-method {
+    border-color: #17a2b8;
+    background-color: #f0fffe;
+}
+
+.section-description {
+    border-color: #000000;
+    background-color: #fffbf0;
+}
+
+.section-document-upload {
+    border-color: #28a745;
+    background-color: #f0fff4;
+}
+
+/* Section headings */
+.section-heading {
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.heading-transaction-number {
+    color: #6c757d;
+}
+
+.heading-transaction-type {
+    color: #ffc107;
+}
+
+.heading-sheet-worksheet {
+    color: #fd7e14;
+}
+
+.heading-date {
+    color: #28a745;
+}
+
+.heading-amount {
+    color: #dc3545;
+}
+
+.heading-fund {
+    color: #20c997;
+}
+
+.heading-category {
+    color: #8b4513;
+}
+
+.heading-debit-account {
+    color: #007bff;
+}
+
+.heading-credit-account {
+    color: #6f42c1;
+}
+
+.heading-payment-method {
+    color: #17a2b8;
+}
+
+.heading-description {
+    color: #000000;
+}
+
+.heading-document-upload {
+    color: #28a745;
+}
+
+/* Master Ledger subsections */
+.master-ledger-subsection {
+    margin-bottom: 20px;
+    padding: 12px;
+    border: 1px solid #fd7e14;
+    border-radius: 6px;
+    background-color: #fff8f0;
+}
+
+.master-ledger-subsection h5 {
+    color: #fd7e14;
+    margin-bottom: 15px;
+}
+
+/* Professional Navigation with Progress Tracking */
+.nav-link-base {
+    background-color: #f8f9fa;
+    color: #495057;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-link-base.completed {
+    background-color: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745 !important;
+}
+
+.nav-link-base.completed::before {
+    content: "✓";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #28a745;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.nav-link-base.current {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border-left: 4px solid #3b82f6 !important;
+    font-weight: 600;
+}
+
+.nav-link-base.current::after {
+    content: "●";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #3b82f6;
+    font-size: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Navigation link base styles */
+.nav-link-base {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+/* Navigation link color variations */
+.nav-border-gray { border-left: 4px solid #6c757d; }
+.nav-border-yellow { border-left: 4px solid #ffc107; }
+.nav-border-orange { border-left: 4px solid #fd7e14; }
+.nav-border-green { border-left: 4px solid #28a745; }
+.nav-border-red { border-left: 4px solid #dc3545; }
+.nav-border-teal { border-left: 4px solid #20c997; }
+.nav-border-brown { border-left: 4px solid #8b4513; }
+.nav-border-blue { border-left: 4px solid #007bff; }
+.nav-border-purple { border-left: 4px solid #6f42c1; }
+.nav-border-cyan { border-left: 4px solid #17a2b8; }
+.nav-border-black { border-left: 4px solid #000000; }
+
+/* Access panel link colors */
+.access-link-be {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #6b8cae;
+}
+
+.access-link-vn {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #c7965e;
+}
+
+.access-link-bills {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #7ba05b;
+}
+
+.access-link-red-bills {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #c85a5a;
+}
+
+.access-link-bank-statement {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #8967a3;
+}
+
+.access-link-documentation {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-left: 4px solid #7a8288;
+}
+
+/* Access section heading styles */
+.access-heading-main {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Enhanced form sections with better visual hierarchy */
+.form-section-enhanced {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.form-section-enhanced:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+/* Enhanced Logo and Title Section */
+.enhanced-logo-title-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.enhanced-logo-title-section .logo-section {
+    margin-right: 20px;
+}
+
+.enhanced-logo-title-section .logo-section img {
+    max-height: 80px;
+    max-width: 150px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.enhanced-logo-title-section h1 {
+    margin: 0;
+    background: linear-gradient(135deg, #007bff 0%, #6f42c1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.enhanced-logo-title-section p {
+    margin: 5px 0 0 0;
+    color: #6c757d;
+    font-style: italic;
+}

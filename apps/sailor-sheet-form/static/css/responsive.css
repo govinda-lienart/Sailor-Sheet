@@ -1,0 +1,108 @@
+/* =====================================================================
+   RESPONSIVE.CSS - Media Queries and Responsive Design
+   ===================================================================== */
+
+/* =====================================================================
+   RESPONSIVE DESIGN
+   ===================================================================== */
+
+/* Responsive navbar */
+@media (max-width: 768px) {
+    .navbar-container {
+        padding: 0 15px;
+    }
+    
+    .navbar-title {
+        font-size: 20px;
+    }
+    
+    .navbar-subtitle {
+        font-size: 11px;
+    }
+    
+    .navbar-logo {
+        width: 50px;
+        height: 50px;
+        padding: 6px;
+    }
+    
+    .powered-by {
+        padding: 4px 8px;
+    }
+    
+    .powered-by-text {
+        font-size: 10px;
+    }
+    
+    .google-sheets-badge {
+        font-size: 11px;
+    }
+}
+
+/* Main responsive container */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+        flex-direction: column; /* Stack all panels vertically on mobile */
+    }
+    
+    .form-access-panel {
+        position: static;
+        width: 100%;
+        min-width: auto;
+        margin-bottom: 20px;
+        order: -2; /* Show Quick Access first on mobile */
+    }
+    
+    .form-container {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .enhanced-logo-title-section {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .enhanced-logo-title-section .logo-section {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .enhanced-file-input-label {
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    /* Navigation responsive styles */
+    .form-navigation {
+        position: static;
+        width: 100%;
+        min-width: auto;
+        margin-bottom: 20px;
+        order: -1; /* Show navigation above form on mobile */
+    }
+    
+    .nav-link {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-navigation {
+        width: 120px;
+        padding: 10px;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+    }
+    
+    .nav-link {
+        padding: 5px 8px;
+        font-size: 10px;
+    }
+}

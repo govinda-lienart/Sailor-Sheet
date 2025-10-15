@@ -15,9 +15,23 @@
     <meta name="description" content="Professional accounting system for NGO financial management">
     
     <!-- ===================================================================
-         STYLESHEETS
+         STYLESHEETS - Modular CSS Architecture
          ================================================================= -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <!-- Main CSS - Base styles, variables, and reset -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+        
+        <!-- Layout CSS - Navigation, containers, and layout -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+        
+        <!-- Component CSS -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/components/forms.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/components/buttons.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/components/uploads.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/components/chatbot.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/components/popups.css') }}">
+        
+        <!-- Responsive CSS - Media queries -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
         
     <!-- =================================================================
          FAVICON & THEME
@@ -772,67 +786,6 @@
         </div>
     </div>
 
-    <style>
-        @keyframes gentleBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        
-        @keyframes blink {
-            0%, 90%, 100% { transform: scaleY(1); }
-            95% { transform: scaleY(0.1); }
-        }
-        
-        @keyframes lookAround {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-2px); }
-            75% { transform: translateX(2px); }
-        }
-        
-        #chat-toggle:hover {
-            animation-play-state: paused;
-            transform: scale(1.1);
-        }
-        
-        /* Lottie Animation Styling - No Background */
-        dotlottie-wc {
-            display: block;
-            background: transparent !important;
-            border-radius: 0 !important;
-            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
-        }
-        
-        /* Enhanced robot animation on hover */
-        #chat-toggle:hover dotlottie-wc {
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-        }
-        
-        /* Ensure no circular background anywhere */
-        #chat-toggle {
-            border-radius: 0 !important;
-            background: none !important;
-            box-shadow: none !important;
-        }
-        
-        .chat-message {
-            margin-bottom: 10px;
-            padding: 10px 15px;
-            border-radius: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .user-message {
-            background: #2196F3;
-            color: white;
-            margin-left: 50px;
-            text-align: right;
-        }
-        
-        .bot-message {
-            background: white;
-            margin-right: 50px;
-        }
-    </style>
 
     <!-- =================================================================
          JAVASCRIPT - ES6 Modules

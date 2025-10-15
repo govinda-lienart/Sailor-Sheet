@@ -1,0 +1,154 @@
+/* =====================================================================
+   BUTTONS.CSS - All Button Styles
+   ===================================================================== */
+
+/* Base Button Styles */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background: #0056b3;
+}
+
+.btn-success {
+    background: #28a745;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    margin-top: 10px;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Enhanced Button Styling with Professional Hover Effects */
+.btn-enhanced {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    width: 100%;
+}
+
+.btn-enhanced:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(40, 167, 69, 0.4);
+}
+
+.btn-enhanced:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-enhanced:hover::before {
+    left: 100%;
+}
+
+/* Upload button specific styling */
+.btn-upload {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+    margin-top: 10px;
+}
+
+.btn-upload:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+    box-shadow: 0 4px 16px rgba(108, 117, 125, 0.4);
+}
+
+/* Enhanced search button styling */
+.enhanced-search-btn {
+    background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.enhanced-search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(23,162,184,0.4);
+}
+
+/* Submit button special styling */
+.nav-submit-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: #fff;
+    font-weight: bold;
+    border-left: 4px solid #0056b3;
+}
+
+/* Enhanced submit button styling */
+.enhanced-submit-btn {
+    font-size: 18px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+/* Red bills specific button styling */
+.red-bills-upload-btn {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+/* Navigation button enhancements */
+.nav-link {
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.access-link {
+    transition: all 0.3s ease;
+}
+
+.access-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}

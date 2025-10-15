@@ -1,0 +1,158 @@
+/* =====================================================================
+   UPLOADS.CSS - Upload Functionality Styles
+   ===================================================================== */
+
+/* Upload section styling */
+.upload-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border: 2px solid #e9ecef;
+}
+
+.upload-section h3 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+/* =============================================================================
+   ENHANCED UI FEATURES - FILE UPLOAD AREAS
+   ============================================================================= */
+
+/* Enhanced File Upload Areas with Drag & Drop */
+.enhanced-file-input {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.enhanced-file-input input[type=file] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+.enhanced-file-input-label {
+    display: block;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    color: #666;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.enhanced-file-input-label:hover {
+    background: #e9ecef;
+    border-color: #28a745;
+    color: #28a745;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.enhanced-file-input-label.drag-over {
+    background: #e8f5e8;
+    border-color: #28a745;
+    color: #28a745;
+    box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+}
+
+/* File info styling */
+.file-info-enhanced {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #17a2b8;
+}
+
+/* Enhanced Upload Sections */
+.enhanced-upload-section {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+    border: 2px solid #28a745;
+}
+
+.enhanced-upload-section h4 {
+    color: #28a745;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.enhanced-upload-section h4 span {
+    margin-left: auto;
+    font-size: 12px;
+    color: #666;
+    font-weight: normal;
+}
+
+/* Enhanced upload sections with specific colors */
+.upload-section-red-bills {
+    border: 2px solid #dc3545;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+}
+
+.upload-section-documentation {
+    border: 2px solid #6c757d;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Red bills specific styling */
+.red-bills-heading {
+    color: #dc3545;
+}
+
+.documentation-heading {
+    color: #6c757d;
+}
+
+/* File info with colored border */
+.file-info-red-bills {
+    border-left-color: #dc3545;
+}
+
+.file-info-documentation {
+    border-left-color: #6c757d;
+}
+
+/* Status indicators for file uploads */
+.upload-status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-left: 10px;
+}
+
+.upload-status-pending {
+    background: #ffc107;
+}
+
+.upload-status-success {
+    background: #28a745;
+}
+
+.upload-status-error {
+    background: #dc3545;
+}
