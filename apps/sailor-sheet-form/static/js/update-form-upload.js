@@ -729,6 +729,76 @@
         }
     }
     
+    // Set up drag-and-drop functionality for update form
+    function setupDragAndDrop() {
+        const updateFileUploadSection = document.getElementById('updateFileUploadSection');
+        const fileInput = document.getElementById('documentFile');
+        
+        if (!updateFileUploadSection || !fileInput) return;
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            updateFileUploadSection.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        // Highlight drop area when dragging over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            updateFileUploadSection.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            updateFileUploadSection.addEventListener(eventName, unhighlight, false);
+        });
+        
+        // Handle dropped files
+        updateFileUploadSection.addEventListener('drop', handleDrop, false);
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        function highlight(e) {
+            updateFileUploadSection.style.border = '2px dashed #007bff';
+            updateFileUploadSection.style.background = '#e7f3ff';
+        }
+        
+        function unhighlight(e) {
+            updateFileUploadSection.style.border = '';
+            updateFileUploadSection.style.background = '';
+        }
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                console.log(`✅ File dropped in update form: ${files[0].name}`);
+                
+                // Show visual feedback
+                const uploadResult = document.getElementById('uploadResult');
+                if (uploadResult) {
+                    uploadResult.style.display = 'block';
+                    uploadResult.innerHTML = `📎 <strong>File ready:</strong> ${files[0].name}`;
+                    uploadResult.style.padding = '10px';
+                    uploadResult.style.borderRadius = '4px';
+                    uploadResult.style.marginTop = '15px';
+                    uploadResult.style.backgroundColor = '#d1ecf1';
+                    uploadResult.style.border = '1px solid #bee5eb';
+                    uploadResult.style.color = '#0c5460';
+                }
+            }
+        }
+        
+        console.log('✅ Drag-and-drop functionality enabled for update form');
+    }
+    
+    // Initialize drag-and-drop when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        setupDragAndDrop();
+    });
+    
     // Expose functions to global scope
     window.initializeDocumentUpload = initializeDocumentUpload;
     window.showUploadResult = showUploadResult;

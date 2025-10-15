@@ -227,6 +227,70 @@
         }
     }
     
+    // Set up drag-and-drop functionality
+    function setupDragAndDrop() {
+        const fileUploadSection = document.getElementById('fileUploadSection');
+        const fileInput = document.getElementById('documentFileInput');
+        
+        if (!fileUploadSection || !fileInput) return;
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileUploadSection.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        // Highlight drop area when dragging over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileUploadSection.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileUploadSection.addEventListener(eventName, unhighlight, false);
+        });
+        
+        // Handle dropped files
+        fileUploadSection.addEventListener('drop', handleDrop, false);
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        function highlight(e) {
+            fileUploadSection.style.border = '2px dashed #007bff';
+            fileUploadSection.style.background = '#e7f3ff';
+        }
+        
+        function unhighlight(e) {
+            fileUploadSection.style.border = '';
+            fileUploadSection.style.background = '';
+        }
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                console.log(`✅ File dropped: ${files[0].name}`);
+                
+                // Show visual feedback
+                const uploadStatus = document.getElementById('uploadStatus');
+                const uploadStatusMessage = document.getElementById('uploadStatusMessage');
+                if (uploadStatus && uploadStatusMessage) {
+                    uploadStatus.style.display = 'block';
+                    uploadStatus.style.background = '#d1ecf1';
+                    uploadStatus.style.borderColor = '#bee5eb';
+                    uploadStatusMessage.style.color = '#0c5460';
+                    uploadStatusMessage.innerHTML = `📎 <strong>File ready:</strong> ${files[0].name}`;
+                }
+            }
+        }
+        
+        console.log('✅ Drag-and-drop functionality enabled for file upload');
+    }
+    
     // Set up event listeners when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
         const documentTypeDropdown = document.getElementById('documentTypeDropdown');
@@ -246,6 +310,9 @@
             uploadFileBtn.addEventListener('click', handleFileUpload);
             console.log('✅ Upload file button listener attached');
         }
+        
+        // Enable drag-and-drop
+        setupDragAndDrop();
     });
     
     // Expose functions to global scope (needed by HTML onclick/onchange handlers)
