@@ -5,6 +5,7 @@ Main application entry point with proper separation of concerns.
 
 import os
 from flask import Flask
+from flask_cors import CORS
 
 # Import blueprints
 from blueprints.main import main_bp
@@ -26,6 +27,21 @@ def create_app():
     """
     # Create Flask web application
     app = Flask(__name__)
+    
+    # =============================================================================
+    # CORS CONFIGURATION
+    # =============================================================================
+    
+    # Enable CORS for API endpoints to allow cross-origin requests
+    # This allows practice tools and external apps to call our APIs
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": ["http://localhost:5001", "http://localhost:5000"],  # Practice tools
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True
+        }
+    })
     
     # =============================================================================
     # CONFIGURATION
