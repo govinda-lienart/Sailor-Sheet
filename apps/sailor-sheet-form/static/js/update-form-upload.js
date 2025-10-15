@@ -325,7 +325,7 @@
         }, 200);
         
         // Upload file
-        fetch('/upload_file', {
+        fetch('/api/upload_file', {
             method: 'POST',
             body: formData
         })

@@ -99,11 +99,14 @@
         console.log(`DEBUG: Uploading file for ${selectedType}: ${file.name}`);
         console.log(`DEBUG: Transaction number: ${transactionNumber}`);
         
-        // Show processing state
+        // Show processing state with progress
         uploadBtn.disabled = true;
         uploadBtn.textContent = '🔄 Uploading...';
         uploadStatus.style.display = 'block';
-        uploadStatusMessage.textContent = 'Uploading file...';
+        uploadStatus.style.background = '#fff3cd';
+        uploadStatus.style.borderColor = '#ffc107';
+        uploadStatusMessage.style.color = '#856404';
+        uploadStatusMessage.innerHTML = '⏳ <strong>Uploading file... 0%</strong>';
         
         // Get current country
         const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
@@ -125,13 +128,24 @@
         const fileType = fileTypeMapping[selectedType];
         formData.append('file_type', fileType);
         
+        // Simulate progress animation
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            uploadStatusMessage.innerHTML = `⏳ <strong>Uploading file... ${Math.round(progress)}%</strong>`;
+        }, 200);
+        
         // Upload file
-        fetch('/upload_file', {
+        fetch('/api/upload_file', {
             method: 'POST',
             body: formData
         })
         .then(response => response.json())
         .then(data => {
+            clearInterval(progressInterval);
+            uploadStatusMessage.innerHTML = '⏳ <strong>Uploading file... 100%</strong>';
+            
             if (data.success) {
                 // Store processed file data in hidden fields
                 // Map dropdown values to correct field IDs
@@ -154,13 +168,15 @@
                 uploadStatus.style.background = '#d4edda';
                 uploadStatus.style.borderColor = '#c3e6cb';
                 uploadStatusMessage.style.color = '#155724';
-                uploadStatusMessage.textContent = `✅ File uploaded successfully! File: ${data.file_name}`;
+                uploadStatusMessage.innerHTML = `✅ <strong>File uploaded successfully!</strong><br>File: ${data.file_name}`;
                 
-                // Clear inputs
-                fileInput.value = '';
-                dropdown.value = '';
-                document.getElementById('uploadModeToggle').style.display = 'none';
-                document.getElementById('fileUploadSection').style.display = 'none';
+                // Clear inputs after a delay
+                setTimeout(() => {
+                    fileInput.value = '';
+                    dropdown.value = '';
+                    document.getElementById('uploadModeToggle').style.display = 'none';
+                    document.getElementById('fileUploadSection').style.display = 'none';
+                }, 2000);
                 
                 console.log('DEBUG: File uploaded successfully');
             } else {
@@ -168,11 +184,12 @@
             }
         })
         .catch(error => {
+            clearInterval(progressInterval);
             console.error('Error uploading file:', error);
             uploadStatus.style.background = '#f8d7da';
             uploadStatus.style.borderColor = '#f5c6cb';
             uploadStatusMessage.style.color = '#721c24';
-            uploadStatusMessage.textContent = `❌ Upload failed: ${error.message}`;
+            uploadStatusMessage.innerHTML = `❌ <strong>Upload failed:</strong> ${error.message}`;
         })
         .finally(() => {
             uploadBtn.disabled = false;

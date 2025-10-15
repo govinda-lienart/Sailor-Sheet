@@ -36,7 +36,14 @@
         
         const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
         processBtn.disabled = true;
-        processBtn.textContent = '🔄 Processing...';
+        const originalText = processBtn.textContent;
+        
+        // Progress animation
+        let dots = 0;
+        const progressInterval = setInterval(() => {
+            dots = (dots + 1) % 4;
+            processBtn.textContent = '🔄 Processing' + '.'.repeat(dots);
+        }, 300);
         
         fetch('/api/process_google_drive_link', {
             method: 'POST',
@@ -50,22 +57,31 @@
         })
         .then(response => response.json())
         .then(data => {
+            clearInterval(progressInterval);
             if (data.success) {
                 document.getElementById('billsFileLinkInput').value = data.file_url;
                 document.getElementById('billsFileNameInput').value = data.file_name;
-                alert(`✅ Bills file processed successfully!\nFile: ${data.file_name}`);
-                document.getElementById('billsGoogleDriveLink').value = '';
+                processBtn.textContent = '✅ Done!';
+                setTimeout(() => {
+                    alert(`✅ Bills file processed successfully!\nFile: ${data.file_name}`);
+                    document.getElementById('billsGoogleDriveLink').value = '';
+                    processBtn.textContent = originalText;
+                }, 500);
             } else {
                 throw new Error(data.error || 'Failed to process Google Drive link');
             }
         })
         .catch(error => {
+            clearInterval(progressInterval);
             console.error('Error processing Bills Google Drive link:', error);
+            processBtn.textContent = '❌ Failed';
             alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            setTimeout(() => {
+                processBtn.textContent = originalText;
+            }, 2000);
         })
         .finally(() => {
             processBtn.disabled = false;
-            processBtn.textContent = 'Process Link';
         });
     }
     
@@ -92,7 +108,14 @@
         
         const selectedCountry = sessionStorage.getItem('selectedCountry') || 'VN';
         processBtn.disabled = true;
-        processBtn.textContent = '🔄 Processing...';
+        const originalText = processBtn.textContent;
+        
+        // Progress animation
+        let dots = 0;
+        const progressInterval = setInterval(() => {
+            dots = (dots + 1) % 4;
+            processBtn.textContent = '🔄 Processing' + '.'.repeat(dots);
+        }, 300);
         
         fetch('/api/process_google_drive_link', {
             method: 'POST',
@@ -106,22 +129,31 @@
         })
         .then(response => response.json())
         .then(data => {
+            clearInterval(progressInterval);
             if (data.success) {
                 document.getElementById('redBillsFileLinkInput').value = data.file_url;
                 document.getElementById('redBillsFileNameInput').value = data.file_name;
-                alert(`✅ Red Bills file processed successfully!\nFile: ${data.file_name}`);
-                document.getElementById('redBillsGoogleDriveLink').value = '';
+                processBtn.textContent = '✅ Done!';
+                setTimeout(() => {
+                    alert(`✅ Red Bills file processed successfully!\nFile: ${data.file_name}`);
+                    document.getElementById('redBillsGoogleDriveLink').value = '';
+                    processBtn.textContent = originalText;
+                }, 500);
             } else {
                 throw new Error(data.error || 'Failed to process Google Drive link');
             }
         })
         .catch(error => {
+            clearInterval(progressInterval);
             console.error('Error processing Red Bills Google Drive link:', error);
+            processBtn.textContent = '❌ Failed';
             alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            setTimeout(() => {
+                processBtn.textContent = originalText;
+            }, 2000);
         })
         .finally(() => {
             processBtn.disabled = false;
-            processBtn.textContent = 'Process Link';
         });
     }
     
@@ -148,7 +180,14 @@
         
         const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
         processBtn.disabled = true;
-        processBtn.textContent = '🔄 Processing...';
+        const originalText = processBtn.textContent;
+        
+        // Progress animation
+        let dots = 0;
+        const progressInterval = setInterval(() => {
+            dots = (dots + 1) % 4;
+            processBtn.textContent = '🔄 Processing' + '.'.repeat(dots);
+        }, 300);
         
         fetch('/api/process_google_drive_link', {
             method: 'POST',
@@ -162,22 +201,31 @@
         })
         .then(response => response.json())
         .then(data => {
+            clearInterval(progressInterval);
             if (data.success) {
                 document.getElementById('documentationFileLinkInput').value = data.file_url;
                 document.getElementById('documentationFileNameInput').value = data.file_name;
-                alert(`✅ Documentation file processed successfully!\nFile: ${data.file_name}`);
-                document.getElementById('documentationGoogleDriveLink').value = '';
+                processBtn.textContent = '✅ Done!';
+                setTimeout(() => {
+                    alert(`✅ Documentation file processed successfully!\nFile: ${data.file_name}`);
+                    document.getElementById('documentationGoogleDriveLink').value = '';
+                    processBtn.textContent = originalText;
+                }, 500);
             } else {
                 throw new Error(data.error || 'Failed to process Google Drive link');
             }
         })
         .catch(error => {
+            clearInterval(progressInterval);
             console.error('Error processing Documentation Google Drive link:', error);
+            processBtn.textContent = '❌ Failed';
             alert(`❌ Failed to process Google Drive link: ${error.message}`);
+            setTimeout(() => {
+                processBtn.textContent = originalText;
+            }, 2000);
         })
         .finally(() => {
             processBtn.disabled = false;
-            processBtn.textContent = 'Process Link';
         });
     }
     
@@ -214,11 +262,22 @@
         console.log(`DEBUG: Processing Google Drive link for ${selectedType}: ${googleDriveLink}`);
         console.log(`DEBUG: Transaction number: ${transactionNumber}`);
         
-        // Show processing state
+        // Show processing state with progress
         processBtn.disabled = true;
         processBtn.textContent = '🔄 Processing...';
         uploadStatus.style.display = 'block';
-        uploadStatusMessage.textContent = 'Processing Google Drive link...';
+        uploadStatus.style.background = '#fff3cd';
+        uploadStatus.style.borderColor = '#ffc107';
+        uploadStatusMessage.style.color = '#856404';
+        uploadStatusMessage.innerHTML = '⏳ <strong>Processing Google Drive link... 0%</strong>';
+        
+        // Simulate progress animation
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 12;
+            if (progress > 85) progress = 85;
+            uploadStatusMessage.innerHTML = `⏳ <strong>Processing Google Drive link... ${Math.round(progress)}%</strong>`;
+        }, 250);
         
         // Map document types to API document types
         const documentTypeMapping = {
@@ -244,6 +303,9 @@
         })
         .then(response => response.json())
         .then(data => {
+            clearInterval(progressInterval);
+            uploadStatusMessage.innerHTML = '⏳ <strong>Processing Google Drive link... 100%</strong>';
+            
             if (data.success) {
                 // Store processed file data in hidden fields
                 // Map dropdown values to correct field IDs
@@ -267,13 +329,15 @@
                 uploadStatus.style.background = '#d4edda';
                 uploadStatus.style.borderColor = '#c3e6cb';
                 uploadStatusMessage.style.color = '#155724';
-                uploadStatusMessage.textContent = `✅ Google Drive link processed successfully! File: ${data.file_name}`;
+                uploadStatusMessage.innerHTML = `✅ <strong>Google Drive link processed successfully!</strong><br>File: ${data.file_name}`;
                 
-                // Clear inputs
-                document.getElementById('googleDriveLinkInput').value = '';
-                dropdown.value = '';
-                document.getElementById('uploadModeToggle').style.display = 'none';
-                document.getElementById('googleDriveLinkSection').style.display = 'none';
+                // Clear inputs after a delay
+                setTimeout(() => {
+                    document.getElementById('googleDriveLinkInput').value = '';
+                    dropdown.value = '';
+                    document.getElementById('uploadModeToggle').style.display = 'none';
+                    document.getElementById('googleDriveLinkSection').style.display = 'none';
+                }, 2000);
                 
                 console.log('DEBUG: Google Drive link processed successfully');
             } else {
@@ -281,11 +345,12 @@
             }
         })
         .catch(error => {
+            clearInterval(progressInterval);
             console.error('Error processing Google Drive link:', error);
             uploadStatus.style.background = '#f8d7da';
             uploadStatus.style.borderColor = '#f5c6cb';
             uploadStatusMessage.style.color = '#721c24';
-            uploadStatusMessage.textContent = `❌ Failed to process link: ${error.message}`;
+            uploadStatusMessage.innerHTML = `❌ <strong>Failed to process link:</strong> ${error.message}`;
         })
         .finally(() => {
             processBtn.disabled = false;
