@@ -122,6 +122,7 @@
         const fileTypeMapping = {
             'bills': 'bills',
             'redBills': 'redBills',
+            'bankStatement': 'bankStatement',
             'documentation': 'documentation'
         };
         const fileType = fileTypeMapping[selectedType];

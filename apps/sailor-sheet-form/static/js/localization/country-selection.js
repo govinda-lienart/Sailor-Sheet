@@ -18,6 +18,7 @@
             console.log(`DEBUG: Option ${index}: value="${option.value}", text="${option.textContent.trim()}"`);
         });
         
+        // Handle Red Bills option
         const redBillsOption = Array.from(allOptions).find(option => 
             option.value === redBillsValue || 
             option.textContent.includes('Red Bill') || 
@@ -38,6 +39,27 @@
         } else {
             console.log(`DEBUG: Red Bills option not found in dropdown ${dropdown.id}`);
             console.log(`DEBUG: Searched for value="${redBillsValue}" and text containing "Red Bill"`);
+        }
+        
+        // Handle Bank Statement option
+        const bankStatementOption = Array.from(allOptions).find(option => 
+            option.value === 'bankStatement' || 
+            option.textContent.includes('Bank Statement')
+        );
+        
+        if (bankStatementOption) {
+            console.log(`DEBUG: Found Bank Statement option: value="${bankStatementOption.value}", text="${bankStatementOption.textContent.trim()}"`);
+            if (countryCode === 'BE') {
+                // Belgium has bank statements - show the option
+                bankStatementOption.style.display = 'block';
+                console.log(`DEBUG: Shown Bank Statement option for Belgium in ${dropdown.id}`);
+            } else if (countryCode === 'VN') {
+                // Vietnam doesn't have bank statements - hide the option
+                bankStatementOption.style.display = 'none';
+                console.log(`DEBUG: Hidden Bank Statement option for Vietnam in ${dropdown.id}`);
+            }
+        } else {
+            console.log(`DEBUG: Bank Statement option not found in dropdown ${dropdown.id}`);
         }
         
         // Update the dropdown to reflect country-specific document types
