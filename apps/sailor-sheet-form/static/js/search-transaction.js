@@ -264,7 +264,6 @@
                         <option value="">Choose document type...</option>
                         <option value="bill">📄 Bill (Normal Invoice)</option>
                         <option value="redBill">🔴 Red Bill (Special Invoice)</option>
-                        <option value="bankStatement">🏦 Bank Statement (Bank transaction records)</option>
                         <option value="documentation">📋 Supporting Documentation</option>
                     </select>
                 </div>

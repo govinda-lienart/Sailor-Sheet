@@ -283,7 +283,6 @@
         const documentTypeMapping = {
             'bills': 'bill',
             'redBills': 'redBill',
-            'bankStatement': 'bankStatement',
             'documentation': 'documentation'
         };
         const documentType = documentTypeMapping[selectedType];
@@ -312,7 +311,6 @@
                 const fieldMapping = {
                     'bills': 'bills',
                     'redBills': 'redBills', 
-                    'bankStatement': 'bankStatement',
                     'documentation': 'documentation'
                 };
                 

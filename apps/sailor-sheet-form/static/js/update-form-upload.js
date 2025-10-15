@@ -641,7 +641,6 @@
                 const typeNames = {
                     'bill': '📄 Bill (Normal Invoice)',
                     'redBill': '🔴 Red Bill (Special Invoice)',
-                    'bankStatement': '🏦 Bank Statement (Bank transaction records)',
                     'documentation': '📋 Supporting Documentation'
                 };
                 uploadFormTitle.textContent = `Upload ${typeNames[selectedType]}`;
