@@ -300,11 +300,16 @@
         progressBar.style.width = '0%';
         progressText.textContent = 'Preparing upload...';
         
+        // Get current country
+        const selectedCountry = sessionStorage.getItem('selectedCountry') || 'BE';
+        console.log(`DEBUG: Uploading file for country: ${selectedCountry}`);
+        
         // Create form data
         console.log(`DEBUG: Creating FormData with transaction_number: "${transactionNumber}"`);
         const formData = new FormData();
         formData.append('file', file);
         formData.append('transaction_number', transactionNumber);
+        formData.append('country_code', selectedCountry);
         console.log(`DEBUG: FormData created, transaction_number set to: "${transactionNumber}"`);
         
         // Map document types to file types that match Python FOLDER_IDS keys
