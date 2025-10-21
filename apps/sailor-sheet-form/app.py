@@ -36,10 +36,13 @@ def create_app():
     # This allows practice tools and external apps to call our APIs
     CORS(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:5001", "http://localhost:5000"],  # Practice tools
+            "origins": ["http://localhost:5001", "http://localhost:5000", "http://127.0.0.1:5001", "http://127.0.0.1:5000"],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "expose_headers": ["Content-Type"],
+            "supports_credentials": True,
+            "send_wildcard": False,
+            "max_age": 3600
         }
     })
     
