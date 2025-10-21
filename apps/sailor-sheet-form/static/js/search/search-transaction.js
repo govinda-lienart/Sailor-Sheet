@@ -263,7 +263,7 @@
                     <select id="documentTypeSelect" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
                         <option value="">Choose document type...</option>
                         <option value="bill">📄 Bill (Normal Invoice)</option>
-                        <option value="redBill">🔴 Red Bill (Special Invoice)</option>
+                        <option value="redBill" data-country="VN">🔴 Red Bill (Special Invoice)</option>
                         <option value="bankStatement">🏦 Bank Statement (Bank transaction records)</option>
                         <option value="documentation">📋 Supporting Documentation</option>
                     </select>
@@ -347,6 +347,21 @@
                     <p>Transaction details retrieved successfully. Ready for document updates.</p>
                 `;
             }
+        }
+        
+        // Determine country from search sheet and update document type dropdown
+        const searchSheet = document.getElementById('searchSheet');
+        if (searchSheet) {
+            const countryCode = searchSheet.value === 'be' ? 'BE' : 'VN';
+            console.log(`DEBUG: Detected search for ${countryCode} sheet, filtering document dropdown`);
+            
+            // Update document type dropdown for this country
+            if (typeof window.updateDocumentTypeDropdown === 'function') {
+                window.updateDocumentTypeDropdown(countryCode);
+            }
+            
+            // Also store in sessionStorage for consistency
+            sessionStorage.setItem('selectedCountry', countryCode);
         }
         
         // Initialize document upload functionality (defined in app-inline.js)
@@ -434,6 +449,11 @@
             if (!transactionNumber) {
                 alert('Please enter a transaction number to search');
                 return;
+            }
+            
+            // Reset drag-drop zone for new search
+            if (typeof window.resetDragDropForNewSearch === 'function') {
+                window.resetDragDropForNewSearch();
             }
             
             // Show loading state

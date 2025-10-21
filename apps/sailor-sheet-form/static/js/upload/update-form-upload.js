@@ -300,12 +300,34 @@
         progressBar.style.width = '0%';
         progressText.textContent = 'Preparing upload...';
         
+        // Get current country from sessionStorage or search sheet selection
+        const searchSheet = document.getElementById('searchSheet');
+        let selectedCountry = sessionStorage.getItem('selectedCountry') || 'VN';
+        
+        // If we searched in BE sheet, use BE country code
+        if (searchSheet && searchSheet.value === 'be') {
+            selectedCountry = 'BE';
+        } else if (searchSheet && searchSheet.value === 'vn') {
+            selectedCountry = 'VN';
+        }
+        
+        console.log(`DEBUG: Selected country for upload: ${selectedCountry}`);
+        console.log(`DEBUG: Search sheet value: ${searchSheet ? searchSheet.value : 'not found'}`);
+        
         // Create form data
         console.log(`DEBUG: Creating FormData with transaction_number: "${transactionNumber}"`);
+        
         const formData = new FormData();
         formData.append('file', file);
         formData.append('transaction_number', transactionNumber);
-        console.log(`DEBUG: FormData created, transaction_number set to: "${transactionNumber}"`);
+        formData.append('country_code', selectedCountry);
+        formData.append('file_type', fileType);
+        
+        console.log(`DEBUG: FormData created with:`);
+        console.log(`  - transaction_number: "${transactionNumber}"`);
+        console.log(`  - country_code: "${selectedCountry}"`);
+        console.log(`  - file_type: "${fileType}"`);
+        console.log(`  - file: ${file.name}`);
         
         // Map document types to file types that match Python FOLDER_IDS keys
         const fileTypeMapping = {
@@ -685,6 +707,10 @@
                 
                 // Clear uploaded file data
                 window.uploadedFileData = null;
+                
+                // Reset drag-drop initialization flag for next transaction search
+                dragDropInitialized = false;
+                console.log('🔄 Reset drag-drop initialization flag');
             });
         }
         
@@ -692,6 +718,7 @@
         if (documentUploadForm) {
             documentUploadForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+                console.log('DEBUG: Form submit event triggered');
                 
                 // Check which mode is selected (for update form)
                 const allUploadModeElements = document.querySelectorAll('input[name="updateUploadMode"]');
@@ -725,6 +752,16 @@
             });
         }
         
+        // Also add click listener to upload button for debugging
+        const uploadBtn = document.getElementById('uploadBtn');
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', function(e) {
+                console.log('DEBUG: Upload button clicked');
+                console.log('DEBUG: Upload button disabled:', this.disabled);
+                console.log('DEBUG: Form element:', documentUploadForm);
+            });
+        }
+        
         // Handle Google Sheets update (Step 2: Update Google Sheets)
         const updateSheetsBtn = document.getElementById('updateSheetsBtn');
         if (updateSheetsBtn) {
@@ -739,18 +776,26 @@
     let dragDropInitialized = false;
     
     function setupDragAndDropForUpdateForm() {
-        // Prevent double initialization
-        if (dragDropInitialized) {
-            console.log('⏭️ Drag-and-drop already initialized for update form');
-            return;
-        }
-        
         const updateFileUploadSection = document.getElementById('updateFileUploadSection');
         const fileInput = document.getElementById('documentFile');
         
         if (!updateFileUploadSection || !fileInput) {
             console.log('⚠️ Update form drag-and-drop elements not found yet');
             return;
+        }
+        
+        // Check if drag-drop zone already exists in the DOM
+        const existingZone = document.getElementById('updateDragDropZone');
+        if (existingZone) {
+            console.log('⏭️ Drag-and-drop zone already exists, skipping creation');
+            return;
+        }
+        
+        // Prevent double initialization (additional safety check)
+        if (dragDropInitialized) {
+            console.log('⏭️ Drag-and-drop already initialized for update form');
+            // Reset flag if zone doesn't exist (cleanup from previous session)
+            dragDropInitialized = false;
         }
         
         // Create and insert drag-and-drop zone before the file input
@@ -835,18 +880,28 @@
             if (files.length > 0) {
                 fileInput.files = files;
                 console.log(`✅ File dropped in update form: ${files[0].name}`);
+                console.log(`DEBUG: File input now has ${fileInput.files.length} files`);
                 
                 // Show visual feedback
                 const uploadResult = document.getElementById('uploadResult');
                 if (uploadResult) {
                     uploadResult.style.display = 'block';
-                    uploadResult.innerHTML = `📎 <strong>File ready:</strong> ${files[0].name}`;
+                    uploadResult.innerHTML = `📎 <strong>File ready:</strong> ${files[0].name}<br><small>Select document type and click upload button to proceed.</small>`;
                     uploadResult.style.padding = '10px';
                     uploadResult.style.borderRadius = '4px';
                     uploadResult.style.marginTop = '15px';
                     uploadResult.style.backgroundColor = '#d1ecf1';
                     uploadResult.style.border = '1px solid #bee5eb';
                     uploadResult.style.color = '#0c5460';
+                }
+                
+                // Check if document type is already selected
+                const documentTypeSelect = document.getElementById('documentTypeSelect');
+                if (documentTypeSelect && documentTypeSelect.value) {
+                    console.log(`DEBUG: Document type already selected: ${documentTypeSelect.value}`);
+                    console.log(`DEBUG: Upload form should be visible`);
+                } else {
+                    console.log(`DEBUG: No document type selected yet - user needs to select one`);
                 }
             }
         }
@@ -855,10 +910,25 @@
         console.log('✅ Drag-and-drop functionality enabled for update form');
     }
     
+    // Function to reset drag-drop for new transaction search
+    function resetDragDropForNewSearch() {
+        // Remove existing drag-drop zone if it exists
+        const existingZone = document.getElementById('updateDragDropZone');
+        if (existingZone) {
+            existingZone.remove();
+            console.log('🗑️ Removed existing drag-drop zone for new search');
+        }
+        
+        // Reset the initialization flag
+        dragDropInitialized = false;
+        console.log('🔄 Reset drag-drop state for new transaction search');
+    }
+    
     // Expose functions to global scope
     window.initializeDocumentUpload = initializeDocumentUpload;
     window.showUploadResult = showUploadResult;
     window.hideUploadResult = hideUploadResult;
+    window.resetDragDropForNewSearch = resetDragDropForNewSearch;
     
     console.log('✅ Update form document upload module initialized');
     

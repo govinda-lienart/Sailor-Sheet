@@ -83,23 +83,53 @@ class GoogleDriveService:
         Returns:
             str: Folder ID
         """
+        print(f"DEBUG: get_folder_id called with file_type='{file_type}', country_code='{country_code}'")
+        
         if country_code:
             # Load country-specific folder IDs
             try:
-                with open('data/countries.json', 'r') as f:
-                    countries_data = json.load(f)
+                # Try multiple paths for countries.json
+                countries_paths = [
+                    'data/countries.json',
+                    '../data/countries.json', 
+                    './data/countries.json',
+                    '/Users/govinda-dashugolienart/Documents/Github_HD/Sailor Sheet/apps/sailor-sheet-form/data/countries.json'
+                ]
+                
+                countries_data = None
+                for path in countries_paths:
+                    try:
+                        with open(path, 'r') as f:
+                            countries_data = json.load(f)
+                        print(f"DEBUG: Successfully loaded countries.json from {path}")
+                        break
+                    except FileNotFoundError:
+                        print(f"DEBUG: countries.json not found at {path}")
+                        continue
+                
+                if not countries_data:
+                    raise Exception("countries.json not found in any expected location")
                 
                 country_folders = countries_data['countries'].get(country_code, {}).get('folders', {})
-                folder_id = country_folders.get(file_type, self.folder_ids.get(file_type, self.default_folder_id))
-                print(f"DEBUG: Using country-specific folder for {country_code}: {folder_id}")
+                print(f"DEBUG: Country folders for {country_code}: {country_folders}")
+                
+                if file_type in country_folders:
+                    folder_id = country_folders[file_type]
+                    print(f"DEBUG: Found {file_type} folder for {country_code}: {folder_id}")
+                else:
+                    # If country doesn't have this file type, use VN as fallback
+                    print(f"DEBUG: {country_code} doesn't have {file_type}, using VN fallback")
+                    folder_id = self.folder_ids.get(file_type, self.default_folder_id)
+                    print(f"DEBUG: Using VN fallback folder: {folder_id}")
+                
                 return folder_id
             except Exception as e:
-                print(f"DEBUG: Error loading country folders, using default: {e}")
+                print(f"DEBUG: Error loading country folders, using VN default: {e}")
                 return self.folder_ids.get(file_type, self.default_folder_id)
         else:
-            # Use default folder IDs
+            # Use default folder IDs (VN)
             folder_id = self.folder_ids.get(file_type, self.default_folder_id)
-            print(f"DEBUG: No country code provided, using default folder: {folder_id}")
+            print(f"DEBUG: No country code provided, using VN default folder: {folder_id}")
             return folder_id
     
     def upload_file_to_drive(self, file_content, filename: str, folder_id: str, mime_type: str = None) -> dict:
