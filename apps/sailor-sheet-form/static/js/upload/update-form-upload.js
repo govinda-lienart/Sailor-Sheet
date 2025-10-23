@@ -650,6 +650,11 @@
                     'documentation': '📋 Supporting Documentation'
                 };
                 uploadFormTitle.textContent = `Upload ${typeNames[selectedType]}`;
+                
+                // Re-initialize drag and drop for the new form
+                setTimeout(() => {
+                    setupDragAndDropForUpdateForm();
+                }, 100);
             } else {
                 // Hide upload form
                 uploadFormContainer.style.display = 'none';
@@ -744,16 +749,29 @@
     let dragDropInitialized = false;
     
     function setupDragAndDropForUpdateForm() {
-        // Prevent double initialization
-        if (dragDropInitialized) {
-            console.log('⏭️ Drag-and-drop already initialized for update form');
-            return;
+        // Clean up existing drag and drop zone if it exists
+        const existingZone = document.getElementById('updateDragDropZone');
+        if (existingZone) {
+            console.log('🧹 Removing existing drag-drop zone');
+            existingZone.remove();
         }
         
+        // Also clean up any existing event listeners by removing and re-adding them
         const updateFileUploadSection = document.getElementById('updateFileUploadSection');
+        if (updateFileUploadSection) {
+            // Clone the element to remove all event listeners
+            const newElement = updateFileUploadSection.cloneNode(true);
+            updateFileUploadSection.parentNode.replaceChild(newElement, updateFileUploadSection);
+        }
+        
+        // Reset the flag to allow re-initialization
+        dragDropInitialized = false;
+        
+        // Get the fresh reference after cleanup
+        const freshUpdateFileUploadSection = document.getElementById('updateFileUploadSection');
         const fileInput = document.getElementById('documentFile');
         
-        if (!updateFileUploadSection || !fileInput) {
+        if (!freshUpdateFileUploadSection || !fileInput) {
             console.log('⚠️ Update form drag-and-drop elements not found yet');
             return;
         }
@@ -786,7 +804,7 @@
         `;
         
         // Insert before the file input
-        updateFileUploadSection.insertBefore(dragDropZone, updateFileUploadSection.firstChild);
+        freshUpdateFileUploadSection.insertBefore(dragDropZone, freshUpdateFileUploadSection.firstChild);
         
         // Make drag-drop zone clickable
         dragDropZone.addEventListener('click', () => {
@@ -795,20 +813,20 @@
         
         // Prevent default drag behaviors
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            updateFileUploadSection.addEventListener(eventName, preventDefaults, false);
+            freshUpdateFileUploadSection.addEventListener(eventName, preventDefaults, false);
         });
         
         // Highlight drop area when dragging over it
         ['dragenter', 'dragover'].forEach(eventName => {
-            updateFileUploadSection.addEventListener(eventName, highlight, false);
+            freshUpdateFileUploadSection.addEventListener(eventName, highlight, false);
         });
         
         ['dragleave', 'drop'].forEach(eventName => {
-            updateFileUploadSection.addEventListener(eventName, unhighlight, false);
+            freshUpdateFileUploadSection.addEventListener(eventName, unhighlight, false);
         });
         
         // Handle dropped files
-        updateFileUploadSection.addEventListener('drop', handleDrop, false);
+        freshUpdateFileUploadSection.addEventListener('drop', handleDrop, false);
         
         function preventDefaults(e) {
             e.preventDefault();
