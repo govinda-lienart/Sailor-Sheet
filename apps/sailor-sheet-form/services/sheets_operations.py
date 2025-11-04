@@ -46,7 +46,30 @@ class SheetsOperations:
             
             # Open the sheet
             sheet = self.gc.open_by_key(sheet_id)
-            worksheet = sheet.sheet1  # Assuming we're searching the first worksheet
+            
+            # Find the Master Ledger worksheet based on sheet type
+            worksheet = None
+            all_worksheets = sheet.worksheets()
+            
+            # Determine the expected worksheet name based on sheet type
+            if sheet_type == 'vn':
+                expected_worksheet_name = 'VN - Master Ledger'
+            elif sheet_type == 'be':
+                expected_worksheet_name = 'BE - Master Ledger'
+            else:
+                expected_worksheet_name = 'Master Ledger'
+            
+            # Search for the Master Ledger worksheet
+            for ws in all_worksheets:
+                if ws.title == expected_worksheet_name or 'Master Ledger' in ws.title:
+                    worksheet = ws
+                    print(f"DEBUG: Found Master Ledger worksheet: {ws.title}")
+                    break
+            
+            # If not found, fall back to first worksheet
+            if worksheet is None:
+                worksheet = sheet.sheet1
+                print(f"DEBUG: Master Ledger worksheet '{expected_worksheet_name}' not found, using first worksheet")
             
             print(f"DEBUG: Opened sheet: {sheet.title}")
             print(f"DEBUG: Using worksheet: {worksheet.title}")

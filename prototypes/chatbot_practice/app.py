@@ -10,8 +10,8 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from typing import Optional, List, Mapping, Any
 from dotenv import load_dotenv
+from tools import setup_agent, get_agent_response
 import requests
-import json
 import os
 
 # Load environment variables from .env file
@@ -47,7 +47,7 @@ class DeepSeekLLM(LLM):
     
     model_name: str = "deepseek-chat"
     temperature: float = 0.7
-    max_tokens: int = 500
+    max_tokens: int = 1000  # Increased for agent responses
     
     @property
     def _llm_type(self) -> str:
@@ -107,15 +107,29 @@ User question: {question}
 Your answer:"""
 )
 
-# Create LangChain chain
+# Create LangChain chain for general questions
 chain = LLMChain(llm=llm, prompt=prompt_template)
 
-# Function to call using LangChain
+# Set up agent with tools (do this once at startup)
+agent = setup_agent(llm, context_info)
+print("✅ Agent with tools initialized")
+
+# Function to call using LangChain or Agent
 def call_deepseek_api(user_message):
-    """Call DeepSeek API using LangChain"""
+    """Call DeepSeek API using LangChain chain or Agent with tools"""
     try:
-        response = chain.invoke({"context": context_info, "question": user_message})
-        return response["text"]
+        # Check if message is transaction-related (use agent)
+        transaction_keywords = ['transaction', 'be-', 'vn-', 'search', 'find', 'lookup', 'get details']
+        use_agent = any(keyword in user_message.lower() for keyword in transaction_keywords)
+        
+        if use_agent:
+            print("🔍 Using agent with tools for transaction search")
+            return get_agent_response(user_message, agent, context_info)
+        else:
+            # Use simple chain for general questions
+            print("💬 Using simple chain for general question")
+            response = chain.invoke({"context": context_info, "question": user_message})
+            return response["text"]
     except Exception as e:
         print(f"❌ Error with LangChain: {e}")
         return None
