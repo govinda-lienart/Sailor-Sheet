@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Practice</title>
+    
+    <!-- Chatbot CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
+    
+    <style>
+        /* Blue background for the practice environment */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .practice-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .practice-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .practice-content h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .practice-content p {
+            color: #555;
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+        
+        .emoji {
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="practice-container">
+        <div class="practice-content">
+            <h1><span class="emoji">🤖</span> Chatbot Practice</h1>
+            <p>This is a standalone practice version of the chatbot!</p>
+            <p>Look in the bottom right corner to interact with the chatbot.</p>
+            <p>Try saying "hello", "help", or ask any question!</p>
+        </div>
+    </div>
+    
+    <!-- =================================================================
+         CHATBOT INTEGRATION - Embeddable Widget with Lottie Animation
+         ================================================================= -->
+    <!-- Lottie Animation Script -->
+    <script
+        src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js"
+        type="module">
+    </script>
+
+    <!-- Container for the widget -->
+    <div id="chatbot-widget">
+        <!-- Robot Button with Lottie Animation - No Background -->
+        <div id="chat-toggle" onclick="toggleChat()">
+            <!-- Lottie Robot Animation - Full Size -->
+            <dotlottie-wc
+                src="https://lottie.host/1274f05f-0d0e-470b-988e-b3f0a3426a5c/9K3tUb0dDP.lottie"
+                speed="1.2"
+                autoplay
+                loop>
+            </dotlottie-wc>
+        </div>
+
+        <!-- Chat Window (Hidden by default) -->
+        <div id="chat-window">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <h4>🤖 Practice Assistant</h4>
+                <button class="chat-close-btn" onclick="toggleChat()">&times;</button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chat-messages">
+                <div class="chat-message bot-message">
+                    Hello! I'm your practice chatbot. How can I help you today?
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="chat-send-btn" onclick="sendMessage()">→</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot JavaScript -->
+    <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+</body>
+</html>

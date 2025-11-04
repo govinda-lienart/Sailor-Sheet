@@ -1,0 +1,55 @@
+SAILOR SHEET ACCOUNTING SYSTEM - PRODUCT INFORMATION
+
+Overview:
+Sailor Sheet is a modern small-business web application designed to help organizations manage their accounting operations without being locked into proprietary systems.
+
+Key Features:
+- Transaction Management: Create, search, and update financial transactions with automated transaction numbering
+- Double-Entry Accounting: Proper debit and credit accounting methodology
+- Multi-Country Support: Works with Belgium (BE) and Vietnam (VN) accounting requirements
+- Google Sheets Integration: All data is stored in Google Sheets for easy access and export
+- Google Drive Integration: Documents (bills, bank statements, invoices) uploaded to country-specific folders
+- Document Management: Link transactions to supporting documents (bills, red bills, bank statements, documentation)
+- Search Functionality: Search transactions by number, date, amount, or description
+- Update Capability: Modify existing transactions and replace attached documents
+- API Endpoints: REST API for programmatic access to data
+- Data Portability: All data stored in Google Sheets - fully exportable and accessible
+
+Technology Stack:
+- Backend: Python with Flask framework
+- Frontend: Vanilla JavaScript (ES6 modules)
+- Storage: Google Sheets as master ledger
+- File Storage: Google Drive with organized country-specific folders
+- Data Format: JSON configuration files for accounts, categories, funds, users
+
+Country Support:
+- Belgium (BE): EUR currency, specific account structure, no red bills
+- Vietnam (VN): VND currency, includes red bills feature, local bank accounts
+
+Document Types:
+- Bill: Normal invoice
+- Red Bill: Special invoice (Vietnam only)
+- Bank Statement: Banking transaction records
+- Supporting Documentation: Additional files
+
+Transaction Workflow:
+1. User fills out transaction form with date, description, amounts
+2. Selects fund, category, accounts (debit and credit)
+3. Optionally uploads supporting documents
+4. Generates automated transaction number
+5. Submits to Google Sheets which acts as master ledger
+6. Documents uploaded to appropriate Google Drive folders
+
+Benefits:
+- Avoid vendor lock-in - data stays accessible
+- No proprietary database - everything in Google Sheets
+- Easy collaboration through Google Workspace
+- Can export data anytime
+- Google Sheets scripts can generate summary reports
+- Suitable for small businesses needing flexible accounting
+
+Future Plans:
+- Open source project (currently in development)
+- Continued feature development
+- Community contributions welcome
+
