@@ -110,16 +110,16 @@ Your answer:"""
 # Create LangChain chain for general questions
 chain = LLMChain(llm=llm, prompt=prompt_template)
 
-# Set up router (do this once at startup)
-format_chain = setup_router(llm, context_info)
-print("✅ Router initialized")
+# Set up router with LangChain Tools (do this once at startup)
+transaction_tool, format_chain, decision_chain = setup_router(llm, context_info)
+print("✅ Router with LangChain Tools initialized")
 
 # Function to call using LangChain chain or Router
 def call_deepseek_api(user_message):
     """Call DeepSeek API using Router or simple chain"""
     try:
-        # Try router first (for transaction searches)
-        router_result = router_response(user_message, llm, context_info, format_chain)
+        # Try router first (for transaction searches using LangChain Tools)
+        router_result = router_response(user_message, transaction_tool, format_chain, decision_chain)
         
         if router_result is not None:
             print("🔍 Router handled the request")
