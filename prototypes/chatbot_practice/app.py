@@ -10,7 +10,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from typing import Optional, List, Mapping, Any
 from dotenv import load_dotenv
-from tools import setup_agent, get_agent_response
+from tools import setup_router, router_response
 import requests
 import os
 
@@ -110,21 +110,20 @@ Your answer:"""
 # Create LangChain chain for general questions
 chain = LLMChain(llm=llm, prompt=prompt_template)
 
-# Set up agent with tools (do this once at startup)
-agent = setup_agent(llm, context_info)
-print("✅ Agent with tools initialized")
+# Set up router (do this once at startup)
+format_chain = setup_router(llm, context_info)
+print("✅ Router initialized")
 
-# Function to call using LangChain or Agent
+# Function to call using LangChain chain or Router
 def call_deepseek_api(user_message):
-    """Call DeepSeek API using LangChain chain or Agent with tools"""
+    """Call DeepSeek API using Router or simple chain"""
     try:
-        # Check if message is transaction-related (use agent)
-        transaction_keywords = ['transaction', 'be-', 'vn-', 'search', 'find', 'lookup', 'get details']
-        use_agent = any(keyword in user_message.lower() for keyword in transaction_keywords)
+        # Try router first (for transaction searches)
+        router_result = router_response(user_message, llm, context_info, format_chain)
         
-        if use_agent:
-            print("🔍 Using agent with tools for transaction search")
-            return get_agent_response(user_message, agent, context_info)
+        if router_result is not None:
+            print("🔍 Router handled the request")
+            return router_result
         else:
             # Use simple chain for general questions
             print("💬 Using simple chain for general question")

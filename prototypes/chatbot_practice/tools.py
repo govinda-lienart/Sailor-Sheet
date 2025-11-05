@@ -1,15 +1,17 @@
 """
-Tools and Agent Setup for Chatbot Practice
-Handles LangChain tools and agent configuration
+Tools and Router Setup for Chatbot Practice
+Handles transaction search tools and simple routing
 """
 
-from langchain.agents import initialize_agent, AgentType, Tool
 from langchain.llms.base import LLM
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 import requests
 import os
+import re
 
 # Configuration - API base URL for main Sailor Sheet app
-SAILOR_SHEET_API_URL = os.getenv('SAILOR_SHEET_API_URL', 'http://localhost:5000')
+SAILOR_SHEET_API_URL = os.getenv('SAILOR_SHEET_API_URL', 'http://localhost:8000')
 
 
 def search_transaction_tool(transaction_number: str) -> str:
@@ -66,73 +68,82 @@ def format_transaction_response(data: dict) -> str:
     return "\n".join(lines)
 
 
-def setup_agent(llm: LLM, context_info: str):
+def extract_transaction_number(user_message: str) -> str:
     """
-    Set up AgentExecutor with tools
+    Extract transaction number from user message.
+    Looks for patterns like VN-XXX-XXX or BE-XXX-XXX
+    """
+    # Pattern to match transaction numbers: VN- or BE- followed by alphanumeric and hyphens
+    pattern = r'(?:VN|BE)-\d+-\d+'
+    match = re.search(pattern, user_message, re.IGNORECASE)
+    if match:
+        return match.group(0).upper()  # Return in uppercase for consistency
+    return None
+
+
+def setup_router(llm: LLM, context_info: str):
+    """
+    Set up router with formatting chain for transaction data
     
     Args:
         llm: The DeepSeekLLM instance
-        context_info: Context about Sailor Sheet for the agent
-        
-    Returns:
-        AgentExecutor instance
-    """
-    # Create the tool
-    transaction_search_tool = Tool(
-        name="search_transaction",
-        func=search_transaction_tool,
-        description=(
-            "Search for a transaction in Sailor Sheet accounting system (Vietnam ledger). "
-            "Use this tool when the user asks to find, search, or get details about a transaction. "
-            "Transaction numbers start with BE or VN followed by the transaction identifier. "
-            "Just pass the transaction number as provided by the user. "
-            "Example: 'search for transaction VN-151025-135926' or 'find BE-131025-170514'"
-        )
-    )
-    
-    # Create tools list
-    tools = [transaction_search_tool]
-    
-    # Initialize agent
-    agent = initialize_agent(
-        tools=tools,
-        llm=llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True,  # Print agent reasoning (helpful for debugging)
-        handle_parsing_errors=True,
-        max_iterations=3  # Limit to prevent infinite loops
-    )
-    
-    return agent
-
-
-def get_agent_response(user_message: str, agent, context_info: str) -> str:
-    """
-    Get response from agent, with context about Sailor Sheet
-    
-    Args:
-        user_message: User's question/message
-        agent: The AgentExecutor instance
         context_info: Context about Sailor Sheet
         
     Returns:
-        Agent's response string
+        LLMChain for formatting responses
     """
-    # Build prompt with context and user message
-    prompt = f"""You are a helpful AI assistant for Sailor Sheet, an accounting application.
+    # Create prompt template for formatting transaction data
+    format_template = PromptTemplate(
+        input_variables=["transaction_data"],
+        template="""You are a helpful assistant. Format this transaction data into a clear, readable response.
+Just present the key information in simple sentences. Be concise and friendly.
 
-Context about Sailor Sheet:
-{context_info}
+Transaction data:
+{transaction_data}
 
-User question: {user_message}
-
-Answer the user's question. If they ask about searching for a transaction, 
-use the search_transaction tool. Be friendly, concise, and helpful.
-"""
+Format this into a clear, readable response (2-3 sentences max):"""
+    )
     
-    try:
-        response = agent.run(prompt)
-        return response
-    except Exception as e:
-        print(f"❌ Error in agent execution: {e}")
-        return "I apologize, but I encountered an error processing your request."
+    format_chain = LLMChain(llm=llm, prompt=format_template)
+    return format_chain
+
+
+def router_response(user_message: str, llm: LLM, context_info: str, format_chain) -> str:
+    """
+    Simple router: detects transaction search and routes to tool, then formats response
+    
+    Args:
+        user_message: User's question/message
+        llm: The DeepSeekLLM instance
+        context_info: Context about Sailor Sheet
+        format_chain: Chain for formatting responses
+        
+    Returns:
+        Formatted response string
+    """
+    # Check if it's a transaction search request
+    transaction_keywords = ['transaction', 'be-', 'vn-', 'search', 'find', 'lookup']
+    is_transaction_query = any(keyword in user_message.lower() for keyword in transaction_keywords)
+    
+    if is_transaction_query:
+        # Extract transaction number
+        transaction_number = extract_transaction_number(user_message)
+        
+        if transaction_number:
+            print(f"🔍 Router: Searching for transaction {transaction_number}")
+            # Call the search tool
+            transaction_data = search_transaction_tool(transaction_number)
+            
+            # Format the response using LLM
+            try:
+                formatted_response = format_chain.invoke({"transaction_data": transaction_data})
+                return formatted_response["text"]
+            except Exception as e:
+                print(f"❌ Error formatting response: {e}")
+                # Return raw transaction data if formatting fails
+                return transaction_data
+        else:
+            return "I couldn't find a transaction number in your message. Please provide a transaction number like VN-151025-135926."
+    
+    # Not a transaction query - return None to use regular chain
+    return None
