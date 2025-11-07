@@ -1,18 +1,18 @@
 """
-Flask Backend for Chatbot Practice with DeepSeek Integration using LangChain
-Handles AI-powered chatbot responses using LangChain with DeepSeek.
+Flask Backend for Chatbot Practice
+Main entry point - handles routes and coordinates LLM + tools.
 """
 
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from langchain.llms.base import LLM
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from typing import Optional, List, Mapping, Any
 from dotenv import load_dotenv
-from tools import setup_router, router_response
-import requests
 import os
+
+# Import from new modular structure
+from llm import DeepSeekLLM
+from tools import setup_router, router_response
 
 # ------------------------------------------------------------
 # 🌍 Environment & Configuration
@@ -22,14 +22,6 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests from frontend
-
-DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
-DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
-
-# Validate that API key is set
-if not DEEPSEEK_API_KEY:
-    raise ValueError("DEEPSEEK_API_KEY environment variable is not set. Please add it to your .env file.")
-
 
 # ------------------------------------------------------------
 # 📘 Context Loader
@@ -48,70 +40,11 @@ def load_context() -> str:
 context_info = load_context()
 print(f"✅ Context loaded: {len(context_info)} characters")
 
-
 # ------------------------------------------------------------
-# 🤖 Custom DeepSeek LLM Integration
-# ------------------------------------------------------------
-
-class DeepSeekLLM(LLM):
-    """Custom LangChain LLM wrapper for DeepSeek API."""
-
-    model_name: str = "deepseek-chat"
-    temperature: float = 0.7
-    max_tokens: int = 1000  # Increased for longer responses
-
-    @property
-    def _llm_type(self) -> str:
-        return "deepseek"
-
-    def _call(
-        self,
-        prompt: str,
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[Any] = None,
-    ) -> str:
-        """Send prompt to DeepSeek API and return model response."""
-        headers = {
-            "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-            "Content-Type": "application/json"
-        }
-
-        data = {
-            "model": self.model_name,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a helpful AI assistant for Sailor Sheet, an accounting application. "
-                        "Be friendly, concise, and informative."
-                    )
-                },
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens
-        }
-
-        try:
-            response = requests.post(DEEPSEEK_API_URL, headers=headers, json=data, timeout=30)
-            response.raise_for_status()
-            result = response.json()
-            return result["choices"][0]["message"]["content"]
-        except Exception as e:
-            print(f"❌ Error calling DeepSeek API: {e}")
-            return "I apologize, but I'm having trouble connecting right now. Please try again later."
-
-    @property
-    def _identifying_params(self) -> Mapping[str, Any]:
-        """Return identifying parameters for LangChain."""
-        return {"model_name": self.model_name, "temperature": self.temperature}
-
-
-# ------------------------------------------------------------
-# 🧠 LangChain Setup (Prompt + Chains)
+# 🤖 LLM & Chains Setup
 # ------------------------------------------------------------
 
-# Initialize LLM
+# Initialize DeepSeek LLM
 llm = DeepSeekLLM()
 
 # General question answering prompt
@@ -137,7 +70,6 @@ chain = LLMChain(llm=llm, prompt=prompt_template)
 transaction_tool, format_chain, decision_chain = setup_router(llm, context_info)
 print("✅ Router with LangChain Tools initialized")
 
-
 # ------------------------------------------------------------
 # 🧩 Helper Functions
 # ------------------------------------------------------------
@@ -145,6 +77,12 @@ print("✅ Router with LangChain Tools initialized")
 def call_deepseek_api(user_message: str) -> str:
     """
     Decide whether to use the router (transaction search) or general chain.
+    
+    Args:
+        user_message: User's input message
+        
+    Returns:
+        AI-generated response string
     """
     # Try routing logic first
     router_output = router_response(user_message, transaction_tool, format_chain, decision_chain)
@@ -157,7 +95,7 @@ def call_deepseek_api(user_message: str) -> str:
         return result["text"]
     except Exception as e:
         print(f"❌ Error in general chain: {e}")
-        return "Sorry, I couldn’t process your request right now. Please try again later."
+        return "Sorry, I couldn't process your request right now. Please try again later."
 
 
 # ------------------------------------------------------------
@@ -200,7 +138,7 @@ def chat():
             return jsonify({"response": ai_response})
         else:
             print("⚠️ Empty AI response, returning fallback.")
-            return jsonify({"response": "I’m having trouble right now, please try again later!"}), 503
+            return jsonify({"response": "I'm having trouble right now, please try again later!"}), 503
 
     except Exception as e:
         print(f"❌ Error in /api/chat: {e}")
