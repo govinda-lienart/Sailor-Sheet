@@ -7,17 +7,27 @@ from langchain.llms.base import LLM
 from typing import Optional, List, Mapping, Any
 import requests
 import os
+from dotenv import load_dotenv
+
+# Load .env file from project root (two levels up from this file)
+# This ensures the API key is available even if app.py hasn't loaded it yet
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env')
+load_dotenv(env_path)
 
 # DeepSeek API Configuration
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
-# Validate API key
-if not DEEPSEEK_API_KEY:
-    raise ValueError(
-        "DEEPSEEK_API_KEY environment variable is not set. "
-        "Please add it to your .env file."
-    )
+# Validate API key (only raise error when the class is actually used, not at import time)
+# This allows the module to be imported even if the key isn't set yet
+def get_api_key():
+    """Get API key, raising an error only when actually needed."""
+    if not DEEPSEEK_API_KEY:
+        raise ValueError(
+            "DEEPSEEK_API_KEY environment variable is not set. "
+            "Please add it to your .env file in the project root directory."
+        )
+    return DEEPSEEK_API_KEY
 
 
 class DeepSeekLLM(LLM):
@@ -39,8 +49,10 @@ class DeepSeekLLM(LLM):
         run_manager: Optional[Any] = None,
     ) -> str:
         """Send prompt to DeepSeek API and return model response."""
+        # Get API key (will raise error here if not set, not at import time)
+        api_key = get_api_key()
         headers = {
-            "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
 

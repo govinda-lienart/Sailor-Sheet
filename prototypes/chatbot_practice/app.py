@@ -3,12 +3,19 @@ Flask Backend for Chatbot Practice
 Main entry point - handles routes and coordinates LLM + tools.
 """
 
+# IMPORTANT: Load environment variables FIRST, before any imports that need them
+from dotenv import load_dotenv
+import os
+
+# Load .env file from project root (two levels up from this file)
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(env_path)
+
+# Now import everything else
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from dotenv import load_dotenv
-import os
 
 # Import from new modular structure
 from llm import DeepSeekLLM
@@ -17,8 +24,6 @@ from tools import setup_router, router_response
 # ------------------------------------------------------------
 # 🌍 Environment & Configuration
 # ------------------------------------------------------------
-
-load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests from frontend

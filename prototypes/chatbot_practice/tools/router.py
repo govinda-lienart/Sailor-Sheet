@@ -7,6 +7,7 @@ from langchain.llms.base import LLM
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.tools import Tool
+from typing import Optional
 import re
 from .transaction_tool import search_transaction_tool
 from .utils import extract_transaction_number
@@ -147,7 +148,7 @@ def router_response(
     transaction_tool: Tool,
     format_chain: LLMChain,
     decision_chain: LLMChain
-) -> str | None:
+) -> Optional[str]:
     """
     Route user message through appropriate tool or fallback.
     

@@ -4,9 +4,10 @@ Helper functions for transaction processing and data formatting.
 """
 
 import re
+from typing import Optional
 
 
-def extract_transaction_number(user_message: str) -> str | None:
+def extract_transaction_number(user_message: str) -> Optional[str]:
     """
     Extract transaction number from user message.
     Looks for patterns like VN-XXX-XXX or BE-XXX-XXX.
