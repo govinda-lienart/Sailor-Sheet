@@ -1,6 +1,6 @@
 """
 Tools and Router Setup for Chatbot Practice
-Handles transaction search tools and simple routing using LangChain Tools
+Handles transaction search tools and simple routing using LangChain Tools.
 """
 
 from langchain.llms.base import LLM
@@ -15,244 +15,232 @@ import re
 SAILOR_SHEET_API_URL = os.getenv('SAILOR_SHEET_API_URL', 'http://localhost:8000')
 
 
-def search_transaction_tool(transaction_number: str) -> str:
+# ------------------------------------------------------------
+# 🧩 Utility Functions
+# ------------------------------------------------------------
+
+def log(msg: str):
+    """Unified log output with emojis for clarity."""
+    print(f"[tools.py] {msg}")
+
+
+def extract_transaction_number(user_message: str) -> str | None:
     """
-    Search for a transaction by transaction number.
-    Always searches in Vietnam (VN) sheet.
+    Extract transaction number from user message.
+    Looks for patterns like VN-XXX-XXX or BE-XXX-XXX.
     """
-    # Always use VN sheet type
-    sheet_type = 'vn'
-    
-    try:
-        response = requests.post(
-            f'{SAILOR_SHEET_API_URL}/api/search_transaction',
-            json={
-                'sheet_type': sheet_type,
-                'transaction_number': transaction_number
-            },
-            timeout=10
-        )
-        
-        # Parse response
-        try:
-            data = response.json()
-        except:
-            return f"Error: Could not parse API response (Status: {response.status_code})"
-        
-        if response.status_code == 200:
-            if data.get('success'):
-                # Format transaction data for LLM
-                transaction_data = data.get('data', {})
-                return format_transaction_response(transaction_data)
-            else:
-                return f"Transaction not found: {data.get('error', 'Unknown error')}"
-        elif response.status_code == 404:
-            # 404 means transaction not found - return clear message
-            error_msg = data.get('error', f'Transaction {transaction_number} not found')
-            return f"Transaction not found: {error_msg}"
-        else:
-            # Other HTTP errors
-            error_msg = data.get('error', f'HTTP {response.status_code}')
-            return f"API error: {error_msg}"
-    except requests.exceptions.RequestException as e:
-        return f"Error connecting to Sailor Sheet API: {str(e)}"
+    pattern = r'(?:VN|BE)-\d+-\d+'
+    match = re.search(pattern, user_message, re.IGNORECASE)
+    return match.group(0).upper() if match else None
 
 
 def format_transaction_response(data: dict) -> str:
-    """Format transaction data into readable string for LLM"""
-    # Extract key fields from transaction data
-    # Format as natural language summary
-    lines = [f"Transaction Details:"]
+    """
+    Format transaction data into readable text for LLM.
+    Skips empty or placeholder fields.
+    """
+    lines = ["Transaction Details:"]
     for key, value in data.items():
-        if value and value != '—' and value != '':
+        if value and value not in ('—', ''):
             lines.append(f"  {key}: {value}")
     return "\n".join(lines)
 
 
-def extract_transaction_number(user_message: str) -> str:
-    """
-    Extract transaction number from user message.
-    Looks for patterns like VN-XXX-XXX or BE-XXX-XXX
-    """
-    # Pattern to match transaction numbers: VN- or BE- followed by alphanumeric and hyphens
-    pattern = r'(?:VN|BE)-\d+-\d+'
-    match = re.search(pattern, user_message, re.IGNORECASE)
-    if match:
-        return match.group(0).upper()  # Return in uppercase for consistency
-    return None
+# ------------------------------------------------------------
+# ⚙️  Tool Function
+# ------------------------------------------------------------
 
+def search_transaction_tool(transaction_number: str) -> str:
+    """
+    Search for a transaction by number using Sailor Sheet API (VN ledger).
+    """
+    try:
+        response = requests.post(
+            f"{SAILOR_SHEET_API_URL}/api/search_transaction",
+            json={"sheet_type": "vn", "transaction_number": transaction_number},
+            timeout=10
+        )
+
+        try:
+            data = response.json()
+        except Exception:
+            return f"Error: Could not parse API response (Status: {response.status_code})"
+
+        if response.status_code == 200:
+            if data.get("success"):
+                return format_transaction_response(data.get("data", {}))
+            return f"Transaction not found: {data.get('error', 'Unknown error')}"
+        elif response.status_code == 404:
+            return f"Transaction not found: {data.get('error', f'Transaction {transaction_number} not found')}"
+        else:
+            return f"API error: {data.get('error', f'HTTP {response.status_code}')}"
+    except requests.exceptions.RequestException as e:
+        return f"Error connecting to Sailor Sheet API: {str(e)}"
+
+
+# ------------------------------------------------------------
+# 🧭 Router Setup
+# ------------------------------------------------------------
 
 def setup_router(llm: LLM, context_info: str):
     """
-    Set up router with LangChain Tool and formatting chain
-    
-    Args:
-        llm: The DeepSeekLLM instance
-        context_info: Context about Sailor Sheet
-        
+    Set up router with LangChain Tool and helper chains.
     Returns:
-        Tuple of (transaction_tool, format_chain, decision_chain)
+        (transaction_tool, format_chain, decision_chain)
     """
-    # Wrap search_transaction_tool in LangChain Tool
+    # Tool: transaction search
     transaction_tool = Tool(
         name="search_transaction",
         func=search_transaction_tool,
         description=(
-            "Search for a transaction in Sailor Sheet accounting system (Vietnam ledger). "
-            "Use this when the user asks to find, search, or get details about a transaction. "
-            "Transaction numbers start with BE or VN followed by numbers and hyphens (e.g., VN-151025-135926)."
+            "Search for a transaction in Sailor Sheet (VN ledger). "
+            "Use when user asks to find, get, or view a transaction. "
+            "Transaction numbers start with BE or VN, e.g., VN-151025-135926."
         )
     )
-    
-    # Create prompt template for formatting transaction data
+
+    # Chain: formatting
     format_template = PromptTemplate(
         input_variables=["transaction_data"],
-        template="""You are a helpful assistant. Format this transaction data into a clear, readable response.
-Just present the key information in simple sentences. Be concise and friendly.
-
+        template="""You are a helpful assistant. Format this transaction data clearly and naturally.
 Transaction data:
 {transaction_data}
 
-Format this into a clear, readable response (2-3 sentences max):"""
+Output a concise, friendly summary (2–3 sentences max):"""
     )
-    
     format_chain = LLMChain(llm=llm, prompt=format_template)
-    
-    # Create decision chain: asks LLM to classify intent (fast, single call)
+
+    # Chain: decision-making (intent classification)
     decision_template = PromptTemplate(
         input_variables=["user_message"],
-        template="""You are a router for an accounting chatbot. Classify what the user wants to do with a transaction.
+        template="""You are a router for an accounting chatbot. Classify the user’s intent.
 
-Available tool: search_transaction (searches for transactions by transaction number like VN-151025-135926 or BE-131025-170514)
+Available tool: search_transaction (looks up transactions like VN-151025-135926 or BE-131025-170514)
 
-The chatbot can only SEARCH for transactions. It CANNOT delete, update, modify, or create transactions.
+The chatbot can only SEARCH. It cannot delete, edit, or create data.
 
 User message: {user_message}
 
-Classify the user's intent. Answer with ONLY one word:
-- SEARCH: if the user wants to search, find, get info, view, see details, investigate, check, etc.
-- DESTRUCTIVE: if the user wants to delete, remove, update, edit, modify, create, add, change, etc.
-- UNCLEAR: if the intent is unclear or neither search nor destructive
-
-Answer:"""
+Answer with one word only:
+- SEARCH
+- DESTRUCTIVE
+- UNCLEAR
+"""
     )
-    
     decision_chain = LLMChain(llm=llm, prompt=decision_template)
-    
+
+    log("✅ Router with LangChain tools initialized")
     return transaction_tool, format_chain, decision_chain
 
 
-def router_response(user_message: str, transaction_tool: Tool, format_chain: LLMChain, decision_chain: LLMChain) -> str:
+# ------------------------------------------------------------
+# 🧩 Router Logic
+# ------------------------------------------------------------
+
+def detect_intent(user_message: str, decision_chain: LLMChain) -> str:
+    """Use LLM to classify intent as SEARCH, DESTRUCTIVE, or UNCLEAR."""
+    decision_response = decision_chain.invoke({"user_message": user_message})
+    return decision_response["text"].strip().upper()
+
+
+def handle_transaction_query(
+    transaction_number: str,
+    user_message: str,
+    has_allowed_verb: bool,
+    has_forbidden_verb: bool,
+    has_additional_words: bool,
+    transaction_tool: Tool,
+    format_chain: LLMChain,
+    decision_chain: LLMChain,
+) -> str:
+    """Handle transaction-related queries based on intent and verbs."""
+    if has_forbidden_verb:
+        log(f"🚫 Forbidden action detected for {transaction_number}")
+        return "Sorry, I can only show transaction information — not delete, update, or modify it."
+
+    if has_allowed_verb:
+        log(f"⚡ Fast path: Direct search for {transaction_number}")
+        data = transaction_tool.run(transaction_number)
+        try:
+            return format_chain.invoke({"transaction_data": data})["text"]
+        except Exception as e:
+            log(f"❌ Formatting error: {e}")
+            return data
+
+    if not has_additional_words:
+        log(f"❓ Transaction number only: {transaction_number}")
+        return f"What would you like to do with transaction {transaction_number}? I can search and show details."
+
+    # Unknown verbs → ask LLM to decide
+    log(f"🤔 Unknown verb in query for {transaction_number}")
+    decision = detect_intent(user_message, decision_chain)
+    if "SEARCH" in decision:
+        data = transaction_tool.run(transaction_number)
+        try:
+            return format_chain.invoke({"transaction_data": data})["text"]
+        except Exception as e:
+            log(f"❌ Formatting error: {e}")
+            return data
+    elif "DESTRUCTIVE" in decision:
+        return "Sorry, I can only search transactions — not modify them."
+    else:
+        return f"I'm not sure what you'd like to do with {transaction_number}. Try saying 'search {transaction_number}'."
+
+
+def router_response(
+    user_message: str,
+    transaction_tool: Tool,
+    format_chain: LLMChain,
+    decision_chain: LLMChain
+) -> str | None:
     """
-    Router using LangChain Tools with verb-based routing:
-    - Transaction number + allowed verb → fast path
-    - Transaction number + forbidden verb → error immediately
-    - Transaction number only → ask for clarification
-    - Transaction number + unknown verb → LLM decision
-    - No transaction number → LLM decision for general queries
-    
-    Args:
-        user_message: User's question/message
-        transaction_tool: LangChain Tool for searching transactions
-        format_chain: Chain for formatting transaction data
-        decision_chain: Chain for deciding if tool should be used
-        
-    Returns:
-        Formatted response string, or None if not a transaction query
+    Route user message through appropriate tool or fallback.
+    Returns a formatted response or None for general queries.
     """
     try:
         user_lower = user_message.lower()
-        
-        # Define verb categories
+
         allowed_verbs = ['search', 'find', 'show', 'get', 'lookup', 'retrieve', 'display', 'info', 'information', 'details', 'tell me about', 'what is']
         forbidden_verbs = ['delete', 'remove', 'cancel', 'void', 'update', 'edit', 'change', 'modify', 'create', 'add', 'new', 'insert']
-        
-        # Check for verbs in message
+
         has_allowed_verb = any(verb in user_lower for verb in allowed_verbs)
         has_forbidden_verb = any(verb in user_lower for verb in forbidden_verbs)
-        
-        # Extract transaction number
+
         transaction_number = extract_transaction_number(user_message)
-        
-        # CASE 1: Transaction number found
+
         if transaction_number:
-            # Check if message has additional words beyond the transaction number (indicates a verb/action)
-            # Remove transaction number from message and check if anything remains
-            message_without_txn = user_lower.replace(transaction_number.lower(), '').strip()
-            # Remove common words that might appear with transaction numbers
-            message_without_txn = message_without_txn.replace('the', '').replace('a', '').replace('an', '').strip()
-            has_additional_words = len(message_without_txn.split()) > 0
-            
-            # A) Transaction number + FORBIDDEN verb → block immediately
-            if has_forbidden_verb:
-                print(f"🚫 Blocked: Forbidden action detected for transaction {transaction_number}")
-                return "Sorry, I can't assist with that request. I can only search for and provide information about transactions. I cannot delete, update, or modify transactions."
-            
-            # B) Transaction number + ALLOWED verb → fast path
-            elif has_allowed_verb:
-                print(f"⚡ Fast path: Transaction {transaction_number} with allowed verb, calling tool directly")
-                transaction_data = transaction_tool.run(transaction_number)
-                
-                # Format the response using LLM
-                try:
-                    formatted_response = format_chain.invoke({"transaction_data": transaction_data})
-                    return formatted_response["text"]
-                except Exception as e:
-                    print(f"❌ Error formatting response: {e}")
-                    return transaction_data
-            
-            # C) Transaction number ONLY (no additional words) → ask what they want
-            elif not has_additional_words:
-                print(f"❓ Transaction number only: {transaction_number}, asking for clarification")
-                return f"What would you like to do with transaction {transaction_number}? I can search for and show you the transaction details. Please specify what you need (e.g., 'search {transaction_number}' or 'show details for {transaction_number}')."
-            
-            # D) Transaction number + UNKNOWN verb/words → use LLM decision
-            else:
-                print(f"🤔 Transaction {transaction_number} with unknown verb/words, using LLM to classify intent...")
-                decision_response = decision_chain.invoke({"user_message": user_message})
-                decision = decision_response["text"].strip().upper()
-                
-                if "SEARCH" in decision:
-                    print(f"🔍 LLM classified as SEARCH: Searching for transaction {transaction_number}")
-                    transaction_data = transaction_tool.run(transaction_number)
-                    try:
-                        formatted_response = format_chain.invoke({"transaction_data": transaction_data})
-                        return formatted_response["text"]
-                    except Exception as e:
-                        print(f"❌ Error formatting response: {e}")
-                        return transaction_data
-                elif "DESTRUCTIVE" in decision:
-                    print(f"🚫 LLM classified as DESTRUCTIVE for transaction {transaction_number}")
-                    return "Sorry, I can't assist with that request. I can only search for and provide information about transactions. I cannot delete, update, or modify transactions."
-                else:
-                    # UNCLEAR or anything else
-                    print(f"❓ LLM classified as UNCLEAR for transaction {transaction_number}")
-                    return f"I'm not sure what you'd like to do with transaction {transaction_number}. I can search for and show you the transaction details. Please specify what you need (e.g., 'search {transaction_number}' or 'show details for {transaction_number}')."
-        
-        # CASE 2: No transaction number → use LLM decision for general queries
+            # Clean message from transaction number
+            message_without_txn = re.sub(transaction_number, '', user_lower).strip()
+            message_without_txn = re.sub(r'\b(the|a|an)\b', '', message_without_txn).strip()
+            has_additional_words = bool(message_without_txn)
+
+            return handle_transaction_query(
+                transaction_number,
+                user_message,
+                has_allowed_verb,
+                has_forbidden_verb,
+                has_additional_words,
+                transaction_tool,
+                format_chain,
+                decision_chain,
+            )
+
+        # No transaction number → general decision
+        log("🤔 No transaction number detected — checking intent")
+        decision = detect_intent(user_message, decision_chain)
+        if "SEARCH" in decision or "DESTRUCTIVE" in decision:
+            return "I understand you're asking about a transaction, but I couldn't find a number. Please include one like VN-151025-135926."
         else:
-            print("🤔 No transaction number found, using LLM to check if transaction-related...")
-            decision_response = decision_chain.invoke({"user_message": user_message})
-            decision = decision_response["text"].strip().upper()
-            
-            if "SEARCH" in decision or "DESTRUCTIVE" in decision:
-                # LLM thinks it's a transaction query but no number found
-                return "I understand you're asking about a transaction, but I couldn't find a transaction number in your message. Please provide a transaction number like VN-151025-135926 or BE-131025-170514."
-            else:
-                # Not a transaction query - return None to use regular chain
-                print("💬 Not a transaction query, using regular chain")
-                return None
-            
+            log("💬 General query — hand off to main chain")
+            return None
+
     except Exception as e:
-        print(f"❌ Error in router: {e}")
-        # Fallback: try extracting transaction number directly
-        transaction_number = extract_transaction_number(user_message)
-        if transaction_number:
-            print(f"🔄 Fallback: Direct tool call for {transaction_number}")
+        log(f"❌ Router error: {e}")
+        txn = extract_transaction_number(user_message)
+        if txn:
             try:
-                transaction_data = transaction_tool.run(transaction_number)
-                formatted_response = format_chain.invoke({"transaction_data": transaction_data})
-                return formatted_response["text"]
-            except:
+                data = transaction_tool.run(txn)
+                return format_chain.invoke({"transaction_data": data})["text"]
+            except Exception:
                 return "I encountered an error processing your request. Please try again."
         return None
