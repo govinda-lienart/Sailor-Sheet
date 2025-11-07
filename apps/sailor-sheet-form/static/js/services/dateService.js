@@ -117,10 +117,14 @@ export function setupDateInputHandlers(dateInputId, showMessageCallback) {
     // Handle paste events
     dateInput.addEventListener('paste', function(e) {
         setTimeout(() => {
-            const value = this.value;
+            let value = this.value.trim();
+            // Strip leading apostrophes immediately
+            value = value.replace(/^'+/g, '');
             const converted = convertDateFormat(value);
-            if (converted !== value) {
-                this.value = converted;
+            // Ensure converted value also has no apostrophes
+            const finalValue = converted.replace(/^'+/g, '');
+            if (finalValue !== this.value) {
+                this.value = finalValue;
                 showMessageCallback('Date format converted successfully!', 'success');
             }
         }, 10); // Small delay to allow paste to complete
@@ -128,7 +132,10 @@ export function setupDateInputHandlers(dateInputId, showMessageCallback) {
     
     // Handle input changes
     dateInput.addEventListener('blur', function() {
-        const value = this.value.trim();
+        let value = this.value.trim();
+        // Strip leading apostrophes immediately
+        value = value.replace(/^'+/g, '');
+        
         if (value) {
             const converted = convertDateFormat(value);
             if (converted !== value && validateDateFormat(converted)) {
@@ -138,8 +145,17 @@ export function setupDateInputHandlers(dateInputId, showMessageCallback) {
                 showMessageCallback('Please enter a valid date format (dd/mm/yyyy or mm/dd/yyyy)', 'error');
                 this.style.borderColor = '#dc3545';
             } else {
+                // Ensure no apostrophe in final value
+                this.value = converted.replace(/^'+/g, '');
                 this.style.borderColor = '';
             }
+        }
+    });
+    
+    // Also strip apostrophes on input (real-time)
+    dateInput.addEventListener('input', function() {
+        if (this.value.startsWith("'")) {
+            this.value = this.value.replace(/^'+/g, '');
         }
     });
     

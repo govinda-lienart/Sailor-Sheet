@@ -69,6 +69,10 @@ function submitToGoogleSheets(formData) {
     // Convert FormData to JSON
     const jsonData = {};
     for (let [key, value] of formData.entries()) {
+        // Strip leading apostrophes from date_input (Excel uses ' to force text)
+        if (key === 'date_input' && value) {
+            value = value.trim().replace(/^'+/g, '');
+        }
         jsonData[key] = value;
     }
     

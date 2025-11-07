@@ -251,6 +251,11 @@ class TransactionOperations:
             print(f"  - Debit account: {debit_account_name} → Offset: '{debit_offset}'")
             print(f"  - Credit account: {credit_account_name} → Offset: '{credit_offset}'")
             
+            # Ensure formatted_date has no apostrophes (double-check before writing)
+            if formatted_date:
+                formatted_date = str(formatted_date).lstrip("'").strip()
+                print(f"DEBUG: Final formatted_date before writing: '{formatted_date}'")
+            
             # Entry 1: DEBIT entry (amount goes in Debit column)
             debit_row = [
                 transaction_number,    # A: Transaction Number
@@ -321,6 +326,21 @@ class TransactionOperations:
             print(f"DEBUG: Adding CREDIT entry to worksheet: {worksheet.title}")
             worksheet.append_row(credit_row)
             print(f"DEBUG: CREDIT entry successfully added")
+            
+            # After appending, explicitly update date cells with USER_ENTERED
+            # This ensures Google Sheets interprets the date correctly (not as text with apostrophe)
+            try:
+                all_values_after = worksheet.get_all_values()
+                debit_row_num = len(all_values_after) - 1
+                credit_row_num = len(all_values_after)
+                
+                # Update date cells (column B) with USER_ENTERED to force proper date interpretation
+                # USER_ENTERED tells Google Sheets to interpret values as if user typed them
+                worksheet.update(f'B{debit_row_num}', [[formatted_date]], value_input_option='USER_ENTERED')
+                worksheet.update(f'B{credit_row_num}', [[formatted_date]], value_input_option='USER_ENTERED')
+                print(f"DEBUG: Date cells (B{debit_row_num} and B{credit_row_num}) updated with USER_ENTERED to remove apostrophe")
+            except Exception as e:
+                print(f"WARNING: Could not update date cells with USER_ENTERED: {e}")
             
             # If we added any HYPERLINK formulas, we need to format them properly with USER_ENTERED for both entries
             has_hyperlinks = any(value.startswith('=HYPERLINK(') for value in file_link_values.values())
