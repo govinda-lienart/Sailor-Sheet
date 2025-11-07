@@ -9,8 +9,8 @@
 export function convertDateFormat(dateString) {
     if (!dateString || dateString.trim() === '') return '';
     
-    // Remove any extra spaces
-    dateString = dateString.trim();
+    // Remove any extra spaces and leading apostrophes (Excel uses ' to force text)
+    dateString = dateString.trim().replace(/^'+/g, ''); // Strip leading apostrophes
     
     // Handle different separators and formats
     let parts = [];

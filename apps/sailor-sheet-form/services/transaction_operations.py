@@ -117,6 +117,10 @@ class TransactionOperations:
             
             # Format the date input to DD/MM/YY format
             try:
+                # Strip any leading apostrophes (Excel uses ' to force text formatting)
+                if date_input:
+                    date_input = str(date_input).lstrip("'").strip()
+                
                 # Parse the date input and convert to DD/MM/YY format
                 if date_input:
                     # If date_input is in YYYY-MM-DD format (from HTML date picker), convert it
@@ -125,8 +129,8 @@ class TransactionOperations:
                         parsed_date = datetime.strptime(date_input, '%Y-%m-%d')
                         formatted_date = parsed_date.strftime('%d/%m/%y')
                     else:
-                        # If already in DD/MM/YY format, use as is
-                        formatted_date = date_input
+                        # If already in DD/MM/YY format, strip apostrophes and use as is
+                        formatted_date = date_input.lstrip("'").strip()
                 else:
                     # If no date provided, use today's date in DD/MM/YY format
                     formatted_date = now.strftime('%d/%m/%y')
@@ -138,9 +142,10 @@ class TransactionOperations:
             # Extract month and year for analysis columns
             try:
                 # Parse the formatted date to extract month and year
-                if '-' in date_input and len(date_input.split('-')[0]) == 4:
+                # Use formatted_date (already cleaned of apostrophes) for parsing
+                if '-' in formatted_date and len(formatted_date.split('-')[0]) == 4:
                     # Date is in YYYY-MM-DD format
-                    parsed_date = datetime.strptime(date_input, '%Y-%m-%d')
+                    parsed_date = datetime.strptime(formatted_date, '%Y-%m-%d')
                 else:
                     # Date is in DD/MM/YY format
                     parsed_date = datetime.strptime(formatted_date, '%d/%m/%y')

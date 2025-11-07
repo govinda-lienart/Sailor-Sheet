@@ -115,23 +115,7 @@ transaction_tool, format_chain, decision_chain = setup_router(llm, context_info)
 print("✅ Router with LangChain Tools initialized")
 
 # Function to call using LangChain chain or Router
-def call_deepseek_api(user_message):
-    """Call DeepSeek API using Router or simple chain"""
-    try:
-        # Try router first (for transaction searches using LangChain Tools)
-        router_result = router_response(user_message, transaction_tool, format_chain, decision_chain)
-        
-        if router_result is not None:
-            print("🔍 Router handled the request")
-            return router_result
-        else:
-            # Use simple chain for general questions
-            print("💬 Using simple chain for general question")
-            response = chain.invoke({"context": context_info, "question": user_message})
-            return response["text"]
-    except Exception as e:
-        print(f"❌ Error with LangChain: {e}")
-        return None
+3
 
 @app.route('/')
 def index():
