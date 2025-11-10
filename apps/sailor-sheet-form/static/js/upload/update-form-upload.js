@@ -114,66 +114,57 @@
         
         let { transactionNumber, documentType, fileUrl, fileName } = window.uploadedFileData;
         
-        // Double-check the transaction number from the displayed search results
-        const searchResults = document.getElementById('searchResults');
-        const transactionTable = searchResults ? searchResults.querySelector('table') : null;
+        console.log('DEBUG: handleGoogleSheetsUpdate - Starting update process');
+        console.log('DEBUG: handleGoogleSheetsUpdate - Transaction number from uploaded data:', transactionNumber);
+        console.log('DEBUG: handleGoogleSheetsUpdate - Document type:', documentType);
+        console.log('DEBUG: handleGoogleSheetsUpdate - File URL:', fileUrl);
         
-        console.log('DEBUG: handleGoogleSheetsUpdate - searchResults:', searchResults);
-        console.log('DEBUG: handleGoogleSheetsUpdate - transactionTable:', transactionTable);
-        console.log('DEBUG: handleGoogleSheetsUpdate - initial transactionNumber:', transactionNumber);
-        
-        // First, try to get transaction number from the search input field (most reliable)
-        const searchInput = document.getElementById('searchTransactionNumber');
-        if (searchInput && searchInput.value.trim()) {
-            const searchInputTransactionNumber = searchInput.value.trim();
-            console.log('DEBUG: handleGoogleSheetsUpdate - Transaction number from search input:', searchInputTransactionNumber);
-            // Only use search input if current transaction number is empty or is the em dash
-            if (!transactionNumber || transactionNumber === '—') {
-                transactionNumber = searchInputTransactionNumber;
-                console.log('DEBUG: handleGoogleSheetsUpdate - Using transaction number from search input:', transactionNumber);
-            }
-        }
-        
-        if (transactionTable) {
-            const allRows = Array.from(transactionTable.querySelectorAll('tr'));
-            console.log('DEBUG: handleGoogleSheetsUpdate - Found', allRows.length, 'table rows');
+        // Validate that we have a valid transaction number from the upload step
+        // The transaction number stored during upload should be trusted and used
+        if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-' || transactionNumber.trim() === '') {
+            console.warn('DEBUG: Transaction number from uploaded data is invalid, attempting fallback...');
             
-            allRows.forEach((row, index) => {
-                if (row.cells && row.cells[0]) {
-                    console.log(`DEBUG: handleGoogleSheetsUpdate - Row ${index}: "${row.cells[0].textContent.trim()}"`);
-                    if (row.cells[1]) {
-                        console.log(`DEBUG: handleGoogleSheetsUpdate - Row ${index} value: "${row.cells[1].textContent.trim()}"`);
+            // Fallback 1: Try to get transaction number from the search input field
+            const searchInput = document.getElementById('searchTransactionNumber');
+            if (searchInput && searchInput.value.trim()) {
+                transactionNumber = searchInput.value.trim();
+                console.log('DEBUG: Using transaction number from search input (fallback):', transactionNumber);
+            } else {
+                // Fallback 2: Try to get from the displayed search results table
+                const searchResults = document.getElementById('searchResults');
+                const transactionTable = searchResults ? searchResults.querySelector('table') : null;
+                
+                if (transactionTable) {
+                    const allRows = Array.from(transactionTable.querySelectorAll('tr'));
+                    const transactionRow = allRows.find(row => {
+                        if (!row.cells[0]) return false;
+                        const headerText = row.cells[0].textContent.trim();
+                        return headerText === 'Transaction Number' || 
+                               headerText === 'BE-Transaction Number' || 
+                               headerText === 'VN-Transaction Number';
+                    });
+                    
+                    if (transactionRow && transactionRow.cells[1]) {
+                        const tableTransactionNumber = transactionRow.cells[1].textContent.trim();
+                        if (tableTransactionNumber && tableTransactionNumber !== '—' && tableTransactionNumber !== '-') {
+                            transactionNumber = tableTransactionNumber;
+                            console.log('DEBUG: Using transaction number from search results table (fallback):', transactionNumber);
+                        }
                     }
                 }
-            });
-            
-            const transactionRow = allRows.find(row => {
-                if (!row.cells[0]) return false;
-                const headerText = row.cells[0].textContent.trim();
-                return headerText === 'Transaction Number' || 
-                       headerText === 'BE-Transaction Number' || 
-                       headerText === 'VN-Transaction Number';
-            });
-            
-            console.log('DEBUG: handleGoogleSheetsUpdate - transactionRow found:', transactionRow);
-            
-            if (transactionRow && transactionRow.cells[1]) {
-                const tableTransactionNumber = transactionRow.cells[1].textContent.trim();
-                console.log(`DEBUG: Transaction number from uploaded data: "${transactionNumber}"`);
-                console.log(`DEBUG: Transaction number from search results table: "${tableTransactionNumber}"`);
-                
-                // Use the transaction number from the search results table (most reliable)
-                // Only use table value if it's not the em dash placeholder
-                if (tableTransactionNumber && tableTransactionNumber !== '—') {
-                    transactionNumber = tableTransactionNumber;
-                    console.log(`DEBUG: Using transaction number from search results: "${transactionNumber}"`);
-                } else {
-                    console.log('DEBUG: handleGoogleSheetsUpdate - Table has em dash placeholder, keeping current value');
-                }
             }
+        } else {
+            console.log('DEBUG: Using transaction number from uploaded file data (trusted source):', transactionNumber);
         }
         
-        console.log(`DEBUG: Starting Google Sheets update for transaction: ${transactionNumber}`);
+        // Final validation - ensure we have a valid transaction number
+        if (!transactionNumber || transactionNumber === '—' || transactionNumber === '-' || transactionNumber.trim() === '') {
+            showUploadResult('❌ Transaction number not found. Please ensure you searched for a transaction before uploading.', 'error');
+            console.error('ERROR: No valid transaction number found for update');
+            return;
+        }
+        
+        console.log(`DEBUG: Final transaction number to use: "${transactionNumber}"`);
         console.log(`DEBUG: Document type: ${documentType}`);
         console.log(`DEBUG: File URL: ${fileUrl}`);
         
@@ -343,12 +334,23 @@
             
             if (data.success) {
                 // Store the upload data for Google Sheets update
+                // Ensure transaction number is a clean string
+                const cleanTransactionNumber = String(transactionNumber).trim();
+                console.log('DEBUG: Storing uploaded file data:');
+                console.log('  - Transaction Number:', cleanTransactionNumber);
+                console.log('  - Document Type:', selectedType);
+                console.log('  - File URL:', data.file_url);
+                console.log('  - File Name:', data.file_name);
+                
                 window.uploadedFileData = {
-                    transactionNumber: transactionNumber,
+                    transactionNumber: cleanTransactionNumber,
                     documentType: selectedType,
                     fileUrl: data.file_url,
                     fileName: data.file_name
                 };
+                
+                // Verify storage
+                console.log('DEBUG: Stored data verification:', window.uploadedFileData);
                 
                 // Show success message and enable Google Sheets update button
                 showUploadResult(`
@@ -356,6 +358,7 @@
                         ✅ File uploaded to Google Drive successfully!
                         <br><strong>File:</strong> ${data.file_name}
                         <br><strong>Type:</strong> ${selectedType}
+                        <br><strong>Transaction:</strong> ${cleanTransactionNumber}
                         <br><a href="${data.file_url}" target="_blank" style="color: #007bff; text-decoration: underline;">📄 View Document</a>
                         <br><br><strong>Next Step:</strong> Click "Update Google Sheets" to add the document link to your transaction.
                     </div>
@@ -527,12 +530,23 @@
             
             if (data.success) {
                 // Store the uploaded file data for later use
+                // Ensure transaction number is a clean string
+                const cleanTransactionNumber = String(transactionNumber).trim();
+                console.log('DEBUG: Storing Google Drive link data:');
+                console.log('  - Transaction Number:', cleanTransactionNumber);
+                console.log('  - Document Type:', selectedType);
+                console.log('  - File URL:', data.file_url);
+                console.log('  - File Name:', data.file_name);
+                
                 window.uploadedFileData = {
-                    transactionNumber: transactionNumber,
+                    transactionNumber: cleanTransactionNumber,
                     documentType: selectedType,
                     fileUrl: data.file_url,
                     fileName: data.file_name
                 };
+                
+                // Verify storage
+                console.log('DEBUG: Stored data verification:', window.uploadedFileData);
                 
                 progressBar.style.width = '100%';
                 progressText.textContent = 'Complete!';
