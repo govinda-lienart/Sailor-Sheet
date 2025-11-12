@@ -19,7 +19,7 @@ from langchain.chains import LLMChain
 
 # Import from new modular structure
 from llm import DeepSeekLLM
-from tools import setup_router, router_response
+from tools import extract_transaction_number, route_message, setup_router
 
 # ------------------------------------------------------------
 # 🌍 Environment & Configuration
@@ -39,7 +39,7 @@ def load_context() -> str:
         with open(context_path, "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
-        return "Sailor Sheet is an accounting application for small businesses."
+        return "Could not load context file."
 
 
 context_info = load_context()
@@ -72,35 +72,61 @@ Your answer:"""
 chain = LLMChain(llm=llm, prompt=prompt_template)
 
 # Initialize router and tools for transaction queries
-transaction_tool, format_chain, decision_chain = setup_router(llm, context_info)
-print("✅ Router with LangChain Tools initialized")
+transaction_tool, format_chain, router_chain = setup_router(llm)
 
 # ------------------------------------------------------------
 # 🧩 Helper Functions
 # ------------------------------------------------------------
 
-def call_deepseek_api(user_message: str) -> str:
-    """
-    Decide whether to use the router (transaction search) or general chain.
-    
-    Args:
-        user_message: User's input message
-        
-    Returns:
-        AI-generated response string
-    """
-    # Try routing logic first
-    router_output = router_response(user_message, transaction_tool, format_chain, decision_chain)
-    if router_output is not None:
-        return router_output
+DEFAULT_DESTRUCTIVE_REPLY = "Sorry, I can only show transaction information — not delete, update, or modify it."
+DEFAULT_UNCLEAR_REPLY = "Please include a transaction number like VN-151025-135926 or clarify what you need."
 
-    # If not transaction-related, use general LangChain chain
+
+def _format_transaction_search(transaction_number: str) -> str:
+    """Run the search tool and format the response for the user."""
+    data = transaction_tool.run(transaction_number)
+    try:
+        return format_chain.invoke({"transaction_data": data})["text"]
+    except Exception as exc:
+        print(f"❌ Formatting error: {exc}")
+        return data
+
+
+def _run_general_chain(user_message: str) -> str:
+    """Fallback to the general Sailor Sheet chain."""
     try:
         result = chain.invoke({"context": context_info, "question": user_message})
         return result["text"]
-    except Exception as e:
-        print(f"❌ Error in general chain: {e}")
+    except Exception as exc:
+        print(f"❌ Error in general chain: {exc}")
         return "Sorry, I couldn't process your request right now. Please try again later."
+
+
+def call_deepseek_api(user_message: str) -> str:
+    """Decide whether to use a structured tool or the general chat chain."""
+    try:
+        decision = route_message(user_message, router_chain)
+    except Exception as exc:
+        print(f"❌ Router invocation failed: {exc}")
+        return _run_general_chain(user_message)
+
+    action = (decision.action or "general_chat").lower()
+
+    if action == "search_transaction":
+        transaction_number = decision.transaction_number or extract_transaction_number(user_message)
+        if not transaction_number:
+            return decision.reason or "I need a transaction number like VN-151025-135926 to search."
+        print(f"🔎 Router selected transaction lookup for {transaction_number}")
+        return _format_transaction_search(transaction_number)
+
+    if action == "reject_destructive":
+        return decision.reason or DEFAULT_DESTRUCTIVE_REPLY
+
+    if action == "reject_unclear":
+        return decision.reason or DEFAULT_UNCLEAR_REPLY
+
+    print("💬 Router selected general chat flow")
+    return _run_general_chain(user_message)
 
 
 # ------------------------------------------------------------

@@ -1,217 +1,124 @@
 """
 Router Logic
-Handles routing user messages to appropriate tools and chains.
+Uses a single LLM router to choose between actions like transaction search,
+general chat, or rejecting destructive/unclear intents.
 """
 
+from dataclasses import dataclass
+import json
+from typing import Optional, Tuple
+
+from langchain.chains import LLMChain
 from langchain.llms.base import LLM
 from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
 from langchain.tools import Tool
-from typing import Optional
-import re
+
 from .transaction_tool import search_transaction_tool
-from .utils import extract_transaction_number
 
 
-def setup_router(llm: LLM, context_info: str):
+@dataclass
+class RouterDecision:
+    """Structured decision returned by the LLM router."""
+
+    action: str
+    transaction_number: Optional[str] = None
+    reason: Optional[str] = None
+
+
+ROUTER_TEMPLATE = """You route messages for the Sailor Sheet assistant.
+
+Available actions:
+1. search_transaction: Use only to READ/LOOK UP a transaction. Requires a transaction_number in the form BE-XXXXXXXX or VN-XXXXXXXX (letters+digits with dashes). Never use this to edit or delete anything.
+2. general_chat: Use for greetings, chit-chat, or any question about Sailor Sheet that does not require looking up a specific transaction.
+3. reject_destructive: Use when the user wants to delete, edit, modify, add, create, insert, or otherwise change accounting data.
+4. reject_unclear: Use when the request is ambiguous, missing a transaction number, or you cannot determine the intent confidently.
+
+Rules:
+- If a transaction is mentioned but the number is missing, choose reject_unclear.
+- If the user requests any destructive action (delete/update/etc.), choose reject_destructive.
+- Your response must be raw JSON with keys action, transaction_number, and reason.
+- transaction_number must be null when not needed.
+- reason is a short sentence explaining the choice.
+
+User message: {user_message}
+
+JSON:"""
+
+
+def setup_router(llm: LLM) -> Tuple[Tool, LLMChain, LLMChain]:
     """
-    Set up router with LangChain Tool and helper chains.
-    
-    Args:
-        llm: LangChain LLM instance
-        context_info: Context information about Sailor Sheet
-        
+    Build the LangChain tool, formatter chain, and intent router chain.
+
     Returns:
-        Tuple of (transaction_tool, format_chain, decision_chain)
+        Tuple of (transaction_tool, format_chain, router_chain)
     """
-    # Tool: transaction search
     transaction_tool = Tool(
         name="search_transaction",
         func=search_transaction_tool,
         description=(
             "Search for a transaction in Sailor Sheet (VN ledger). "
-            "Use when user asks to find, get, or view a transaction. "
+            "Use when the user asks to find, get, or view a transaction. "
             "Transaction numbers start with BE or VN, e.g., VN-151025-135926."
-        )
+        ),
     )
 
-    # Chain: formatting transaction data
     format_template = PromptTemplate(
         input_variables=["transaction_data"],
         template="""You are a helpful assistant. Format this transaction data clearly and naturally.
 Transaction data:
 {transaction_data}
 
-Output a concise, friendly summary (2–3 sentences max):"""
+Output a concise, friendly summary (2–3 sentences max):""",
     )
     format_chain = LLMChain(llm=llm, prompt=format_template)
 
-    # Chain: decision-making (intent classification)
-    decision_template = PromptTemplate(
+    router_template = PromptTemplate(
         input_variables=["user_message"],
-        template="""You are a router for an accounting chatbot. Classify the user's intent.
-
-Available tool: search_transaction (looks up transactions like VN-151025-135926 or BE-131025-170514)
-
-The chatbot can only SEARCH. It cannot delete, edit, or create data.
-
-User message: {user_message}
-
-Answer with one word only:
-- SEARCH
-- DESTRUCTIVE
-- UNCLEAR
-"""
+        template=ROUTER_TEMPLATE,
     )
-    decision_chain = LLMChain(llm=llm, prompt=decision_template)
+    router_chain = LLMChain(llm=llm, prompt=router_template)
 
-    print("✅ Router with LangChain tools initialized")
-    return transaction_tool, format_chain, decision_chain
+    print("✅ LLM intent router initialized")
+    return transaction_tool, format_chain, router_chain
 
 
-def detect_intent(user_message: str, decision_chain: LLMChain) -> str:
+def _strip_json_snippet(raw_text: str) -> str:
+    """Remove code fences or leading text so json.loads succeeds."""
+    text = raw_text.strip()
+    if text.startswith("```"):
+        text = text.strip("`")
+        # Remove possible language hint like json\n
+        lines = text.splitlines()
+        if lines and lines[0].lower().startswith("json"):
+            lines = lines[1:]
+        text = "\n".join(lines).strip()
+    return text
+
+
+def parse_router_output(raw_output: str) -> RouterDecision:
     """
-    Use LLM to classify intent as SEARCH, DESTRUCTIVE, or UNCLEAR.
-    
-    Args:
-        user_message: User's input message
-        decision_chain: LangChain chain for intent classification
-        
-    Returns:
-        Intent classification string (SEARCH, DESTRUCTIVE, or UNCLEAR)
+    Convert the LLM output into a RouterDecision object.
+
+    Falls back to general_chat when parsing fails.
     """
-    decision_response = decision_chain.invoke({"user_message": user_message})
-    return decision_response["text"].strip().upper()
-
-
-def handle_transaction_query(
-    transaction_number: str,
-    user_message: str,
-    has_allowed_verb: bool,
-    has_forbidden_verb: bool,
-    has_additional_words: bool,
-    transaction_tool: Tool,
-    format_chain: LLMChain,
-    decision_chain: LLMChain,
-) -> str:
-    """
-    Handle transaction-related queries based on intent and verbs.
-    
-    Args:
-        transaction_number: Extracted transaction number
-        user_message: Original user message
-        has_allowed_verb: Whether message contains allowed verbs (search, find, etc.)
-        has_forbidden_verb: Whether message contains forbidden verbs (delete, update, etc.)
-        has_additional_words: Whether message has words beyond transaction number
-        transaction_tool: LangChain tool for searching transactions
-        format_chain: Chain for formatting transaction data
-        decision_chain: Chain for intent classification
-        
-    Returns:
-        Formatted response string
-    """
-    if has_forbidden_verb:
-        print(f"🚫 Forbidden action detected for {transaction_number}")
-        return "Sorry, I can only show transaction information — not delete, update, or modify it."
-
-    if has_allowed_verb:
-        print(f"⚡ Fast path: Direct search for {transaction_number}")
-        data = transaction_tool.run(transaction_number)
-        try:
-            return format_chain.invoke({"transaction_data": data})["text"]
-        except Exception as e:
-            print(f"❌ Formatting error: {e}")
-            return data
-
-    if not has_additional_words:
-        print(f"❓ Transaction number only: {transaction_number}")
-        return f"What would you like to do with transaction {transaction_number}? I can search and show details."
-
-    # Unknown verbs → ask LLM to decide
-    print(f"🤔 Unknown verb in query for {transaction_number}")
-    decision = detect_intent(user_message, decision_chain)
-    if "SEARCH" in decision:
-        data = transaction_tool.run(transaction_number)
-        try:
-            return format_chain.invoke({"transaction_data": data})["text"]
-        except Exception as e:
-            print(f"❌ Formatting error: {e}")
-            return data
-    elif "DESTRUCTIVE" in decision:
-        return "Sorry, I can only search transactions — not modify them."
-    else:
-        return f"I'm not sure what you'd like to do with {transaction_number}. Try saying 'search {transaction_number}'."
-
-
-def router_response(
-    user_message: str,
-    transaction_tool: Tool,
-    format_chain: LLMChain,
-    decision_chain: LLMChain
-) -> Optional[str]:
-    """
-    Route user message through appropriate tool or fallback.
-    
-    Args:
-        user_message: User's input message
-        transaction_tool: LangChain tool for searching transactions
-        format_chain: Chain for formatting transaction data
-        decision_chain: Chain for intent classification
-        
-    Returns:
-        Formatted response string or None for general queries
-    """
+    cleaned = _strip_json_snippet(raw_output)
     try:
-        user_lower = user_message.lower()
+        data = json.loads(cleaned)
+        return RouterDecision(
+            action=data.get("action", "general_chat"),
+            transaction_number=data.get("transaction_number"),
+            reason=data.get("reason"),
+        )
+    except json.JSONDecodeError:
+        print("⚠️ Router output was not valid JSON, defaulting to general_chat")
+        return RouterDecision(
+            action="general_chat",
+            reason="Router output could not be parsed.",
+        )
 
-        allowed_verbs = [
-            'search', 'find', 'show', 'get', 'lookup', 'retrieve',
-            'display', 'info', 'information', 'details', 'tell me about', 'what is'
-        ]
-        forbidden_verbs = [
-            'delete', 'remove', 'cancel', 'void', 'update', 'edit',
-            'change', 'modify', 'create', 'add', 'new', 'insert'
-        ]
 
-        has_allowed_verb = any(verb in user_lower for verb in allowed_verbs)
-        has_forbidden_verb = any(verb in user_lower for verb in forbidden_verbs)
-
-        transaction_number = extract_transaction_number(user_message)
-
-        if transaction_number:
-            # Clean message from transaction number
-            message_without_txn = re.sub(transaction_number, '', user_lower, flags=re.IGNORECASE).strip()
-            message_without_txn = re.sub(r'\b(the|a|an)\b', '', message_without_txn).strip()
-            has_additional_words = bool(message_without_txn)
-
-            return handle_transaction_query(
-                transaction_number,
-                user_message,
-                has_allowed_verb,
-                has_forbidden_verb,
-                has_additional_words,
-                transaction_tool,
-                format_chain,
-                decision_chain,
-            )
-
-        # No transaction number → general decision
-        print("🤔 No transaction number detected — checking intent")
-        decision = detect_intent(user_message, decision_chain)
-        if "SEARCH" in decision or "DESTRUCTIVE" in decision:
-            return "I understand you're asking about a transaction, but I couldn't find a number. Please include one like VN-151025-135926."
-        else:
-            print("💬 General query — hand off to main chain")
-            return None
-
-    except Exception as e:
-        print(f"❌ Router error: {e}")
-        txn = extract_transaction_number(user_message)
-        if txn:
-            try:
-                data = transaction_tool.run(txn)
-                return format_chain.invoke({"transaction_data": data})["text"]
-            except Exception:
-                return "I encountered an error processing your request. Please try again."
-        return None
-
+def route_message(user_message: str, router_chain: LLMChain) -> RouterDecision:
+    """Invoke the router chain and parse its structured decision."""
+    response = router_chain.invoke({"user_message": user_message})
+    raw_text = response["text"]
+    return parse_router_output(raw_text)
