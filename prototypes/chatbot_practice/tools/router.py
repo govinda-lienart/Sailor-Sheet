@@ -17,28 +17,29 @@ from .transaction_tool import search_transaction_tool
 
 
 @dataclass
-class RouterDecision:
-    """Structured decision returned by the LLM router."""
+class RouterCall:
+    """Structured tool call returned by the LLM router."""
 
-    action: str
-    transaction_number: Optional[str] = None
+    tool: str
+    tool_input: Optional[str] = None
     reason: Optional[str] = None
 
 
 ROUTER_TEMPLATE = """You route messages for the Sailor Sheet assistant.
 
-Available actions:
-1. search_transaction: Use only to READ/LOOK UP a transaction. Requires a transaction_number in the form BE-XXXXXXXX or VN-XXXXXXXX (letters+digits with dashes). Never use this to edit or delete anything.
-2. general_chat: Use for greetings, chit-chat, or any question about Sailor Sheet that does not require looking up a specific transaction.
-3. reject_destructive: Use when the user wants to delete, edit, modify, add, create, insert, or otherwise change accounting data.
-4. reject_unclear: Use when the request is ambiguous, missing a transaction number, or you cannot determine the intent confidently.
+Available tools:
+1. search_transaction → READ ONLY lookup. Requires a transaction_number in the form BE-XXXXXXXX or VN-XXXXXXXX (letters+digits with dashes). Never use this to edit or delete anything.
+2. general_chat → Friendly chit-chat or questions about Sailor Sheet that do not need a specific transaction lookup.
+3. reject_destructive → When the user asks to delete, edit, modify, add, create, insert, or otherwise change accounting data.
+4. reject_unclear → When the request is ambiguous, missing a transaction number, or you cannot determine intent confidently.
 
 Rules:
-- If a transaction is mentioned but the number is missing, choose reject_unclear.
-- If the user requests any destructive action (delete/update/etc.), choose reject_destructive.
-- Your response must be raw JSON with keys action, transaction_number, and reason.
-- transaction_number must be null when not needed.
-- reason is a short sentence explaining the choice.
+- If a transaction is mentioned but the number is missing, call reject_unclear.
+- If the user requests any destructive action (delete/update/etc.), call reject_destructive.
+- Respond with raw JSON ONLY using keys: tool, tool_input, reason.
+- tool must be one of: search_transaction, general_chat, reject_destructive, reject_unclear.
+- tool_input must contain the transaction number for search_transaction, or the user message / explanation for other tools.
+- reason is a short sentence explaining why you chose that tool.
 
 User message: {user_message}
 
@@ -95,30 +96,31 @@ def _strip_json_snippet(raw_text: str) -> str:
     return text
 
 
-def parse_router_output(raw_output: str) -> RouterDecision:
+def parse_router_output(raw_output: str) -> RouterCall:
     """
-    Convert the LLM output into a RouterDecision object.
+    Convert the LLM output into a RouterCall object.
 
     Falls back to general_chat when parsing fails.
     """
     cleaned = _strip_json_snippet(raw_output)
     try:
         data = json.loads(cleaned)
-        return RouterDecision(
-            action=data.get("action", "general_chat"),
-            transaction_number=data.get("transaction_number"),
+        return RouterCall(
+            tool=data.get("tool", "general_chat"),
+            tool_input=data.get("tool_input"),
             reason=data.get("reason"),
         )
     except json.JSONDecodeError:
         print("⚠️ Router output was not valid JSON, defaulting to general_chat")
-        return RouterDecision(
-            action="general_chat",
+        return RouterCall(
+            tool="general_chat",
             reason="Router output could not be parsed.",
         )
 
 
-def route_message(user_message: str, router_chain: LLMChain) -> RouterDecision:
+def route_message(user_message: str, router_chain: LLMChain) -> RouterCall:
     """Invoke the router chain and parse its structured decision."""
     response = router_chain.invoke({"user_message": user_message})
     raw_text = response["text"]
+    print(f"🧭 Router raw output: {raw_text}")
     return parse_router_output(raw_text)
