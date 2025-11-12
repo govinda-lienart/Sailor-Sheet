@@ -3,10 +3,10 @@ Tools Module
 Contains all LangChain tools and routing logic.
 """
 
-from .tool_registry import build_action_tools
+from .lc_tools.tool_registry import build_action_tools
 from .router import RouterCall, route_message, setup_router
-from .transaction_tool import search_transaction_tool
-from .utils import extract_transaction_number, format_transaction_response
+from .helpers.transaction_tool import search_transaction_tool
+from .helpers.utils import extract_transaction_number, format_transaction_response
 
 __all__ = [
     'build_action_tools',

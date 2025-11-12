@@ -13,7 +13,7 @@ from langchain.llms.base import LLM
 from langchain.prompts import PromptTemplate
 from langchain.tools import Tool
 
-from .transaction_tool import search_transaction_tool
+from .helpers.transaction_tool import search_transaction_tool
 
 
 @dataclass
